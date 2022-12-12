@@ -40,7 +40,7 @@ app.get('/api/resetSettings', (req, res) => {
 
 app.get('/api/getDisplayOptions', (req, res) => {
 	console.log('/api/getDisplayOptions');
-	return res.send({
+	const data = {
 		enabled: 1,
 		sdaPin: 0,
 		sclPin: 1,
@@ -49,7 +49,23 @@ app.get('/api/getDisplayOptions', (req, res) => {
 		i2cSpeed: 400000,
 		flipDisplay: 0,
 		invertDisplay: 1,
-	});
+		buttonLayout: 0,
+		buttonLayoutRight: 3,
+		splashMode: 3,
+		splashChoice: 0,
+		splashImage: Array(16*64).fill(255)
+	}
+	console.log('data', data);
+	return res.send(data);
+});
+
+app.get('/api/getSplashImage', (req, res) => {
+	console.log('/api/getSplashImage');
+	const data = {
+		splashImage: Array(16*64).fill(255)
+	}
+	console.log('data', data);
+	return res.send(data);
 });
 
 app.get('/api/getGamepadOptions', (req, res) => {
@@ -108,6 +124,40 @@ app.get('/api/getPinMappings', (req, res) => {
 	}
 
 	return res.send(mappings);
+});
+
+app.get('/api/getAddonsOptions', (req, res) => {
+	console.log('/api/getAddonsOptions');
+	let usedPins = [];
+	for (let prop of Object.keys(controllers['pico']))
+		if (!isNaN(parseInt(controllers['pico'][prop])))
+			usedPins.push(parseInt(controllers['pico'][prop]));
+	return res.send({
+		turboPin: -1,
+		turboPinLED: -1,
+		sliderLSPin: -1,
+		sliderRSPin: -1,
+		turboShotCount: 20,
+		reversePin: -1,
+		reversePinLED: -1,
+		reverseActionUp: 1,
+		reverseActionDown: 1,
+		reverseActionLeft: 1,
+		reverseActionRight: 1,
+		i2cAnalog1219SDAPin: -1,
+		i2cAnalog1219SCLPin: -1,
+		i2cAnalog1219Block: 0,
+		i2cAnalog1219Speed: 400000,
+		i2cAnalog1219Address: 0x40,
+		usedPins,
+	});
+});
+
+app.get('/api/getFirmwareVersion', (req, res) => {
+	console.log('/api/getFirmwareVersion');
+	return res.send({
+		version: process.env.REACT_APP_CURRENT_VERSION,
+	});
 });
 
 app.post('/api/*', (req, res) => {

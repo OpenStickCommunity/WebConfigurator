@@ -24,9 +24,9 @@ const SOCD_MODES = [
 ];
 
 const schema = yup.object().shape({
-	dpadMode: yup.number().required().oneOf(DPAD_MODES.map(o => o.value)).label('D-Pad Mode'),
+	dpadMode : yup.number().required().oneOf(DPAD_MODES.map(o => o.value)).label('D-Pad Mode'),
 	inputMode: yup.number().required().oneOf(INPUT_MODES.map(o => o.value)).label('Input Mode'),
-	socdMode: yup.number().required().oneOf(SOCD_MODES.map(o => o.value)).label('SOCD Mode'),
+	socdMode : yup.number().required().oneOf(SOCD_MODES.map(o => o.value)).label('SOCD Mode'),
 });
 
 const FormContext = () => {
@@ -56,7 +56,7 @@ export default function SettingsPage() {
 
 	const onSuccess = async (values) => {
 		const success = WebApi.setGamepadOptions(values);
-		setSaveMessage(success ? 'Saved!' : 'Unable to Save');
+		setSaveMessage(success ? 'Saved! Please Restart Your Device' : 'Unable to Save');
 	};
 
 	return (

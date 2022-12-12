@@ -3,8 +3,7 @@
 	margin: -6px 8px 0 12px;
 }
 
-.nav-link,
-.nav-item * {
+.nav-link, .nav-item * {
 	font-size: 0.875rem;
 }
 
@@ -23,17 +22,16 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-	.title-logo {
-		animation: clockwise-spin infinite 20s linear;
-	}
+  .title-logo {
+    animation: clockwise-spin infinite 20s linear;
+  }
 }
 
 @keyframes clockwise-spin {
-	from {
-		transform: rotate(0deg);
-	}
-
-	to {
-		transform: rotate(360deg);
-	}
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }

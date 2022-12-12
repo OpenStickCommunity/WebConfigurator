@@ -1,4 +1,3 @@
-[![Node.js CI](https://github.com/OpenStickFoundation/WebConfigurator/actions/workflows/node.js.yml/badge.svg?branch=main)](https://github.com/OpenStickFoundation/WebConfigurator/actions/workflows/node.js.yml)
 # GP2040 Web Configurator
 
 Simple web application for gamepad configuration.

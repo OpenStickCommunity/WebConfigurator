@@ -10,7 +10,7 @@ table.pin-mapping-table {
 		display: inline-block;
 		width: 80px;
 
-		+.invalid-feedback {
+		+ .invalid-feedback {
 			display: inline;
 			margin-left: 20px;
 			margin-right: 10px;
@@ -31,3 +31,4 @@ table.pin-mapping-table {
 		margin-right: 10px;
 	}
 }
+
