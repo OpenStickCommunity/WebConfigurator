@@ -149,6 +149,16 @@ app.get('/api/getAddonsOptions', (req, res) => {
 		i2cAnalog1219Block: 0,
 		i2cAnalog1219Speed: 400000,
 		i2cAnalog1219Address: 0x40,
+		onBoardLedMode: 0,
+		dualDirUpPin: -1,
+		dualDirDownPin: -1,
+		dualDirLeftPin: -1,
+		dualDirRightPin: -1,
+		dualDirDpadMode: 0,
+		dualDirCombineMode: 0,
+		buzzerEnabled: 0,
+		buzzerPin: -1,
+		buzzerVolume: 100,
 		usedPins,
 	});
 });

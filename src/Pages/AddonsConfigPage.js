@@ -12,6 +12,30 @@ const I2C_BLOCKS = [
 	{ label: 'i2c1', value: 1 },
 ];
 
+const ON_BOARD_LED_MODES = [
+	{ label: 'Off', value: 0 },
+	{ label: 'Mode Indicator', value: 1 },
+	{ label: 'Input Test', value: 2 }
+];
+
+const DUAL_STICK_MODES = [
+	{ label: 'D-Pad', value: 0 },
+	{ label: 'Left Analog', value: 1 },
+	{ label: 'Right Analog', value: 2 },
+];
+
+const DUAL_COMBINE_MODES = [
+    { label: 'Mixed', value: 0 },
+	{ label: 'Gamepad', value: 1},
+	{ label: 'Dual Directional', value: 2 },
+	{ label: 'None', value: 3 }
+];
+
+const BUZZER_MODE = [
+	{ label: 'Disabled', value: 0 },
+	{ label: 'Enabled', value: 1 },
+];
+
 const schema = yup.object().shape({
 	turboPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Turbo Pin'),
 	turboPinLED: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Turbo Pin LED'),
@@ -25,6 +49,16 @@ const schema = yup.object().shape({
 	i2cAnalog1219Block: yup.number().required().oneOf(I2C_BLOCKS.map(o => o.value)).label('I2C Analog1219 Block'),
 	i2cAnalog1219Speed: yup.number().required().label('I2C Analog1219 Speed'),
 	i2cAnalog1219Address: yup.number().required().label('I2C Analog1219 Address'),
+	onBoardLedMode: yup.number().required().oneOf(ON_BOARD_LED_MODES.map(o => o.value)).label('On-Board LED Mode'),
+	dualDirUpPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Dual Directional Up Pin'),
+	dualDirDownPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Dual Directional Down Pin'),
+	dualDirLeftPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Dual Directional Left Pin'),
+	dualDirRightPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Dual Directional Right Pin'),
+	dualDirDpadMode : yup.number().required().oneOf(DUAL_STICK_MODES.map(o => o.value)).label('Dual Stick Mode'), 
+	dualDirCombineMode : yup.number().required().oneOf(DUAL_COMBINE_MODES.map(o => o.value)).label('Dual Combination Mode'),
+	buzzerEnabled: yup.number().required().min(0).max(1).label('Enabled?'),
+	buzzerPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Buzzer Pin'),
+	buzzerVolume: yup.number().required().min(0).max(100).label('Buzzer Volume'),
 });
 
 const defaultValues = {
@@ -40,6 +74,16 @@ const defaultValues = {
 	i2cAnalog1219Block: 0,
 	i2cAnalog1219Speed: 400000,
 	i2cAnalog1219Address: 0x40,
+	onBoardLedMode: 0,
+	dualUpPin: -1,
+	dualDownPin: -1,
+	dualLeftPin: -1,
+	dualRightPin: -1,
+	dualDirDpadMode: 0,
+	dualDirCombineMode: 0,
+	buzzerEnabled: 0,
+	buzzerPin: -1,
+	buzzerVolume: 100
 };
 
 const REVERSE_ACTION = [
@@ -95,6 +139,24 @@ const FormContext = () => {
 			values.i2cAnalog1219Speed = parseInt(values.i2cAnalog1219Speed);
 		if (!!values.i2cAnalog1219Address)
 			values.i2cAnalog1219Address = parseInt(values.i2cAnalog1219Address);
+		if (!!values.onBoardLedMode)
+			values.onBoardLedMode = parseInt(values.onBoardLedMode);
+		if (!!values.dualDownPin)
+			values.dualDownPin = parseInt(values.dualDownPin);
+		if (!!values.dualUpPin)
+			values.dualUpPin = parseInt(values.dualUpPin);
+		if (!!values.dualLeftPin)
+			values.dualLeftPin = parseInt(values.dualLeftPin);
+		if (!!values.dualRightPin)
+			values.dualRightPin = parseInt(values.dualRightPin);
+		if (!!values.dualDirMode)
+			values.dualDirMode = parseInt(values.dualDirMode);
+		if (!!values.buzzerEnabled)
+			values.buzzerEnabled = parseInt(values.buzzerEnabled);
+		if (!!values.buzzerPin)
+			values.buzzerPin = parseInt(values.buzzerPin);
+		if (!!values.buzzerVolume)
+			values.buzzerVolume = parseInt(values.buzzerVolume);
 	}, [values, setValues]);
 
 	return null;
@@ -122,6 +184,19 @@ export default function AddonsConfigPage() {
 					<Section title="Add-Ons Configuration">
 						<p>Use the form below to reconfigure experimental options in GP2040-CE.</p>
 						<p>Please note: these options are experimental for the time being.</p>
+					</Section>
+					<Section title="On-Board LED Configuration">
+							<FormSelect
+								label="LED Mode"
+								name="onBoardLedMode"
+								className="form-select-sm"
+								groupClassName="col-sm-4 mb-3"
+								value={values.onBoardLedMode}
+								error={errors.onBoardLedMode}
+								isInvalid={errors.onBoardLedMode}
+								onChange={handleChange}>
+								{ON_BOARD_LED_MODES.map((o, i) => <option key={`onBoardLedMode-option-${i}`} value={o.value}>{o.label}</option>)}
+							</FormSelect>
 					</Section>
 					<Section title="Turbo">
 						<Col>
@@ -326,6 +401,113 @@ export default function AddonsConfigPage() {
 								isInvalid={errors.i2cAnalog1219Address}
 								onChange={handleChange}
 								maxLength={4}
+							/>
+						</Col>
+					</Section>
+					<Section title="Dual Directional Input">
+						<Col>
+							<FormControl type="number"
+								label="Dual Directional Up Pin"
+								name="dualDirUpPin"
+								className="form-select-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.dualDirUpPin}
+								error={errors.dualDirUpPin}
+								isInvalid={errors.dualDirUpPin}
+								onChange={handleChange}
+								min={-1}
+								max={29}
+							/>
+							<FormControl type="number"
+								label="Dual Directional Down Pin"
+								name="dualDirDownPin"
+								className="form-select-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.dualDirDownPin}
+								error={errors.dualDirDownPin}
+								isInvalid={errors.dualDirDownPin}
+								onChange={handleChange}
+								min={-1}
+								max={29}
+							/>
+							<FormControl type="number"
+								label="Dual Directional Left Pin"
+								name="dualDirLeftPin"
+								className="form-select-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.dualDirLeftPin}
+								error={errors.dualDirLeftPin}
+								isInvalid={errors.dualDirLeftPin}
+								onChange={handleChange}
+								min={-1}
+								max={29}
+							/>
+							<FormControl type="number"
+								label="Dual Directional Right Pin"
+								name="dualDirRightPin"
+								className="form-select-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.dualDirRightPin}
+								error={errors.dualDirRightPin}
+								isInvalid={errors.dualDirRightPin}
+								onChange={handleChange}
+								min={-1}
+								max={29}
+							/>
+							<Form.Group className="row mb-3">
+								<Form.Label>Dual Directional D-Pad Mode</Form.Label>
+								<div className="col-sm-3">
+									<Form.Select name="dualDirDpadMode" className="form-select-sm" value={values.dualDirDpadMode} onChange={handleChange} isInvalid={errors.dualDirDpadMode}>
+										{DUAL_STICK_MODES.map((o, i) => <option key={`button-dualDirDpadMode-option-${i}`} value={o.value}>{o.label}</option>)}
+									</Form.Select>
+									<Form.Control.Feedback type="invalid">{errors.dualDirDpadMode}</Form.Control.Feedback>
+								</div>
+							</Form.Group>
+							<Form.Group className="row mb-3">
+								<Form.Label>Dual Directional Combination Mode</Form.Label>
+								<div className="col-sm-3">
+									<Form.Select name="dualDirCombineMode" className="form-select-sm" value={values.dualDirCombineMode} onChange={handleChange} isInvalid={errors.dualDirCombineMode}>
+										{DUAL_COMBINE_MODES.map((o, i) => <option key={`button-dualDirCombineMode-option-${i}`} value={o.value}>{o.label}</option>)}
+									</Form.Select>
+									<Form.Control.Feedback type="invalid">{errors.dualDirCombineMode}</Form.Control.Feedback>
+								</div>
+							</Form.Group>
+						</Col>
+					</Section>
+					<Section title="Buzzer Speaker">
+						<Col>
+							<Form.Group className="row mb-3">
+								<Form.Label>Use Buzzer</Form.Label>
+								<div className="col-sm-3">
+									<Form.Select name="buzzerEnabled" className="form-select-sm" value={values.buzzerEnabled} onChange={handleChange} isInvalid={errors.buzzerEnabled}>
+										{BUZZER_MODE.map((o, i) => <option key={`button-buzzerEnabled-option-${i}`} value={o.value}>{o.label}</option>)}
+									</Form.Select>
+									<Form.Control.Feedback type="invalid">{errors.buzzerEnabled}</Form.Control.Feedback>
+								</div>
+							</Form.Group>
+							<FormControl type="number"
+								label="Buzzer Pin"
+								name="buzzerPin"
+								className="form-control-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.buzzerPin}
+								error={errors.buzzerPin}
+								isInvalid={errors.buzzerPin}
+								onChange={handleChange}
+								min={-1}
+								max={29}
+							/>
+							<FormControl type="number"
+								label="Buzzer Volume"
+								name="buzzerVolume"
+								className="form-control-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.buzzerVolume}
+								error={errors.buzzerVolume}
+								isInvalid={errors.buzzerVolume}
+								onChange={handleChange}
+								min={0}
+								max={100}
 							/>
 						</Col>
 					</Section>
