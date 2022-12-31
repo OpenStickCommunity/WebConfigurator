@@ -12,7 +12,7 @@ function correctincludes() {
     fs.readFile(root + fsdata_filename, "utf8", function (error, data) {
         if (data) {
             let result = data.replace("#include \"lwip/apps/fs.h\"\r\n#include \"lwip/def.h\"", '#include "fsdata.h"');
-        
+
             fs.writeFile(root + fsdata_filename, result, "utf8", function (error) {
                 if (error) {
                     console.error(error);
@@ -27,12 +27,14 @@ function correctincludes() {
 }
 
 function makefsdata() {
-      exec(`${root}\\tools\\makefsdata`, [`${rootwww}\\build`, '-defl:1', '-xc:png,ico,json', `-f:${root}\\lib\\httpd\\fsdata.c`], function(error, data) {
+    console.log(root);
+    console.log(rootwww);
+    exec(`${root}\\tools\\makefsdata`, [`${rootwww}\\build`, '-defl:1', '-xc:png,ico,json', `-f:${root}\\lib\\httpd\\fsdata.c`], function (error, data) {
         if (error) {
             console.error(error);
         } else {
             correctincludes();
         }
-    });  
+    });
 }
 makefsdata();
