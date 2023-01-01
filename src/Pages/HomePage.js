@@ -17,7 +17,7 @@ export default function HomePage() {
 		})
 		.catch(console.error);
 		
-		axios.get('https://api.github.com/repos/OpenStickFoundation/GP2040-CE/releases')
+		axios.get('https://api.github.com/repos/OpenStickCommunity/GP2040-CE/releases')
 			.then((response) => {
 				const sortedData = orderBy(response.data, 'published_at', 'desc');
 				setLatestVersion(sortedData[0].name);
@@ -39,7 +39,7 @@ export default function HomePage() {
 							<a
 								target="_blank"
 								rel="noreferrer"
-								href={`https://github.com/OpenStickFoundation/GP2040-CE/releases/tag/${latestTag}`}
+								href={`https://github.com/OpenStickCommunity/GP2040-CE/releases/tag/${latestTag}`}
 								className="btn btn-primary"
 							>
 								Get Latest Version
