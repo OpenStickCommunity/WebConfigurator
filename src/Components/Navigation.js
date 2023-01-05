@@ -17,7 +17,7 @@ const Navigation = (props) => {
 
 	return (
 		<Navbar collapseOnSelect bg="dark" variant="dark" expand="md" fixed="top">
-			<Navbar.Brand href="/">
+			<Navbar.Brand as={NavLink} exact={true} to="/">
 				<img src="images/logo.png" className="title-logo" alt="logo" />{' '}GP2040
 			</Navbar.Brand>
 			<Navbar.Collapse id="basic-navbar-nav">
