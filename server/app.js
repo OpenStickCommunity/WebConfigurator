@@ -53,7 +53,24 @@ app.get('/api/getDisplayOptions', (req, res) => {
 		buttonLayoutRight: 3,
 		splashMode: 3,
 		splashChoice: 0,
-		splashImage: Array(16*64).fill(255)
+		splashImage: Array(16*64).fill(255),
+		buttonLayoutCustomOptions:{
+			params: {
+				layout: 2,
+				startX: 8,
+				startY: 28,
+				buttonRadius: 8,
+				buttonPadding: 2
+			},
+			paramsRight: {
+				layout: 9,
+				startX: 8,
+				startY: 28,
+				buttonRadius: 8,
+				buttonPadding: 2
+			}
+		},
+
 	}
 	console.log('data', data);
 	return res.send(data);
@@ -165,6 +182,27 @@ app.get('/api/getFirmwareVersion', (req, res) => {
 	return res.send({
 		version: process.env.REACT_APP_CURRENT_VERSION,
 	});
+});
+
+app.get('/api/getButtonLayoutCustomOptions', (req, res) => {
+	console.log('/api/getButtonLayoutCustomOptions');
+	return res.send({
+		params: {
+			layout: 2,
+			startX: 8,
+			startY: 28,
+			buttonRadius: 8,
+			buttonPadding: 2
+		},
+		paramsRight: {
+			layout: 9,
+			startX: 8,
+			startY: 28,
+			buttonRadius: 8,
+			buttonPadding: 2
+		}
+	}
+);
 });
 
 app.post('/api/*', (req, res) => {
