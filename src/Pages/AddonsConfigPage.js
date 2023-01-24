@@ -31,6 +31,10 @@ const DUAL_COMBINE_MODES = [
 	{ label: 'None', value: 3 }
 ];
 
+const ANALOG_PINS = [
+	-1,26,27,28
+];
+
 const schema = yup.object().shape({
 	turboPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Turbo Pin'),
 	turboPinLED: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Turbo Pin LED'),
@@ -51,6 +55,8 @@ const schema = yup.object().shape({
 	dualDirRightPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Dual Directional Right Pin'),
 	dualDirDpadMode : yup.number().required().oneOf(DUAL_STICK_MODES.map(o => o.value)).label('Dual Stick Mode'), 
 	dualDirCombineMode : yup.number().required().oneOf(DUAL_COMBINE_MODES.map(o => o.value)).label('Dual Combination Mode'),
+	analogAdcPinX : yup.number().required().test('', '${originalValue} is unavailable/already assigned!', (value) => usedPins.indexOf(value) === -1).label('Analog Stick Pin X'),
+ 	analogAdcPinY : yup.number().required().test('', '${originalValue} is unavailable/already assigned!', (value) => usedPins.indexOf(value) === -1).label('Analog Stick Pin Y')
 });
 
 const defaultValues = {
@@ -72,7 +78,9 @@ const defaultValues = {
 	dualLeftPin: -1,
 	dualRightPin: -1,
 	dualDirDpadMode: 0,
-	dualDirCombineMode: 0
+	dualDirCombineMode: 0,
+	analogAdcPinX : -1,
+ 	analogAdcPinY : -1
 };
 
 const REVERSE_ACTION = [
@@ -140,6 +148,10 @@ const FormContext = () => {
 			values.dualRightPin = parseInt(values.dualRightPin);
 		if (!!values.dualDirMode)
 			values.dualDirMode = parseInt(values.dualDirMode);
+		if (!!values.analogAdcPinX)
+			values.analogAdcPinX = parseInt(values.analogAdcPinX);
+		if (!!values.analogAdcPinY)
+			values.analogAdcPinY = parseInt(values.analogAdcPinY);
 	}, [values, setValues]);
 
 	return null;
@@ -180,6 +192,35 @@ export default function AddonsConfigPage() {
 								onChange={handleChange}>
 								{ON_BOARD_LED_MODES.map((o, i) => <option key={`onBoardLedMode-option-${i}`} value={o.value}>{o.label}</option>)}
 							</FormSelect>
+					</Section>
+					<Section title="Analog">
+						<p>Available pins: {ANALOG_PINS.join(", ")}</p>
+						<Col>
+							<FormSelect
+								label="Analog Stick X Pin"
+								name="analogAdcPinX"
+								className="form-select-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.analogAdcPinX}
+								error={errors.analogAdcPinX}
+								isInvalid={errors.analogAdcPinX}
+								onChange={handleChange}
+							>
+								{ANALOG_PINS.map((i) => <option key={`analogPins-option-${i}`} value={i}>{i}</option>)}
+							</FormSelect>
+							<FormSelect
+								label="Analog Stick Y Pin"
+								name="analogAdcPinY"
+								className="form-select-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.analogAdcPinY}
+								error={errors.analogAdcPinY}
+								isInvalid={errors.analogAdcPinY}
+								onChange={handleChange}
+							>
+								{ANALOG_PINS.map((i) => <option key={`analogPins-option-${i}`} value={i}>{i}</option>)}
+							</FormSelect>
+						</Col>
 					</Section>
 					<Section title="Turbo">
 						<Col>

@@ -156,6 +156,8 @@ app.get('/api/getAddonsOptions', (req, res) => {
 		dualDirRightPin: -1,
 		dualDirDpadMode: 0,
 		dualDirCombineMode: 0,
+		analogAdcPinX: -1,
+  		analogAdcPinY: -1,
 		usedPins,
 	});
 });
