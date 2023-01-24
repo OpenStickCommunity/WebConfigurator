@@ -31,6 +31,10 @@ const DUAL_COMBINE_MODES = [
 	{ label: 'None', value: 3 }
 ];
 
+const ANALOG_PINS = [
+	-1,26,27,28
+];
+
 const BUTTON_MASKS = [
 	{ label: 'None',  value:  0          },
 	{ label: 'B1',    value:  (1 << 0)   },
@@ -53,7 +57,6 @@ const BUTTON_MASKS = [
 	{ label: 'Right', value:  (1 << 17)  },
 ]
 
-
 const schema = yup.object().shape({
 	turboPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Turbo Pin'),
 	turboPinLED: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Turbo Pin LED'),
@@ -74,10 +77,8 @@ const schema = yup.object().shape({
 	dualDirRightPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Dual Directional Right Pin'),
 	dualDirDpadMode : yup.number().required().oneOf(DUAL_STICK_MODES.map(o => o.value)).label('Dual Stick Mode'), 
 	dualDirCombineMode : yup.number().required().oneOf(DUAL_COMBINE_MODES.map(o => o.value)).label('Dual Combination Mode'),
-	analogAdcPinX : yup.number().required()
-		.test('', '${originalValue} is unavailable/already assigned!', (value) => usedPins.indexOf(value) === -1).label('Analog Stick Pin X'),
- 	analogAdcPinY : yup.number().required()
-		.test('', '${originalValue} is unavailable/already assigned!', (value) => usedPins.indexOf(value) === -1).label('Analog Stick Pin Y'),
+	analogAdcPinX : yup.number().required().test('', '${originalValue} is unavailable/already assigned!', (value) => usedPins.indexOf(value) === -1).label('Analog Stick Pin X'),
+ 	analogAdcPinY : yup.number().required().test('', '${originalValue} is unavailable/already assigned!', (value) => usedPins.indexOf(value) === -1).label('Analog Stick Pin Y'),
 	bootselButtonMap : yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('BOOTSEL Button Map')
 });
 
@@ -234,8 +235,9 @@ export default function AddonsConfigPage() {
 							</FormSelect>
 					</Section>
 					<Section title="Analog">
+						<p>Available pins: {ANALOG_PINS.join(", ")}</p>
 						<Col>
-							<FormControl type="number"
+							<FormSelect
 								label="Analog Stick X Pin"
 								name="analogAdcPinX"
 								className="form-select-sm"
@@ -244,10 +246,10 @@ export default function AddonsConfigPage() {
 								error={errors.analogAdcPinX}
 								isInvalid={errors.analogAdcPinX}
 								onChange={handleChange}
-								min={-1}
-								max={29}
-							/>
-							<FormControl type="number"
+							>
+								{ANALOG_PINS.map((i) => <option key={`analogPins-option-${i}`} value={i}>{i}</option>)}
+							</FormSelect>
+							<FormSelect
 								label="Analog Stick Y Pin"
 								name="analogAdcPinY"
 								className="form-select-sm"
@@ -256,9 +258,9 @@ export default function AddonsConfigPage() {
 								error={errors.analogAdcPinY}
 								isInvalid={errors.analogAdcPinY}
 								onChange={handleChange}
-								min={-1}
-								max={29}
-							/>	
+							>
+								{ANALOG_PINS.map((i) => <option key={`analogPins-option-${i}`} value={i}>{i}</option>)}
+							</FormSelect>
 						</Col>
 					</Section>
 					<Section title="Turbo">
