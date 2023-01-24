@@ -31,6 +31,29 @@ const DUAL_COMBINE_MODES = [
 	{ label: 'None', value: 3 }
 ];
 
+const BUTTON_MASKS = [
+	{ label: 'None',  value:  0          },
+	{ label: 'B1',    value:  (1 << 0)   },
+	{ label: 'B2',    value:  (1 << 1)   },
+	{ label: 'B3',    value:  (1 << 2)   },
+	{ label: 'B4',    value:  (1 << 3)   },
+	{ label: 'L1',    value:  (1 << 4)   },
+	{ label: 'R1',    value:  (1 << 5)   },
+	{ label: 'L2',    value:  (1 << 6)   },
+	{ label: 'R2',    value:  (1 << 7)   },
+	{ label: 'S1',    value:  (1 << 8)   },
+	{ label: 'S2',    value:  (1 << 9)   },
+	{ label: 'L3',    value:  (1 << 10)  },
+	{ label: 'R3',    value:  (1 << 11)  },
+	{ label: 'A1',    value:  (1 << 12)  },
+	{ label: 'A2',    value:  (1 << 13)  },
+	{ label: 'Up',    value:  (1 << 14)  },
+	{ label: 'Down',  value:  (1 << 15)  },
+	{ label: 'Left',  value:  (1 << 16)  },
+	{ label: 'Right', value:  (1 << 17)  },
+]
+
+
 const schema = yup.object().shape({
 	turboPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Turbo Pin'),
 	turboPinLED: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Turbo Pin LED'),
@@ -51,6 +74,7 @@ const schema = yup.object().shape({
 	dualDirRightPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Dual Directional Right Pin'),
 	dualDirDpadMode : yup.number().required().oneOf(DUAL_STICK_MODES.map(o => o.value)).label('Dual Stick Mode'), 
 	dualDirCombineMode : yup.number().required().oneOf(DUAL_COMBINE_MODES.map(o => o.value)).label('Dual Combination Mode'),
+	bootselButtonMap : yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('BOOTSEL Button Map'),
 });
 
 const defaultValues = {
@@ -72,7 +96,8 @@ const defaultValues = {
 	dualLeftPin: -1,
 	dualRightPin: -1,
 	dualDirDpadMode: 0,
-	dualDirCombineMode: 0
+	dualDirCombineMode: 0,
+	bootselButtonMap: 0
 };
 
 const REVERSE_ACTION = [
@@ -140,6 +165,8 @@ const FormContext = () => {
 			values.dualRightPin = parseInt(values.dualRightPin);
 		if (!!values.dualDirMode)
 			values.dualDirMode = parseInt(values.dualDirMode);
+		if (!!values.bootselButtonMap)
+			values.bootselButtonMap = parseInt(values.bootselButtonMap);
 	}, [values, setValues]);
 
 	return null;
@@ -167,6 +194,21 @@ export default function AddonsConfigPage() {
 					<Section title="Add-Ons Configuration">
 						<p>Use the form below to reconfigure experimental options in GP2040-CE.</p>
 						<p>Please note: these options are experimental for the time being.</p>
+					</Section>
+					<Section title="BOOTSEL Button Configuration">
+						<p>Note: OLED might become unresponsive if button is set, unset to restore.</p>
+						<FormSelect
+							label="BOOTSEL Button"
+							name="bootselButtonMap"
+							className="form-select-sm"
+							groupClassName="col-sm-3 mb-3"
+							value={values.bootselButtonMap}
+							error={errors.bootselButtonMap}
+							isInvalid={errors.bootselButtonMap}
+							onChange={handleChange}
+						>
+							{BUTTON_MASKS.map((o, i) => <option key={`bootselButtonMap-option-${i}`} value={o.value}>{o.label}</option>)}
+						</FormSelect>
 					</Section>
 					<Section title="On-Board LED Configuration">
 							<FormSelect
