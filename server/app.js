@@ -158,6 +158,7 @@ app.get('/api/getAddonsOptions', (req, res) => {
 		dualDirCombineMode: 0,
 		analogAdcPinX: -1,
   		analogAdcPinY: -1,
+		bootselButtonMap: 0,
 		usedPins,
 	});
 });
