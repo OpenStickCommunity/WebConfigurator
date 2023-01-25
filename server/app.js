@@ -170,6 +170,17 @@ app.get('/api/getFirmwareVersion', (req, res) => {
 	});
 });
 
+app.get('/api/getMemoryReport', (req, res) => {
+	console.log('/api/getMemoryReport');
+	return res.send({
+		totalFlash: 2048, 
+        usedFlash: 1048,
+        staticAllocs: 200,
+        totalHeap: 2048,
+        usedHeap: 1048 
+	});
+});
+
 app.post('/api/*', (req, res) => {
 	console.log(req.url);
 	return res.send(req.body);

@@ -6,14 +6,33 @@ import Section from '../Components/Section';
 
 import WebApi from '../Services/WebApi';
 
+const percentage = (x, y) => (x / y * 100).toFixed(2)
+const toKB = (x) => parseFloat((x / 1024).toFixed(2))
+
 export default function HomePage() {
 	const [latestVersion, setLatestVersion] = useState('');
 	const [latestTag, setLatestTag] = useState('');
 	const [currentVersion, setCurrentVersion] = useState(process.env.REACT_APP_CURRENT_VERSION);
+	const [memoryReport, setMemoryReport] = useState(null);
 
 	useEffect(() => {
 		WebApi.getFirmwareVersion().then(response => {
 			setCurrentVersion(response.version);
+		})
+		.catch(console.error);
+		
+		WebApi.getMemoryReport().then(response => {
+			const unit = 1024;
+			const {totalFlash, usedFlash, staticAllocs, totalHeap, usedHeap} = response;
+			setMemoryReport({
+				totalFlash: toKB(totalFlash),
+				usedFlash: toKB(usedFlash),
+				staticAllocs,
+				totalHeap: toKB(totalHeap),
+				usedHeap: toKB(usedHeap),
+				percentageFlash: percentage(usedFlash, totalFlash),
+				percentageHeap: percentage(usedHeap, totalHeap)
+			});
 		})
 		.catch(console.error);
 		
@@ -30,22 +49,28 @@ export default function HomePage() {
 		<div>
 			<h1>Welcome to the GP2040-CE Web Configurator!</h1>
 			<p>Please select a menu option to proceed.</p>
-			<Section title="Firmware Version">
-				<div className="card-body">
-					<div className="card-text">Current Version: { currentVersion }</div>
-					<div className="card-text">Latest Version: { latestVersion }</div>
-					{(latestVersion && currentVersion !== latestVersion) ?
+			<Section title="System Stats">
+				<div>
+					<p><div><strong>Version</strong></div>
+					<div>Current: { currentVersion }</div>
+					<div>Latest: { latestVersion }</div>
+					{(latestVersion && currentVersion !== latestVersion) &&
 						<div className="mt-3">
 							<a
 								target="_blank"
 								rel="noreferrer"
 								href={`https://github.com/OpenStickCommunity/GP2040-CE/releases/tag/${latestTag}`}
 								className="btn btn-primary"
-							>
-								Get Latest Version
-							</a>
+							>Get Latest Version</a>
+						</div>}</p>
+					{memoryReport &&
+						<div>
+							<strong>Memory (KB)</strong>
+							<div>Flash: {memoryReport.usedFlash} // {memoryReport.totalFlash} ({memoryReport.percentageFlash}%)</div>
+							<div>Heap: {memoryReport.usedHeap} // {memoryReport.totalHeap} ({memoryReport.percentageHeap}%)</div>
+							<div>Static Allocations: {memoryReport.staticAllocs}</div>
 						</div>
-					: null}
+					}
 				</div>
 			</Section>
 		</div>
