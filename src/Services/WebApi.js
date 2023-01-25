@@ -169,6 +169,12 @@ async function getFirmwareVersion() {
 		.catch(console.error);
 }
 
+async function getMemoryReport() {
+	return axios.get(`${baseUrl}/api/getMemoryReport`)
+		.then((response) => response.data)
+		.catch(console.error);
+}
+
 const WebApi = {
 	resetSettings,
 	getDisplayOptions,
@@ -183,7 +189,8 @@ const WebApi = {
 	setAddonsOptions,
 	getSplashImage,
 	setSplashImage,
-	getFirmwareVersion
+	getFirmwareVersion,
+	getMemoryReport
 };
 
 export default WebApi;
