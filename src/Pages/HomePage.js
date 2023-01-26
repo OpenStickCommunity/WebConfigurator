@@ -27,7 +27,7 @@ export default function HomePage() {
 			setMemoryReport({
 				totalFlash: toKB(totalFlash),
 				usedFlash: toKB(usedFlash),
-				staticAllocs,
+				staticAllocs: toKB(staticAllocs),
 				totalHeap: toKB(totalHeap),
 				usedHeap: toKB(usedHeap),
 				percentageFlash: percentage(usedFlash, totalFlash),
