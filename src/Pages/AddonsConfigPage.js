@@ -31,10 +31,31 @@ const DUAL_COMBINE_MODES = [
 	{ label: 'None', value: 3 }
 ];
 
-const BUZZER_MODE = [
-	{ label: 'Disabled', value: 0 },
-	{ label: 'Enabled', value: 1 },
+const ANALOG_PINS = [
+	-1,26,27,28
 ];
+
+const BUTTON_MASKS = [
+	{ label: 'None',  value:  0          },
+	{ label: 'B1',    value:  (1 << 0)   },
+	{ label: 'B2',    value:  (1 << 1)   },
+	{ label: 'B3',    value:  (1 << 2)   },
+	{ label: 'B4',    value:  (1 << 3)   },
+	{ label: 'L1',    value:  (1 << 4)   },
+	{ label: 'R1',    value:  (1 << 5)   },
+	{ label: 'L2',    value:  (1 << 6)   },
+	{ label: 'R2',    value:  (1 << 7)   },
+	{ label: 'S1',    value:  (1 << 8)   },
+	{ label: 'S2',    value:  (1 << 9)   },
+	{ label: 'L3',    value:  (1 << 10)  },
+	{ label: 'R3',    value:  (1 << 11)  },
+	{ label: 'A1',    value:  (1 << 12)  },
+	{ label: 'A2',    value:  (1 << 13)  },
+	{ label: 'Up',    value:  (1 << 14)  },
+	{ label: 'Down',  value:  (1 << 15)  },
+	{ label: 'Left',  value:  (1 << 16)  },
+	{ label: 'Right', value:  (1 << 17)  },
+]
 
 const schema = yup.object().shape({
 	turboPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Turbo Pin'),
@@ -56,9 +77,9 @@ const schema = yup.object().shape({
 	dualDirRightPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Dual Directional Right Pin'),
 	dualDirDpadMode : yup.number().required().oneOf(DUAL_STICK_MODES.map(o => o.value)).label('Dual Stick Mode'), 
 	dualDirCombineMode : yup.number().required().oneOf(DUAL_COMBINE_MODES.map(o => o.value)).label('Dual Combination Mode'),
-	buzzerEnabled: yup.number().required().min(0).max(1).label('Enabled?'),
-	buzzerPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Buzzer Pin'),
-	buzzerVolume: yup.number().required().min(0).max(100).label('Buzzer Volume'),
+	analogAdcPinX : yup.number().required().test('', '${originalValue} is unavailable/already assigned!', (value) => usedPins.indexOf(value) === -1).label('Analog Stick Pin X'),
+ 	analogAdcPinY : yup.number().required().test('', '${originalValue} is unavailable/already assigned!', (value) => usedPins.indexOf(value) === -1).label('Analog Stick Pin Y'),
+	bootselButtonMap : yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('BOOTSEL Button Map')
 });
 
 const defaultValues = {
@@ -81,9 +102,9 @@ const defaultValues = {
 	dualRightPin: -1,
 	dualDirDpadMode: 0,
 	dualDirCombineMode: 0,
-	buzzerEnabled: 0,
-	buzzerPin: -1,
-	buzzerVolume: 100
+	analogAdcPinX : -1,
+ 	analogAdcPinY : -1,
+	bootselButtonMap: 0
 };
 
 const REVERSE_ACTION = [
@@ -151,12 +172,12 @@ const FormContext = () => {
 			values.dualRightPin = parseInt(values.dualRightPin);
 		if (!!values.dualDirMode)
 			values.dualDirMode = parseInt(values.dualDirMode);
-		if (!!values.buzzerEnabled)
-			values.buzzerEnabled = parseInt(values.buzzerEnabled);
-		if (!!values.buzzerPin)
-			values.buzzerPin = parseInt(values.buzzerPin);
-		if (!!values.buzzerVolume)
-			values.buzzerVolume = parseInt(values.buzzerVolume);
+		if (!!values.analogAdcPinX)
+			values.analogAdcPinX = parseInt(values.analogAdcPinX);
+		if (!!values.analogAdcPinY)
+			values.analogAdcPinY = parseInt(values.analogAdcPinY);
+		if (!!values.bootselButtonMap)
+			values.bootselButtonMap = parseInt(values.bootselButtonMap);
 	}, [values, setValues]);
 
 	return null;
@@ -185,6 +206,21 @@ export default function AddonsConfigPage() {
 						<p>Use the form below to reconfigure experimental options in GP2040-CE.</p>
 						<p>Please note: these options are experimental for the time being.</p>
 					</Section>
+					<Section title="BOOTSEL Button Configuration">
+						<p>Note: OLED might become unresponsive if button is set, unset to restore.</p>
+						<FormSelect
+							label="BOOTSEL Button"
+							name="bootselButtonMap"
+							className="form-select-sm"
+							groupClassName="col-sm-3 mb-3"
+							value={values.bootselButtonMap}
+							error={errors.bootselButtonMap}
+							isInvalid={errors.bootselButtonMap}
+							onChange={handleChange}
+						>
+							{BUTTON_MASKS.map((o, i) => <option key={`bootselButtonMap-option-${i}`} value={o.value}>{o.label}</option>)}
+						</FormSelect>
+					</Section>
 					<Section title="On-Board LED Configuration">
 							<FormSelect
 								label="LED Mode"
@@ -197,6 +233,35 @@ export default function AddonsConfigPage() {
 								onChange={handleChange}>
 								{ON_BOARD_LED_MODES.map((o, i) => <option key={`onBoardLedMode-option-${i}`} value={o.value}>{o.label}</option>)}
 							</FormSelect>
+					</Section>
+					<Section title="Analog">
+						<p>Available pins: {ANALOG_PINS.join(", ")}</p>
+						<Col>
+							<FormSelect
+								label="Analog Stick X Pin"
+								name="analogAdcPinX"
+								className="form-select-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.analogAdcPinX}
+								error={errors.analogAdcPinX}
+								isInvalid={errors.analogAdcPinX}
+								onChange={handleChange}
+							>
+								{ANALOG_PINS.map((i) => <option key={`analogPins-option-${i}`} value={i}>{i}</option>)}
+							</FormSelect>
+							<FormSelect
+								label="Analog Stick Y Pin"
+								name="analogAdcPinY"
+								className="form-select-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.analogAdcPinY}
+								error={errors.analogAdcPinY}
+								isInvalid={errors.analogAdcPinY}
+								onChange={handleChange}
+							>
+								{ANALOG_PINS.map((i) => <option key={`analogPins-option-${i}`} value={i}>{i}</option>)}
+							</FormSelect>
+						</Col>
 					</Section>
 					<Section title="Turbo">
 						<Col>
@@ -472,43 +537,6 @@ export default function AddonsConfigPage() {
 									<Form.Control.Feedback type="invalid">{errors.dualDirCombineMode}</Form.Control.Feedback>
 								</div>
 							</Form.Group>
-						</Col>
-					</Section>
-					<Section title="Buzzer Speaker">
-						<Col>
-							<Form.Group className="row mb-3">
-								<Form.Label>Use Buzzer</Form.Label>
-								<div className="col-sm-3">
-									<Form.Select name="buzzerEnabled" className="form-select-sm" value={values.buzzerEnabled} onChange={handleChange} isInvalid={errors.buzzerEnabled}>
-										{BUZZER_MODE.map((o, i) => <option key={`button-buzzerEnabled-option-${i}`} value={o.value}>{o.label}</option>)}
-									</Form.Select>
-									<Form.Control.Feedback type="invalid">{errors.buzzerEnabled}</Form.Control.Feedback>
-								</div>
-							</Form.Group>
-							<FormControl type="number"
-								label="Buzzer Pin"
-								name="buzzerPin"
-								className="form-control-sm"
-								groupClassName="col-sm-3 mb-3"
-								value={values.buzzerPin}
-								error={errors.buzzerPin}
-								isInvalid={errors.buzzerPin}
-								onChange={handleChange}
-								min={-1}
-								max={29}
-							/>
-							<FormControl type="number"
-								label="Buzzer Volume"
-								name="buzzerVolume"
-								className="form-control-sm"
-								groupClassName="col-sm-3 mb-3"
-								value={values.buzzerVolume}
-								error={errors.buzzerVolume}
-								isInvalid={errors.buzzerVolume}
-								onChange={handleChange}
-								min={0}
-								max={100}
-							/>
 						</Col>
 					</Section>
 					<div className="mt-3">

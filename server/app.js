@@ -157,9 +157,9 @@ app.get('/api/getAddonsOptions', (req, res) => {
 		dualDirRightPin: -1,
 		dualDirDpadMode: 0,
 		dualDirCombineMode: 0,
-		buzzerEnabled: 0,
-		buzzerPin: -1,
-		buzzerVolume: 100,
+		analogAdcPinX: -1,
+  	analogAdcPinY: -1,
+		bootselButtonMap: 0,
 		usedPins,
 	});
 });
@@ -168,6 +168,17 @@ app.get('/api/getFirmwareVersion', (req, res) => {
 	console.log('/api/getFirmwareVersion');
 	return res.send({
 		version: process.env.REACT_APP_CURRENT_VERSION,
+	});
+});
+
+app.get('/api/getMemoryReport', (req, res) => {
+	console.log('/api/getMemoryReport');
+	return res.send({
+		totalFlash: 2048, 
+        usedFlash: 1048,
+        staticAllocs: 200,
+        totalHeap: 2048,
+        usedHeap: 1048 
 	});
 });
 
