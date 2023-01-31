@@ -28,7 +28,9 @@ const BUTTON_LAYOUTS = [
 	{ label: 'Dancepad', value: 6 },        // BUTTON_LAYOUT_DANCEPADA
 	{ label: 'Twinstick', value: 7 },       // BUTTON_LAYOUT_TWINSTICKA
 	{ label: 'Blank', value: 8 },           // BUTTON_LAYOUT_BLANKA
-	{ label: 'VLX', value: 9 }              // BUTTON_LAYOUT_VLXA
+	{ label: 'VLX', value: 9 },             // BUTTON_LAYOUT_VLXA
+	{ label: 'Fightboard', value: 10 },              // BUTTON_LAYOUT_FIGHTBOARD_STICK
+	{ label: 'Fightboard Mirrored', value: 11 },     // BUTTON_LAYOUT_FIGHTBOARD_MIRRORED
 ];
 
 const BUTTON_LAYOUTS_RIGHT = [
@@ -45,7 +47,9 @@ const BUTTON_LAYOUTS_RIGHT = [
 	{ label: 'Dancepad', value: 10 },		 // BUTTON_LAYOUT_DANCEPADB
 	{ label: 'Twinstick', value: 11 },	     // BUTTON_LAYOUT_TWINSTICKB
 	{ label: 'Blank', value: 12 },		     // BUTTON_LAYOUT_BLANKB
-	{ label: 'VLX', value: 13 }		         // BUTTON_LAYOUT_VLXB
+	{ label: 'VLX', value: 13 },		     // BUTTON_LAYOUT_VLXB
+	{ label: 'Fightboard', value: 14 },				// BUTTON_LAYOUT_FIGHTBOARD
+	{ label: 'Fightboard Mirrored', value: 15 },	// BUTTON_LAYOUT_FIGHTBOARD_STICK_MIRRORED
 ];
 
 const SPLASH_MODES = [
