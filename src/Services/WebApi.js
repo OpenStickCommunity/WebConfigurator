@@ -64,22 +64,15 @@ async function getSplashImage() {
 	return axios.get(`${baseUrl}/api/getSplashImage`)
 		.then((response) => {
 			return response.data;
-		})
-		.catch(console.error);
+		}).catch(console.error);
 }
 
 async function setSplashImage({splashImage}) {
-	return await chunk(splashImage, 64).reduce(async (acc, chunk, index) => {
-		return axios.post(`${baseUrl}/api/setSplashImage`, { splashImage: chunk, index})
-		.then((response) => {
-			console.log(response.data);
-			return true;
-		})
-		.catch((err) => {
-			console.error(err);
-			return false;
-		}).then(acc);
-	}, Promise.resolve({splashImage}));
+	return axios.post(`${baseUrl}/api/setSplashImage`, {
+		splashImage: btoa(String.fromCharCode.apply(null, new Uint8Array(splashImage)))
+	}).then((response) => {
+		return response.data;
+	}).catch(console.error);
 }
 
 async function getGamepadOptions() {
