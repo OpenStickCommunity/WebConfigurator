@@ -171,6 +171,11 @@ app.get('/api/getFirmwareVersion', (req, res) => {
 	});
 });
 
+app.get('/api/reboot', (req, res) => {
+	console.log('/api/reboot');
+	return res.send({ });
+});
+
 app.get('/api/getMemoryReport', (req, res) => {
 	console.log('/api/getMemoryReport');
 	return res.send({
