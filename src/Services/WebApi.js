@@ -168,6 +168,12 @@ async function getMemoryReport() {
 		.catch(console.error);
 }
 
+async function reboot() {
+	return axios.get(`${baseUrl}/api/reboot`)
+		.then((response) => response.data)
+		.catch(console.error);
+}
+
 const WebApi = {
 	resetSettings,
 	getDisplayOptions,
@@ -183,7 +189,8 @@ const WebApi = {
 	getSplashImage,
 	setSplashImage,
 	getFirmwareVersion,
-	getMemoryReport
+	getMemoryReport,
+	reboot
 };
 
 export default WebApi;
