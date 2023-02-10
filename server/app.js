@@ -158,8 +158,17 @@ app.get('/api/getAddonsOptions', (req, res) => {
 		dualDirDpadMode: 0,
 		dualDirCombineMode: 0,
 		analogAdcPinX: -1,
-  	analogAdcPinY: -1,
+  		analogAdcPinY: -1,
 		bootselButtonMap: 0,
+		AnalogInputEnabled: 1,
+		BoardLedAddonEnabled: 1,
+		BuzzerSpeakerAddonEnabled: 1,
+		BootselButtonAddonEnabled: 1,
+		DualDirectionalInputEnabled: 1,
+		I2CAnalog1219InputEnabled: 1,
+		JSliderInputEnabled: 1,
+		ReverseInputEnabled: 1,
+		TurboInputEnabled: 1,
 		usedPins,
 	});
 });
