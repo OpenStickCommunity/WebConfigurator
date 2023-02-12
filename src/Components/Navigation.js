@@ -56,7 +56,7 @@ const Navigation = (props) => {
 					<Button style={{ marginRight: "7px" }} variant="success" onClick={handleShow}>
 						Reboot
 					</Button>
-					<div style={{ marginTop: "4px" }}>
+					<div style={{ marginTop: "4px", marginRight: "10px" }}>
 						<FormSelect
 							name="buttonLabels"
 							className="form-select-sm"
