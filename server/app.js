@@ -160,6 +160,8 @@ app.get('/api/getAddonsOptions', (req, res) => {
 		analogAdcPinX: -1,
   		analogAdcPinY: -1,
 		bootselButtonMap: 0,
+		buzzerPin: -1,
+		buzzerVolume: 100,
 		AnalogInputEnabled: 1,
 		BoardLedAddonEnabled: 1,
 		BuzzerSpeakerAddonEnabled: 1,

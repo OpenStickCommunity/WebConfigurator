@@ -80,6 +80,8 @@ const schema = yup.object().shape({
 	analogAdcPinX : yup.number().required().test('', '${originalValue} is unavailable/already assigned!', (value) => usedPins.indexOf(value) === -1).label('Analog Stick Pin X'),
  	analogAdcPinY : yup.number().required().test('', '${originalValue} is unavailable/already assigned!', (value) => usedPins.indexOf(value) === -1).label('Analog Stick Pin Y'),
 	bootselButtonMap : yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('BOOTSEL Button Map'),
+	buzzerPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Buzzer Pin'),
+	buzzerVolume: yup.number().required().min(0).max(100).label('Buzzer Volume'),
 	AnalogInputEnabled: yup.number().required().label('Analog Input Enabled'),
 	BoardLedAddonEnabled: yup.number().required().label('Board LED Add-On Enabled'),
 	BuzzerSpeakerAddonEnabled: yup.number().required().label('Buzzer Speaker Add-On Enabled'),
@@ -114,6 +116,8 @@ const defaultValues = {
 	analogAdcPinX : -1,
  	analogAdcPinY : -1,
 	bootselButtonMap: 0,
+	buzzerPin: -1,
+	buzzerVolume: 100,
 	AnalogInputEnabled: 0,
 	BoardLedAddonEnabled: 0,
 	BuzzerSpeakerAddonEnabled: 0,
@@ -196,6 +200,10 @@ const FormContext = () => {
 			values.analogAdcPinY = parseInt(values.analogAdcPinY);
 		if (!!values.bootselButtonMap)
 			values.bootselButtonMap = parseInt(values.bootselButtonMap);
+		if (!!values.buzzerPin)
+			values.buzzerPin = parseInt(values.buzzerPin);
+		if (!!values.buzzerVolume)
+			values.buzzerVolume = parseInt(values.buzzerVolume);
 		if (!!values.AnalogInputEnabled)
 			values.AnalogInputEnabled = parseInt(values.AnalogInputEnabled);
 		if (!!values.BoardLedAddonEnabled)
@@ -688,6 +696,48 @@ export default function AddonsConfigPage() {
 							isInvalid={false}
 							checked={Boolean(values.DualDirectionalInputEnabled)}
 							onChange={(e) => {handleCheckbox("DualDirectionalInputEnabled", values); handleChange(e);}}
+						/>
+					</Section>
+					<Section title="Buzzer Speaker">
+						<div
+							id="BuzzerSpeakerAddonOptions"
+							hidden={!values.BuzzerSpeakerAddonEnabled}>
+						<Col>	
+							<FormControl type="number"
+								label="Buzzer Pin"
+								name="buzzerPin"
+								className="form-control-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.buzzerPin}
+								error={errors.buzzerPin}
+								isInvalid={errors.buzzerPin}
+								onChange={handleChange}
+								min={-1}
+								max={29}
+							/>
+							<FormControl type="number"
+								label="Buzzer Volume"
+								name="buzzerVolume"
+								className="form-control-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.buzzerVolume}
+								error={errors.buzzerVolume}
+								isInvalid={errors.buzzerVolume}
+								onChange={handleChange}
+								min={0}
+								max={100}
+							/>
+						</Col>
+						</div>
+						<FormCheck
+							label="Enabled"
+							type="switch"
+							id="BuzzerSpeakerAddonButton"
+							reverse="true"
+							error={false}
+							isInvalid={false}
+							checked={Boolean(values.BuzzerSpeakerAddonEnabled)}
+							onChange={(e) => {handleCheckbox("BuzzerSpeakerAddonEnabled", values); handleChange(e);}}
 						/>
 					</Section>
 					<div className="mt-3">
