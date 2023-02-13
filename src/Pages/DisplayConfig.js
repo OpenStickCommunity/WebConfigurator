@@ -29,7 +29,9 @@ const BUTTON_LAYOUTS = [
 	{ label: 'Twinstick', value: 7 },       // BUTTON_LAYOUT_TWINSTICKA
 	{ label: 'Blank', value: 8 },           // BUTTON_LAYOUT_BLANKA
 	{ label: 'VLX', value: 9 },              // BUTTON_LAYOUT_VLXA
-	{ label: 'Custom', value: 10 }              // BUTTON_LAYOUT_VLXA
+	{ label: 'Fightboard', value: 10 },              // BUTTON_LAYOUT_FIGHTBOARD_STICK
+	{ label: 'Fightboard Mirrored', value: 11 },     // BUTTON_LAYOUT_FIGHTBOARD_MIRRORED
+	{ label: 'Custom', value: 12 }              // BUTTON_LAYOUT_CUSTOM
 ];
 
 const BUTTON_LAYOUTS_RIGHT = [
@@ -47,7 +49,9 @@ const BUTTON_LAYOUTS_RIGHT = [
 	{ label: 'Twinstick', value: 11 },	     // BUTTON_LAYOUT_TWINSTICKB
 	{ label: 'Blank', value: 12 },		     // BUTTON_LAYOUT_BLANKB
 	{ label: 'VLX', value: 13 },		         // BUTTON_LAYOUT_VLXB
-	{ label: 'Custom', value: 14 }		         // BUTTON_LAYOUT_VLXB
+	{ label: 'Fightboard', value: 14 },				// BUTTON_LAYOUT_FIGHTBOARD
+	{ label: 'Fightboard Mirrored', value: 15 },	// BUTTON_LAYOUT_FIGHTBOARD_STICK_MIRRORED
+	{ label: 'Custom', value: 16 }		         // BUTTON_LAYOUT_CUSTOM
 ];
 
 const SPLASH_MODES = [
@@ -63,6 +67,16 @@ const SPLASH_CHOICES = [
 	{ label: 'Z', value: 3 },                // Z
 	{ label: 'Custom', value: 4 },           // CUSTOM
 	{ label: 'Legacy', value: 5 },           // LEGACY
+];
+
+const DISPLAY_SAVER_TIMEOUT_CHOICES = [
+	{ label: 'Off', value: 0 },
+	{ label: '1 minute', value: 1 },
+	{ label: '2 minutes', value: 2 },
+	{ label: '5 minutes', value: 5 },
+	{ label: '10 minutes', value: 10 },
+	{ label: '20 minutes', value: 20 },
+	{ label: '30 minutes', value: 30 },
 ];
 
 const defaultValues = {
@@ -95,7 +109,8 @@ const defaultValues = {
 			buttonRadius: 8,
 			buttonPadding: 2
 		}
-	}
+	},
+	displaySaverTimeout: 0,
 };
 
 let usedPins = [];
@@ -133,8 +148,8 @@ const schema = yup.object().shape({
 			buttonRadius: yup.number().required().min(0).max(20).label('Button Radius'),
 			buttonPadding: yup.number().required().min(0).max(20).label('Button Padding')
 		})
-	})
-
+	}),
+	displaySaverTimeout: yup.number().required().oneOf(DISPLAY_SAVER_TIMEOUT_CHOICES.map(o => o.value)).label('Display Saver'),
 });
 
 const FormContext = () => {
@@ -509,6 +524,20 @@ export default function DisplayConfigPage() {
 								</Form.Group>
 							</Col>
 						</Row>}
+						<Row className="mb-3">
+							<FormSelect
+									label="Display Saver Timeout"
+									name="displaySaverTimeout"
+									className="form-select-sm"
+									groupClassName="col-sm-3 mb-3"
+									value={values.displaySaverTimeout}
+									error={errors.displaySaverTimeout}
+									isInvalid={errors.displaySaverTimeout}
+									onChange={handleChange}
+								>
+									{DISPLAY_SAVER_TIMEOUT_CHOICES.map((o, i) => <option key={`displaySaverTimeout-option-${i}`} value={o.value}>{o.label}</option>)}
+							</FormSelect>
+						</Row>
 						<Row>
 							<Field name="splashImage">
 								{({

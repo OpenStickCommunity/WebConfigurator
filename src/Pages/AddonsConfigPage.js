@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Form, Row, Col } from 'react-bootstrap';
+import { Button, Form, Row, Col, FormCheck } from 'react-bootstrap';
 import { Formik, useFormikContext } from 'formik';
 import * as yup from 'yup';
 import FormControl from '../Components/FormControl';
@@ -79,7 +79,16 @@ const schema = yup.object().shape({
 	dualDirCombineMode : yup.number().required().oneOf(DUAL_COMBINE_MODES.map(o => o.value)).label('Dual Combination Mode'),
 	analogAdcPinX : yup.number().required().test('', '${originalValue} is unavailable/already assigned!', (value) => usedPins.indexOf(value) === -1).label('Analog Stick Pin X'),
  	analogAdcPinY : yup.number().required().test('', '${originalValue} is unavailable/already assigned!', (value) => usedPins.indexOf(value) === -1).label('Analog Stick Pin Y'),
-	bootselButtonMap : yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('BOOTSEL Button Map')
+	bootselButtonMap : yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('BOOTSEL Button Map'),
+	AnalogInputEnabled: yup.number().required().label('Analog Input Enabled'),
+	BoardLedAddonEnabled: yup.number().required().label('Board LED Add-On Enabled'),
+	BuzzerSpeakerAddonEnabled: yup.number().required().label('Buzzer Speaker Add-On Enabled'),
+	BootselButtonAddonEnabled: yup.number().required().label('Boot Select Button Add-On Enabled'),
+	DualDirectionalInputEnabled: yup.number().required().label('Dual Directional Input Enabled'),
+	I2CAnalog1219InputEnabled: yup.number().required().label('I2C Analog1219 Input Enabled'),
+	JSliderInputEnabled: yup.number().required().label('JSlider Input Enabled'),
+	ReverseInputEnabled: yup.number().required().label('Reverse Input Enabled'),
+	TurboInputEnabled: yup.number().required().label('Turbo Input Enabled')
 });
 
 const defaultValues = {
@@ -104,7 +113,16 @@ const defaultValues = {
 	dualDirCombineMode: 0,
 	analogAdcPinX : -1,
  	analogAdcPinY : -1,
-	bootselButtonMap: 0
+	bootselButtonMap: 0,
+	AnalogInputEnabled: 0,
+	BoardLedAddonEnabled: 0,
+	BuzzerSpeakerAddonEnabled: 0,
+	BootselButtonAddonEnabled: 0,
+	DualDirectionalInputEnabled: 0,
+	I2CAnalog1219InputEnabled: 0,
+	JSliderInputEnabled: 0,
+	ReverseInputEnabled: 0,
+	TurboInputEnabled: 0
 };
 
 const REVERSE_ACTION = [
@@ -178,6 +196,24 @@ const FormContext = () => {
 			values.analogAdcPinY = parseInt(values.analogAdcPinY);
 		if (!!values.bootselButtonMap)
 			values.bootselButtonMap = parseInt(values.bootselButtonMap);
+		if (!!values.AnalogInputEnabled)
+			values.AnalogInputEnabled = parseInt(values.AnalogInputEnabled);
+		if (!!values.BoardLedAddonEnabled)
+			values.BoardLedAddonEnabled = parseInt(values.BoardLedAddonEnabled);
+		if (!!values.BuzzerSpeakerAddonEnabled)
+			values.BuzzerSpeakerAddonEnabled = parseInt(values.BuzzerSpeakerAddonEnabled);
+		if (!!values.BootselButtonAddonEnabled)
+			values.BootselButtonAddonEnabled = parseInt(values.BootselButtonAddonEnabled);
+		if (!!values.DualDirectionalInputEnabled)
+			values.DualDirectionalInputEnabled = parseInt(values.DualDirectionalInputEnabled);
+		if (!!values.I2CAnalog1219InputEnabled)
+			values.I2CAnalog1219InputEnabled = parseInt(values.I2CAnalog1219InputEnabled);
+		if (!!values.JSliderInputEnabled)
+			values.JSliderInputEnabled = parseInt(values.JSliderInputEnabled);
+		if (!!values.ReverseInputEnabled)
+			values.ReverseInputEnabled = parseInt(values.ReverseInputEnabled);
+		if (!!values.TurboInputEnabled)
+			values.TurboInputEnabled = parseInt(values.TurboInputEnabled);
 	}, [values, setValues]);
 
 	return null;
@@ -191,8 +227,12 @@ export default function AddonsConfigPage() {
 		setSaveMessage(success ? 'Saved! Please Restart Your Device' : 'Unable to Save');
 	};
 
+	const handleCheckbox = async (name, values) => {
+		values[name] = values[name] === 1 ? 0 : 1;
+	};
+
 	return (
-	<Formik validationSchema={schema} onSubmit={onSuccess} initialValues={defaultValues}>
+	<Formik enableReinitialize={true} validationSchema={schema} onSubmit={onSuccess} initialValues={defaultValues}>
 			{({
 				handleSubmit,
 				handleChange,
@@ -203,25 +243,41 @@ export default function AddonsConfigPage() {
 			}) => (
 				<Form noValidate onSubmit={handleSubmit}>
 					<Section title="Add-Ons Configuration">
-						<p>Use the form below to reconfigure experimental options in GP2040-CE.</p>
-						<p>Please note: these options are experimental for the time being.</p>
+						<p>Use the form below to reconfigure add-on options in GP2040-CE.</p>
 					</Section>
 					<Section title="BOOTSEL Button Configuration">
-						<p>Note: OLED might become unresponsive if button is set, unset to restore.</p>
-						<FormSelect
-							label="BOOTSEL Button"
-							name="bootselButtonMap"
-							className="form-select-sm"
-							groupClassName="col-sm-3 mb-3"
-							value={values.bootselButtonMap}
-							error={errors.bootselButtonMap}
-							isInvalid={errors.bootselButtonMap}
-							onChange={handleChange}
-						>
-							{BUTTON_MASKS.map((o, i) => <option key={`bootselButtonMap-option-${i}`} value={o.value}>{o.label}</option>)}
-						</FormSelect>
+						<div
+							id="BootselButtonAddonOptions"
+							hidden={!values.BootselButtonAddonEnabled}>
+							<p>Note: OLED might become unresponsive if button is set, unset to restore.</p>
+							<FormSelect
+								label="BOOTSEL Button"
+								name="bootselButtonMap"
+								className="form-select-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.bootselButtonMap}
+								error={errors.bootselButtonMap}
+								isInvalid={errors.bootselButtonMap}
+								onChange={handleChange}
+							>
+								{BUTTON_MASKS.map((o, i) => <option key={`bootselButtonMap-option-${i}`} value={o.value}>{o.label}</option>)}
+							</FormSelect>
+						</div>
+						<FormCheck
+							label="Enabled"
+							type="switch"
+							id="BootselButtonAddonButton"
+							reverse="true"
+							error={false}
+							isInvalid={false}
+							checked={Boolean(values.BootselButtonAddonEnabled)}
+							onChange={(e) => { handleCheckbox("BootselButtonAddonEnabled", values); handleChange(e);}}
+						/>
 					</Section>
 					<Section title="On-Board LED Configuration">
+						<div
+							id="BoardLedAddonEnabledOptions"
+							hidden={!values.BoardLedAddonEnabled}>
 							<FormSelect
 								label="LED Mode"
 								name="onBoardLedMode"
@@ -233,8 +289,22 @@ export default function AddonsConfigPage() {
 								onChange={handleChange}>
 								{ON_BOARD_LED_MODES.map((o, i) => <option key={`onBoardLedMode-option-${i}`} value={o.value}>{o.label}</option>)}
 							</FormSelect>
+						</div>
+						<FormCheck
+							label="Enabled"
+							type="switch"
+							id="BoardLedAddonButton"
+							reverse="true"
+							error={false}
+							isInvalid={false}
+							checked={Boolean(values.BoardLedAddonEnabled)}
+							onChange={(e) => {handleCheckbox("BoardLedAddonEnabled", values); handleChange(e);}}
+						/>
 					</Section>
 					<Section title="Analog">
+						<div
+							id="AnalogInputOptions"
+							hidden={!values.AnalogInputEnabled}>
 						<p>Available pins: {ANALOG_PINS.join(", ")}</p>
 						<Col>
 							<FormSelect
@@ -262,8 +332,22 @@ export default function AddonsConfigPage() {
 								{ANALOG_PINS.map((i) => <option key={`analogPins-option-${i}`} value={i}>{i}</option>)}
 							</FormSelect>
 						</Col>
+						</div>
+						<FormCheck
+							label="Enabled"
+							type="switch"
+							id="AnalogInputButton"
+							reverse="true"
+							error={false}
+							isInvalid={false}
+							checked={Boolean(values.AnalogInputEnabled)}
+							onChange={(e) => {handleCheckbox("AnalogInputEnabled", values); handleChange(e);}}
+						/>
 					</Section>
 					<Section title="Turbo">
+						<div
+							id="TurboInputOptions"
+							hidden={!values.TurboInputEnabled}>
 						<Col>
 							<FormControl type="number"
 								label="Turbo Pin"
@@ -302,8 +386,22 @@ export default function AddonsConfigPage() {
 								max={30}
 							/>
 						</Col>
+						</div>
+						<FormCheck
+							label="Enabled"
+							type="switch"
+							id="TurboInputButton"
+							reverse="true"
+							error={false}
+							isInvalid={false}
+							checked={Boolean(values.TurboInputEnabled)}
+							onChange={(e) => {handleCheckbox("TurboInputEnabled", values); handleChange(e);}}
+						/>
 					</Section>
 					<Section title="Joystick Selection Slider">
+						<div
+							id="JSliderInputOptions"
+							hidden={!values.JSliderInputEnabled}>
 						<Col>
 							<FormControl type="number"
 								label="Slider LS Pin"
@@ -330,8 +428,22 @@ export default function AddonsConfigPage() {
 								max={29}
 							/>
 						</Col>
+						</div>
+						<FormCheck
+							label="Enabled"
+							type="switch"
+							id="JSliderInputButton"
+							reverse="true"
+							error={false}
+							isInvalid={false}
+							checked={Boolean(values.JSliderInputEnabled)}
+							onChange={(e) => {handleCheckbox("JSliderInputEnabled", values); handleChange(e);}}
+						/>
 					</Section>
 					<Section title="Input Reverse">
+						<div
+							id="ReverseInputOptions"
+							hidden={!values.ReverseInputEnabled}>
 						<Col>
 							<FormControl type="number"
 								label="Reverse Input Pin"
@@ -406,8 +518,22 @@ export default function AddonsConfigPage() {
 								{REVERSE_ACTION.map((o, i) => <option key={`reverseActionRight-option-${i}`} value={o.value}>{o.label}</option>)}
 							</FormSelect>
 						</Col>
+						</div>
+						<FormCheck
+							label="Enabled"
+							type="switch"
+							id="ReverseInputButton"
+							reverse="true"
+							error={false}
+							isInvalid={false}
+							checked={Boolean(values.ReverseInputEnabled)}
+							onChange={(e) => {handleCheckbox("ReverseInputEnabled", values); handleChange(e);}}
+						/>
 					</Section>
 					<Section title="I2C Analog ADS1219">
+						<div
+							id="I2CAnalog1219InputOptions"
+							hidden={!values.I2CAnalog1219InputEnabled}>
 						<Col>
 							<FormControl type="number"
 								label="I2C Analog ADS1219 SDA Pin"
@@ -468,8 +594,22 @@ export default function AddonsConfigPage() {
 								maxLength={4}
 							/>
 						</Col>
+						</div>
+						<FormCheck
+							label="Enabled"
+							type="switch"
+							id="I2CAnalog1219InputButton"
+							reverse="true"
+							error={false}
+							isInvalid={false}
+							checked={Boolean(values.I2CAnalog1219InputEnabled)}
+							onChange={(e) => {handleCheckbox("I2CAnalog1219InputEnabled", values); handleChange(e);}}
+						/>
 					</Section>
 					<Section title="Dual Directional Input">
+						<div
+							id="DualDirectionalInputOptions"
+							hidden={!values.DualDirectionalInputEnabled}>
 						<Col>
 							<FormControl type="number"
 								label="Dual Directional Up Pin"
@@ -538,6 +678,17 @@ export default function AddonsConfigPage() {
 								</div>
 							</Form.Group>
 						</Col>
+						</div>
+						<FormCheck
+							label="Enabled"
+							type="switch"
+							id="DualDirectionalInputButton"
+							reverse="true"
+							error={false}
+							isInvalid={false}
+							checked={Boolean(values.DualDirectionalInputEnabled)}
+							onChange={(e) => {handleCheckbox("DualDirectionalInputEnabled", values); handleChange(e);}}
+						/>
 					</Section>
 					<div className="mt-3">
 						<Button type="submit">Save</Button>

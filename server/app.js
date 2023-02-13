@@ -71,6 +71,7 @@ app.get('/api/getDisplayOptions', (req, res) => {
 			}
 		},
 
+		displaySaverTimeout: 0,
 	}
 	console.log('data', data);
 	return res.send(data);
@@ -174,8 +175,17 @@ app.get('/api/getAddonsOptions', (req, res) => {
 		dualDirDpadMode: 0,
 		dualDirCombineMode: 0,
 		analogAdcPinX: -1,
-  	analogAdcPinY: -1,
+  		analogAdcPinY: -1,
 		bootselButtonMap: 0,
+		AnalogInputEnabled: 1,
+		BoardLedAddonEnabled: 1,
+		BuzzerSpeakerAddonEnabled: 1,
+		BootselButtonAddonEnabled: 1,
+		DualDirectionalInputEnabled: 1,
+		I2CAnalog1219InputEnabled: 1,
+		JSliderInputEnabled: 1,
+		ReverseInputEnabled: 1,
+		TurboInputEnabled: 1,
 		usedPins,
 	});
 });
@@ -204,8 +214,23 @@ app.get('/api/getButtonLayoutCustomOptions', (req, res) => {
 			buttonRadius: 8,
 			buttonPadding: 2
 		}
-	}
-);
+	})
+});
+
+app.get('/api/reboot', (req, res) => {
+	console.log('/api/reboot');
+	return res.send({ });
+});
+
+app.get('/api/getMemoryReport', (req, res) => {
+	console.log('/api/getMemoryReport');
+	return res.send({
+		totalFlash: 2048, 
+        usedFlash: 1048,
+        staticAllocs: 200,
+        totalHeap: 2048,
+        usedHeap: 1048 
+	});
 });
 
 app.post('/api/*', (req, res) => {
