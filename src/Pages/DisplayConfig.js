@@ -58,15 +58,6 @@ const SPLASH_MODES = [
 	{ label: 'Disabled', value: 3 },         // NOSPLASH
 ];
 
-const SPLASH_CHOICES = [
-	{ label: 'Main', value: 0 },			 // MAIN
-	{ label: 'X', value: 1 },		         // X
-	{ label: 'Y', value: 2 },                // Y
-	{ label: 'Z', value: 3 },                // Z
-	{ label: 'Custom', value: 4 },           // CUSTOM
-	{ label: 'Legacy', value: 5 },           // LEGACY
-];
-
 const DISPLAY_SAVER_TIMEOUT_CHOICES = [
 	{ label: 'Off', value: 0 },
 	{ label: '1 minute', value: 1 },
@@ -89,7 +80,6 @@ const defaultValues = {
 	buttonLayout: 0,
 	buttonLayoutRight: 3,
 	splashMode: 3,
-	splashChoice: 0,
 	splashImage: Array(16*64).fill(0), // 128 columns represented by bytes so 16 and 64 rows
 	invertSplash: false,
 	displaySaverTimeout: 0,
@@ -111,7 +101,6 @@ const schema = yup.object().shape({
 	buttonLayout: yup.number().required().oneOf(BUTTON_LAYOUTS.map(o => o.value)).label('Button Layout Left'),
 	buttonLayoutRight: yup.number().required().oneOf(BUTTON_LAYOUTS_RIGHT.map(o => o.value)).label('Button Layout Right'),
 	splashMode: yup.number().required().oneOf(SPLASH_MODES.map(o => o.value)).label('Splash Screen'),
-	splashChoice: yup.number().required().oneOf(SPLASH_CHOICES.map(o => o.value)).label('Splash Screen Choice'),
 	displaySaverTimeout: yup.number().required().oneOf(DISPLAY_SAVER_TIMEOUT_CHOICES.map(o => o.value)).label('Display Saver'),
 });
 
@@ -144,8 +133,6 @@ const FormContext = () => {
 			values.buttonLayoutRight = parseInt(values.buttonLayoutRight);
 		if (!!values.splashMode)
 			values.splashMode = parseInt(values.splashMode);
-		if (!!values.splashChoice)
-			values.splashChoice = parseInt(values.splashChoice);
 	}, [values, setValues]);
 
 	return null;
@@ -360,20 +347,6 @@ export default function DisplayConfigPage() {
 							>
 								{SPLASH_MODES.map((o, i) => <option key={`splashMode-option-${i}`} value={o.value}>{o.label}</option>)}
 							</FormSelect>
-							<FormSelect
-								label="Splash Choice"
-								name="splashChoice"
-								className="form-select-sm"
-								groupClassName="col-sm-3 mb-3"
-								value={values.splashChoice}
-								error={errors.splashChoice}
-								isInvalid={errors.splashChoice}
-								onChange={handleChange}
-							>
-								{SPLASH_CHOICES.map((o, i) => <option key={`splashChoice-option-${i}`} value={o.value}>{o.label}</option>)}
-							</FormSelect>
-						</Row>
-						<Row className="mb-3">
 							<FormSelect
 									label="Display Saver Timeout"
 									name="displaySaverTimeout"
