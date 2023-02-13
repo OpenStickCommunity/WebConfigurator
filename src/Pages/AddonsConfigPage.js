@@ -80,6 +80,8 @@ const schema = yup.object().shape({
 	analogAdcPinX : yup.number().required().test('', '${originalValue} is unavailable/already assigned!', (value) => usedPins.indexOf(value) === -1).label('Analog Stick Pin X'),
  	analogAdcPinY : yup.number().required().test('', '${originalValue} is unavailable/already assigned!', (value) => usedPins.indexOf(value) === -1).label('Analog Stick Pin Y'),
 	bootselButtonMap : yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('BOOTSEL Button Map'),
+	buzzerPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Buzzer Pin'),
+	buzzerVolume: yup.number().required().min(0).max(100).label('Buzzer Volume'),
 	AnalogInputEnabled: yup.number().required().label('Analog Input Enabled'),
 	BoardLedAddonEnabled: yup.number().required().label('Board LED Add-On Enabled'),
 	BuzzerSpeakerAddonEnabled: yup.number().required().label('Buzzer Speaker Add-On Enabled'),
@@ -114,6 +116,8 @@ const defaultValues = {
 	analogAdcPinX : -1,
  	analogAdcPinY : -1,
 	bootselButtonMap: 0,
+	buzzerPin: -1,
+	buzzerVolume: 100,
 	AnalogInputEnabled: 0,
 	BoardLedAddonEnabled: 0,
 	BuzzerSpeakerAddonEnabled: 0,
@@ -196,6 +200,10 @@ const FormContext = () => {
 			values.analogAdcPinY = parseInt(values.analogAdcPinY);
 		if (!!values.bootselButtonMap)
 			values.bootselButtonMap = parseInt(values.bootselButtonMap);
+		if (!!values.buzzerPin)
+			values.buzzerPin = parseInt(values.buzzerPin);
+		if (!!values.buzzerVolume)
+			values.buzzerVolume = parseInt(values.buzzerVolume);
 		if (!!values.AnalogInputEnabled)
 			values.AnalogInputEnabled = parseInt(values.AnalogInputEnabled);
 		if (!!values.BoardLedAddonEnabled)
@@ -306,7 +314,7 @@ export default function AddonsConfigPage() {
 							id="AnalogInputOptions"
 							hidden={!values.AnalogInputEnabled}>
 						<p>Available pins: {ANALOG_PINS.join(", ")}</p>
-						<Col>
+						<Row class="mb-3">
 							<FormSelect
 								label="Analog Stick X Pin"
 								name="analogAdcPinX"
@@ -331,7 +339,7 @@ export default function AddonsConfigPage() {
 							>
 								{ANALOG_PINS.map((i) => <option key={`analogPins-option-${i}`} value={i}>{i}</option>)}
 							</FormSelect>
-						</Col>
+						</Row>
 						</div>
 						<FormCheck
 							label="Enabled"
@@ -348,7 +356,7 @@ export default function AddonsConfigPage() {
 						<div
 							id="TurboInputOptions"
 							hidden={!values.TurboInputEnabled}>
-						<Col>
+						<Row class="mb-3">
 							<FormControl type="number"
 								label="Turbo Pin"
 								name="turboPin"
@@ -385,7 +393,7 @@ export default function AddonsConfigPage() {
 								min={2}
 								max={30}
 							/>
-						</Col>
+						</Row>
 						</div>
 						<FormCheck
 							label="Enabled"
@@ -402,7 +410,7 @@ export default function AddonsConfigPage() {
 						<div
 							id="JSliderInputOptions"
 							hidden={!values.JSliderInputEnabled}>
-						<Col>
+						<Row class="mb-3">
 							<FormControl type="number"
 								label="Slider LS Pin"
 								name="sliderLSPin"
@@ -427,7 +435,7 @@ export default function AddonsConfigPage() {
 								min={-1}
 								max={29}
 							/>
-						</Col>
+						</Row>
 						</div>
 						<FormCheck
 							label="Enabled"
@@ -444,7 +452,7 @@ export default function AddonsConfigPage() {
 						<div
 							id="ReverseInputOptions"
 							hidden={!values.ReverseInputEnabled}>
-						<Col>
+						<Row class="mb-3">
 							<FormControl type="number"
 								label="Reverse Input Pin"
 								name="reversePin"
@@ -469,6 +477,8 @@ export default function AddonsConfigPage() {
 								min={-1}
 								max={29}
 							/>
+						</Row>
+						<Row class="mb-3">
 							<FormSelect
 								label="Reverse Up"
 								name="reverseActionUp"
@@ -517,7 +527,7 @@ export default function AddonsConfigPage() {
 							>
 								{REVERSE_ACTION.map((o, i) => <option key={`reverseActionRight-option-${i}`} value={o.value}>{o.label}</option>)}
 							</FormSelect>
-						</Col>
+						</Row>
 						</div>
 						<FormCheck
 							label="Enabled"
@@ -534,7 +544,7 @@ export default function AddonsConfigPage() {
 						<div
 							id="I2CAnalog1219InputOptions"
 							hidden={!values.I2CAnalog1219InputEnabled}>
-						<Col>
+						<Row class="mb-3">
 							<FormControl type="number"
 								label="I2C Analog ADS1219 SDA Pin"
 								name="i2cAnalog1219SDAPin"
@@ -582,6 +592,8 @@ export default function AddonsConfigPage() {
 								onChange={handleChange}
 								min={100000}
 							/>
+						</Row>
+						<Row class="mb-3">
 							<FormControl
 								label="I2C Analog ADS1219 Address"
 								name="i2cAnalog1219Address"
@@ -593,7 +605,7 @@ export default function AddonsConfigPage() {
 								onChange={handleChange}
 								maxLength={4}
 							/>
-						</Col>
+						</Row>
 						</div>
 						<FormCheck
 							label="Enabled"
@@ -610,9 +622,9 @@ export default function AddonsConfigPage() {
 						<div
 							id="DualDirectionalInputOptions"
 							hidden={!values.DualDirectionalInputEnabled}>
-						<Col>
+						<Row class="mb-3">
 							<FormControl type="number"
-								label="Dual Directional Up Pin"
+								label="Dual Up Pin"
 								name="dualDirUpPin"
 								className="form-select-sm"
 								groupClassName="col-sm-3 mb-3"
@@ -624,7 +636,7 @@ export default function AddonsConfigPage() {
 								max={29}
 							/>
 							<FormControl type="number"
-								label="Dual Directional Down Pin"
+								label="Dual Down Pin"
 								name="dualDirDownPin"
 								className="form-select-sm"
 								groupClassName="col-sm-3 mb-3"
@@ -636,7 +648,7 @@ export default function AddonsConfigPage() {
 								max={29}
 							/>
 							<FormControl type="number"
-								label="Dual Directional Left Pin"
+								label="Dual Left Pin"
 								name="dualDirLeftPin"
 								className="form-select-sm"
 								groupClassName="col-sm-3 mb-3"
@@ -648,7 +660,7 @@ export default function AddonsConfigPage() {
 								max={29}
 							/>
 							<FormControl type="number"
-								label="Dual Directional Right Pin"
+								label="Dual Right Pin"
 								name="dualDirRightPin"
 								className="form-select-sm"
 								groupClassName="col-sm-3 mb-3"
@@ -659,25 +671,34 @@ export default function AddonsConfigPage() {
 								min={-1}
 								max={29}
 							/>
-							<Form.Group className="row mb-3">
-								<Form.Label>Dual Directional D-Pad Mode</Form.Label>
-								<div className="col-sm-3">
-									<Form.Select name="dualDirDpadMode" className="form-select-sm" value={values.dualDirDpadMode} onChange={handleChange} isInvalid={errors.dualDirDpadMode}>
-										{DUAL_STICK_MODES.map((o, i) => <option key={`button-dualDirDpadMode-option-${i}`} value={o.value}>{o.label}</option>)}
-									</Form.Select>
-									<Form.Control.Feedback type="invalid">{errors.dualDirDpadMode}</Form.Control.Feedback>
-								</div>
-							</Form.Group>
-							<Form.Group className="row mb-3">
-								<Form.Label>Dual Directional Combination Mode</Form.Label>
-								<div className="col-sm-3">
-									<Form.Select name="dualDirCombineMode" className="form-select-sm" value={values.dualDirCombineMode} onChange={handleChange} isInvalid={errors.dualDirCombineMode}>
-										{DUAL_COMBINE_MODES.map((o, i) => <option key={`button-dualDirCombineMode-option-${i}`} value={o.value}>{o.label}</option>)}
-									</Form.Select>
-									<Form.Control.Feedback type="invalid">{errors.dualDirCombineMode}</Form.Control.Feedback>
-								</div>
-							</Form.Group>
-						</Col>
+						</Row>
+						<Row class="mb-3">
+							<FormSelect
+								label="Dual D-Pad Mode"
+								name="dualDirDpadMode"
+								className="form-select-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.dualDirDpadMode}
+								error={errors.dualDirDpadMode}
+								isInvalid={errors.dualDirDpadMode}
+								onChange={handleChange}
+							>
+								{DUAL_STICK_MODES.map((o, i) => <option key={`button-dualDirDpadMode-option-${i}`} value={o.value}>{o.label}</option>)}
+							</FormSelect>
+
+							<FormSelect
+								label="Combination Mode"
+								name="dualDirCombineMode"
+								className="form-select-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.dualDirCombineMode}
+								error={errors.dualDirCombineMode}
+								isInvalid={errors.dualDirCombineMode}
+								onChange={handleChange}
+							>
+								{DUAL_COMBINE_MODES.map((o, i) => <option key={`button-dualDirCombineMode-option-${i}`} value={o.value}>{o.label}</option>)}
+							</FormSelect>
+						</Row>
 						</div>
 						<FormCheck
 							label="Enabled"
@@ -688,6 +709,48 @@ export default function AddonsConfigPage() {
 							isInvalid={false}
 							checked={Boolean(values.DualDirectionalInputEnabled)}
 							onChange={(e) => {handleCheckbox("DualDirectionalInputEnabled", values); handleChange(e);}}
+						/>
+					</Section>
+					<Section title="Buzzer Speaker">
+						<div
+							id="BuzzerSpeakerAddonOptions"
+							hidden={!values.BuzzerSpeakerAddonEnabled}>
+						<Row class="mb-3">	
+							<FormControl type="number"
+								label="Buzzer Pin"
+								name="buzzerPin"
+								className="form-control-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.buzzerPin}
+								error={errors.buzzerPin}
+								isInvalid={errors.buzzerPin}
+								onChange={handleChange}
+								min={-1}
+								max={29}
+							/>
+							<FormControl type="number"
+								label="Buzzer Volume"
+								name="buzzerVolume"
+								className="form-control-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.buzzerVolume}
+								error={errors.buzzerVolume}
+								isInvalid={errors.buzzerVolume}
+								onChange={handleChange}
+								min={0}
+								max={100}
+							/>
+						</Row>
+						</div>
+						<FormCheck
+							label="Enabled"
+							type="switch"
+							id="BuzzerSpeakerAddonButton"
+							reverse="true"
+							error={false}
+							isInvalid={false}
+							checked={Boolean(values.BuzzerSpeakerAddonEnabled)}
+							onChange={(e) => {handleCheckbox("BuzzerSpeakerAddonEnabled", values); handleChange(e);}}
 						/>
 					</Section>
 					<div className="mt-3">
