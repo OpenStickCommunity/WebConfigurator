@@ -82,6 +82,7 @@ const schema = yup.object().shape({
 	bootselButtonMap : yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('BOOTSEL Button Map'),
 	buzzerPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Buzzer Pin'),
 	buzzerVolume: yup.number().required().min(0).max(100).label('Buzzer Volume'),
+	playerNumber: yup.number().required().min(1).max(4).label('Player Number'),
 	AnalogInputEnabled: yup.number().required().label('Analog Input Enabled'),
 	BoardLedAddonEnabled: yup.number().required().label('Board LED Add-On Enabled'),
 	BuzzerSpeakerAddonEnabled: yup.number().required().label('Buzzer Speaker Add-On Enabled'),
@@ -89,6 +90,7 @@ const schema = yup.object().shape({
 	DualDirectionalInputEnabled: yup.number().required().label('Dual Directional Input Enabled'),
 	I2CAnalog1219InputEnabled: yup.number().required().label('I2C Analog1219 Input Enabled'),
 	JSliderInputEnabled: yup.number().required().label('JSlider Input Enabled'),
+	PlayerNumAddonEnabled: yup.number().required().label('Player Number Add-On Enabled'),
 	ReverseInputEnabled: yup.number().required().label('Reverse Input Enabled'),
 	TurboInputEnabled: yup.number().required().label('Turbo Input Enabled')
 });
@@ -118,6 +120,7 @@ const defaultValues = {
 	bootselButtonMap: 0,
 	buzzerPin: -1,
 	buzzerVolume: 100,
+	playerNumber: 1,
 	AnalogInputEnabled: 0,
 	BoardLedAddonEnabled: 0,
 	BuzzerSpeakerAddonEnabled: 0,
@@ -125,6 +128,7 @@ const defaultValues = {
 	DualDirectionalInputEnabled: 0,
 	I2CAnalog1219InputEnabled: 0,
 	JSliderInputEnabled: 0,
+	PlayerNumAddonEnabled: 0,
 	ReverseInputEnabled: 0,
 	TurboInputEnabled: 0
 };
@@ -204,6 +208,8 @@ const FormContext = () => {
 			values.buzzerPin = parseInt(values.buzzerPin);
 		if (!!values.buzzerVolume)
 			values.buzzerVolume = parseInt(values.buzzerVolume);
+		if (!!values.playerNumber)
+			values.playerNumber = parseInt(values.playerNumber);	
 		if (!!values.AnalogInputEnabled)
 			values.AnalogInputEnabled = parseInt(values.AnalogInputEnabled);
 		if (!!values.BoardLedAddonEnabled)
@@ -218,6 +224,8 @@ const FormContext = () => {
 			values.I2CAnalog1219InputEnabled = parseInt(values.I2CAnalog1219InputEnabled);
 		if (!!values.JSliderInputEnabled)
 			values.JSliderInputEnabled = parseInt(values.JSliderInputEnabled);
+		if (!!values.PlayerNumAddonEnabled)
+			values.PlayerNumAddonEnabled = parseInt(values.PlayerNumAddonEnabled);
 		if (!!values.ReverseInputEnabled)
 			values.ReverseInputEnabled = parseInt(values.ReverseInputEnabled);
 		if (!!values.TurboInputEnabled)
@@ -751,6 +759,36 @@ export default function AddonsConfigPage() {
 							isInvalid={false}
 							checked={Boolean(values.BuzzerSpeakerAddonEnabled)}
 							onChange={(e) => {handleCheckbox("BuzzerSpeakerAddonEnabled", values); handleChange(e);}}
+						/>
+					</Section>
+					<Section title="Player Number (X-INPUT ONLY)">
+						<div
+							id="PlayerNumAddonOptions"
+							hidden={!values.PlayerNumAddonEnabled}>
+						<Row class="mb-3">	
+							<FormControl type="number"
+								label="Player Number"
+								name="playerNumber"
+								className="form-control-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.playerNumber}
+								error={errors.playerNumber}
+								isInvalid={errors.playerNumber}
+								onChange={handleChange}
+								min={1}
+								max={4}
+							/>
+						</Row>
+						</div>
+						<FormCheck
+							label="Enabled"
+							type="switch"
+							id="PlayerNumAddonButton"
+							reverse="true"
+							error={false}
+							isInvalid={false}
+							checked={Boolean(values.PlayerNumAddonEnabled)}
+							onChange={(e) => {handleCheckbox("PlayerNumAddonEnabled", values); handleChange(e);}}
 						/>
 					</Section>
 					<div className="mt-3">
