@@ -765,7 +765,8 @@ export default function AddonsConfigPage() {
 						<div
 							id="PlayerNumAddonOptions"
 							hidden={!values.PlayerNumAddonEnabled}>
-						<Row class="mb-3">	
+						<p><strong>WARNING: ONLY ENABLE THIS OPTION IF YOU ARE CONNECTING MULTIPLE GP2040-CE DEVICES WITH PLAYER NUMBER ENABLED</strong></p>
+						<Row class="mb-3">
 							<FormControl type="number"
 								label="Player Number"
 								name="playerNumber"
