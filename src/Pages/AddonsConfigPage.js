@@ -82,12 +82,15 @@ const schema = yup.object().shape({
 	bootselButtonMap : yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('BOOTSEL Button Map'),
 	buzzerPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Buzzer Pin'),
 	buzzerVolume: yup.number().required().min(0).max(100).label('Buzzer Volume'),
+	extraButtonPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Extra Button Pin'),
+	extraButtonMap : yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('Extra Button Map'),
 	playerNumber: yup.number().required().min(1).max(4).label('Player Number'),
 	AnalogInputEnabled: yup.number().required().label('Analog Input Enabled'),
 	BoardLedAddonEnabled: yup.number().required().label('Board LED Add-On Enabled'),
 	BuzzerSpeakerAddonEnabled: yup.number().required().label('Buzzer Speaker Add-On Enabled'),
 	BootselButtonAddonEnabled: yup.number().required().label('Boot Select Button Add-On Enabled'),
 	DualDirectionalInputEnabled: yup.number().required().label('Dual Directional Input Enabled'),
+	ExtraButtonAddonEnabled: yup.number().required().label('Extra Button Add-On Enabled'),
 	I2CAnalog1219InputEnabled: yup.number().required().label('I2C Analog1219 Input Enabled'),
 	JSliderInputEnabled: yup.number().required().label('JSlider Input Enabled'),
 	PlayerNumAddonEnabled: yup.number().required().label('Player Number Add-On Enabled'),
@@ -120,12 +123,15 @@ const defaultValues = {
 	bootselButtonMap: 0,
 	buzzerPin: -1,
 	buzzerVolume: 100,
+	extrabuttonPin: -1,
+	extraButtonMap: 0,
 	playerNumber: 1,
 	AnalogInputEnabled: 0,
 	BoardLedAddonEnabled: 0,
 	BuzzerSpeakerAddonEnabled: 0,
 	BootselButtonAddonEnabled: 0,
 	DualDirectionalInputEnabled: 0,
+	ExtraButtonAddonEnabled: 0,
 	I2CAnalog1219InputEnabled: 0,
 	JSliderInputEnabled: 0,
 	PlayerNumAddonEnabled: 0,
@@ -208,6 +214,10 @@ const FormContext = () => {
 			values.buzzerPin = parseInt(values.buzzerPin);
 		if (!!values.buzzerVolume)
 			values.buzzerVolume = parseInt(values.buzzerVolume);
+		if (!!values.extraButtonMap)
+			values.extraButtonMap = parseInt(values.extraButtonMap);
+		if (!!values.extrabuttonPin)
+			values.extrabuttonPin = parseInt(values.extrabuttonPin);
 		if (!!values.playerNumber)
 			values.playerNumber = parseInt(values.playerNumber);	
 		if (!!values.AnalogInputEnabled)
@@ -220,6 +230,8 @@ const FormContext = () => {
 			values.BootselButtonAddonEnabled = parseInt(values.BootselButtonAddonEnabled);
 		if (!!values.DualDirectionalInputEnabled)
 			values.DualDirectionalInputEnabled = parseInt(values.DualDirectionalInputEnabled);
+		if (!!values.ExtraButtonAddonEnabled)
+			values.ExtraButtonAddonEnabled = parseInt(values.ExtraButtonAddonEnabled);
 		if (!!values.I2CAnalog1219InputEnabled)
 			values.I2CAnalog1219InputEnabled = parseInt(values.I2CAnalog1219InputEnabled);
 		if (!!values.JSliderInputEnabled)
@@ -759,6 +771,48 @@ export default function AddonsConfigPage() {
 							isInvalid={false}
 							checked={Boolean(values.BuzzerSpeakerAddonEnabled)}
 							onChange={(e) => {handleCheckbox("BuzzerSpeakerAddonEnabled", values); handleChange(e);}}
+						/>
+					</Section>
+					<Section title="Extra Button Configuration">
+						<div
+							id="ExtraButtonAddonOptions"
+							hidden={!values.ExtraButtonAddonEnabled}>
+							<Row class="mb-3">
+								<FormControl type="number"
+									label="Extra Button Pin"
+									name="extraButtonPin"
+									className="form-select-sm"
+									groupClassName="col-sm-3 mb-3"
+									value={values.extraButtonPin}
+									error={errors.extraButtonPin}
+									isInvalid={errors.extraButtonPin}
+									onChange={handleChange}
+									min={-1}
+									max={29}
+								/>
+								<FormSelect
+									label="Extra Button"
+									name="extraButtonMap"
+									className="form-select-sm"
+									groupClassName="col-sm-3 mb-3"
+									value={values.extraButtonMap}
+									error={errors.extraButtonMap}
+									isInvalid={errors.extraButtonMap}
+									onChange={handleChange}
+								>
+									{BUTTON_MASKS.map((o, i) => <option key={`extraButtonMap-option-${i}`} value={o.value}>{o.label}</option>)}
+								</FormSelect>
+							</Row>
+						</div>
+						<FormCheck
+							label="Enabled"
+							type="switch"
+							id="ExtraButtonAddonButton"
+							reverse="true"
+							error={false}
+							isInvalid={false}
+							checked={Boolean(values.ExtraButtonAddonEnabled)}
+							onChange={(e) => { handleCheckbox("ExtraButtonAddonEnabled", values); handleChange(e);}}
 						/>
 					</Section>
 					<Section title="Player Number (X-INPUT ONLY)">
