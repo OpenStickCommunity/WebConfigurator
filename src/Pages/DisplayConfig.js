@@ -70,6 +70,13 @@ const DISPLAY_SAVER_TIMEOUT_CHOICES = [
 	{ label: '30 minutes', value: 30 },
 ];
 
+const DISPLAY_FLIP_MODES = [
+ { label: "None", value: 0 },
+ { label: "Flip", value: 1 },
+ { label: "Mirror", value: 2 },
+ { label: "Flip and Mirror", value: 3 },
+];
+
 const defaultValues = {
 	enabled: false,
 	sdaPin: -1,
@@ -117,7 +124,7 @@ const schema = yup.object().shape({
 	sclPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => true).label('SCL Pin'),
 	i2cBlock: yup.number().required().oneOf(I2C_BLOCKS.map(o => o.value)).label('I2C Block'),
 	i2cSpeed: yup.number().required().label('I2C Speed'),
-	flipDisplay: yup.number().label('Flip Display'),
+	flipDisplay: yup.number().oneOf(DISPLAY_FLIP_MODES.map(o => o.value)).label('Flip Display'),
 	invertDisplay: yup.number().label('Invert Display'),
 	buttonLayout: buttonLayoutSchema,
 	buttonLayoutRight: buttonLayoutRightSchema,
@@ -360,7 +367,7 @@ export default function DisplayConfigPage() {
 								isInvalid={errors.flipDisplay}
 								onChange={handleChange}
 							>
-								{ON_OFF_OPTIONS.map((o, i) => <option key={`flipDisplay-option-${i}`} value={o.value}>{o.label}</option>)}
+								{DISPLAY_FLIP_MODES.map((o, i) => <option key={`flipDisplay-option-${i}`} value={o.value}>{o.label}</option>)}
 							</FormSelect>
 							<FormSelect
 								label="Invert Display"
