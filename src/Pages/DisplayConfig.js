@@ -180,7 +180,7 @@ const FormContext = () => {
 		if (!!values.splashChoice)
 			values.splashChoice = parseInt(values.splashChoice);
 
-		await WebApi.setDisplayOptions(values, false)
+		await WebApi.setDisplayOptions(values, true)
 	}, [values, setValues]);
 
 	useEffect(async () => {
@@ -201,7 +201,7 @@ const FormContext = () => {
 		if (!!values.splashChoice)
 			values.splashChoice = parseInt(values.splashChoice);
 
-		await WebApi.setDisplayOptions(values, false)
+		await WebApi.setDisplayOptions(values, true)
 	}, [values.splashImage]);
 
 	return null;
@@ -213,7 +213,7 @@ export default function DisplayConfigPage() {
 	const [saveMessage, setSaveMessage] = useState('');
 
 	const onSuccess = async (values) => {
-		const success = await WebApi.setDisplayOptions(values, true)
+		const success = await WebApi.setDisplayOptions(values, false)
 		.then(() => WebApi.setSplashImage(values));
 		setSaveMessage(success ? 'Saved! Please Restart Your Device' : 'Unable to Save');
 	};
