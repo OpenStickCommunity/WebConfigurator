@@ -60,6 +60,14 @@ const SPLASH_MODES = [
 	{ label: 'Disabled', value: 3 },         // NOSPLASH
 ];
 
+const SPLASH_DURATION_CHOICES = [
+	{ label: 'Default', value: 0 },
+	{ label: '5 seconds', value: 5000 },
+	{ label: '10 seconds', value: 10000 },
+	{ label: '30 seconds', value: 30000 },
+	{ label: 'Always ON', value: -1 }
+];
+
 const DISPLAY_SAVER_TIMEOUT_CHOICES = [
 	{ label: 'Off', value: 0 },
 	{ label: '1 minute', value: 1 },
@@ -88,6 +96,7 @@ const defaultValues = {
 	invertDisplay: false,
 	buttonLayout: 0,
 	buttonLayoutRight: 3,
+	splashDuration: 0,
 	splashMode: 3,
 	splashImage: Array(16*64).fill(0), // 128 columns represented by bytes so 16 and 64 rows
 	invertSplash: false,
@@ -145,6 +154,7 @@ const schema = yup.object().shape({
 			buttonPadding: yup.number().required().min(0).max(20).label('Button Padding')
 		})
 	}),
+	splashDuration: yup.number().required().oneOf(SPLASH_DURATION_CHOICES.map(o => o.value)).label('Splash Duration'),
 	displaySaverTimeout: yup.number().required().oneOf(DISPLAY_SAVER_TIMEOUT_CHOICES.map(o => o.value)).label('Display Saver'),
 });
 
@@ -179,7 +189,8 @@ const FormContext = () => {
 			values.splashMode = parseInt(values.splashMode);
 		if (!!values.splashChoice)
 			values.splashChoice = parseInt(values.splashChoice);
-
+		if (!!values.splashDuration)
+			values.splashDuration = parseInt(values.splashDuration);
 		await WebApi.setDisplayOptions(values, true)
 	}, [values, setValues]);
 
@@ -509,6 +520,18 @@ export default function DisplayConfigPage() {
 							</Col>
 						</Row>}
 						<Row className="mb-3">
+							<FormSelect
+									label="Splash Duration"
+									name="splashDuration"
+									className="form-select-sm"
+									groupClassName="col-sm-3 mb-3"
+									value={values.splashDuration}
+									error={errors.splashDuration}
+									isInvalid={errors.splashDuration}
+									onChange={handleChange}
+								>
+									{SPLASH_DURATION_CHOICES.map((o, i) => <option key={`splashDuration-option-${i}`} value={o.value}>{o.label}</option>)}
+							</FormSelect>
 							<FormSelect
 									label="Display Saver Timeout"
 									name="displaySaverTimeout"
