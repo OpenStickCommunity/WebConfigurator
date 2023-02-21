@@ -41,15 +41,18 @@ async function getDisplayOptions() {
 		.catch(console.error);
 }
 
-async function setDisplayOptions(options) {
+async function setDisplayOptions(options, isPreview) {
 	let newOptions = { ...options };
 	newOptions.i2cAddress = parseInt(options.i2cAddress);
 	newOptions.buttonLayout = parseInt(options.buttonLayout);
 	newOptions.buttonLayoutRight = parseInt(options.buttonLayoutRight);
 	newOptions.splashMode = parseInt(options.splashMode);
 	newOptions.splashChoice = parseInt(options.splashChoice);
+	newOptions.buttonLayoutCustomOptions.params.layout = parseInt(options.buttonLayoutCustomOptions.params.layout);
+	newOptions.buttonLayoutCustomOptions.paramsRight.layout = parseInt(options.buttonLayoutCustomOptions.paramsRight.layout);
 	newOptions.splashImage = '';
-	return axios.post(`${baseUrl}/api/setDisplayOptions`, newOptions)
+	const url = !isPreview ? `${baseUrl}/api/setDisplayOptions` : `${baseUrl}/api/setPreviewDisplayOptions`;
+	return axios.post(url, newOptions)
 		.then((response) => {
 			console.log(response.data);
 			return true;

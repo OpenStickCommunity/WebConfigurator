@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Button, Form, Row, Col } from 'react-bootstrap';
+import { Button, Form, Row, Col, FormLabel } from 'react-bootstrap';
 import { Formik, useFormikContext, ErrorMessage, Field } from 'formik';
 import * as yup from 'yup';
 import FormControl from '../Components/FormControl';
@@ -28,9 +28,10 @@ const BUTTON_LAYOUTS = [
 	{ label: 'Dancepad', value: 6 },        // BUTTON_LAYOUT_DANCEPADA
 	{ label: 'Twinstick', value: 7 },       // BUTTON_LAYOUT_TWINSTICKA
 	{ label: 'Blank', value: 8 },           // BUTTON_LAYOUT_BLANKA
-	{ label: 'VLX', value: 9 },             // BUTTON_LAYOUT_VLXA
+	{ label: 'VLX', value: 9 },              // BUTTON_LAYOUT_VLXA
 	{ label: 'Fightboard', value: 10 },              // BUTTON_LAYOUT_FIGHTBOARD_STICK
 	{ label: 'Fightboard Mirrored', value: 11 },     // BUTTON_LAYOUT_FIGHTBOARD_MIRRORED
+	{ label: 'Custom', value: 12 }              // BUTTON_LAYOUT_CUSTOM
 ];
 
 const BUTTON_LAYOUTS_RIGHT = [
@@ -47,9 +48,10 @@ const BUTTON_LAYOUTS_RIGHT = [
 	{ label: 'Dancepad', value: 10 },		 // BUTTON_LAYOUT_DANCEPADB
 	{ label: 'Twinstick', value: 11 },	     // BUTTON_LAYOUT_TWINSTICKB
 	{ label: 'Blank', value: 12 },		     // BUTTON_LAYOUT_BLANKB
-	{ label: 'VLX', value: 13 },		     // BUTTON_LAYOUT_VLXB
+	{ label: 'VLX', value: 13 },		         // BUTTON_LAYOUT_VLXB
 	{ label: 'Fightboard', value: 14 },				// BUTTON_LAYOUT_FIGHTBOARD
 	{ label: 'Fightboard Mirrored', value: 15 },	// BUTTON_LAYOUT_FIGHTBOARD_STICK_MIRRORED
+	{ label: 'Custom', value: 16 }		         // BUTTON_LAYOUT_CUSTOM
 ];
 
 const SPLASH_MODES = [
@@ -98,10 +100,29 @@ const defaultValues = {
 	splashMode: 3,
 	splashImage: Array(16*64).fill(0), // 128 columns represented by bytes so 16 and 64 rows
 	invertSplash: false,
+	buttonLayoutCustomOptions: {
+		params: {
+			layout: 0,
+			startX: 8,
+			startY: 28,
+			buttonRadius: 8,
+			buttonPadding: 2
+		},
+		paramsRight: {
+			layout: 3,
+			startX: 8,
+			startY: 28,
+			buttonRadius: 8,
+			buttonPadding: 2
+		}
+	},
 	displaySaverTimeout: 0,
 };
 
 let usedPins = [];
+
+const buttonLayoutSchema = yup.number().required().oneOf(BUTTON_LAYOUTS.map(o => o.value)).label('Button Layout Left')
+const buttonLayoutRightSchema = yup.number().required().oneOf(BUTTON_LAYOUTS_RIGHT.map(o => o.value)).label('Button Layout Right')
 
 const schema = yup.object().shape({
 	enabled: yup.number().label('Enabled?'),
@@ -114,9 +135,25 @@ const schema = yup.object().shape({
 	i2cSpeed: yup.number().required().label('I2C Speed'),
 	flipDisplay: yup.number().oneOf(DISPLAY_FLIP_MODES.map(o => o.value)).label('Flip Display'),
 	invertDisplay: yup.number().label('Invert Display'),
-	buttonLayout: yup.number().required().oneOf(BUTTON_LAYOUTS.map(o => o.value)).label('Button Layout Left'),
-	buttonLayoutRight: yup.number().required().oneOf(BUTTON_LAYOUTS_RIGHT.map(o => o.value)).label('Button Layout Right'),
+	buttonLayout: buttonLayoutSchema,
+	buttonLayoutRight: buttonLayoutRightSchema,
 	splashMode: yup.number().required().oneOf(SPLASH_MODES.map(o => o.value)).label('Splash Screen'),
+	buttonLayoutCustomOptions: yup.object().shape({
+		params: yup.object().shape({
+			layout: buttonLayoutSchema,
+			startX: yup.number().required().min(0).max(128).label('Start X'),
+			startY: yup.number().required().min(0).max(64).label('Start Y'),
+			buttonRadius: yup.number().required().min(0).max(20).label('Button Radius'),
+			buttonPadding: yup.number().required().min(0).max(20).label('Button Padding')
+		}),
+		paramsRight: yup.object().shape({
+			layout: buttonLayoutRightSchema,
+			startX: yup.number().required().min(0).max(128).label('Start X'),
+			startY: yup.number().required().min(0).max(64).label('Start Y'),
+			buttonRadius: yup.number().required().min(0).max(20).label('Button Radius'),
+			buttonPadding: yup.number().required().min(0).max(20).label('Button Padding')
+		})
+	}),
 	splashDuration: yup.number().required().oneOf(SPLASH_DURATION_CHOICES.map(o => o.value)).label('Splash Duration'),
 	displaySaverTimeout: yup.number().required().oneOf(DISPLAY_SAVER_TIMEOUT_CHOICES.map(o => o.value)).label('Display Saver'),
 });
@@ -135,7 +172,7 @@ const FormContext = () => {
 		fetchData();
 	}, [setValues]);
 
-	useEffect(() => {
+	useEffect(async () => {
 		if (!!values.enabled)
 			values.enabled = parseInt(values.enabled);
 		if (!!values.i2cBlock)
@@ -150,18 +187,45 @@ const FormContext = () => {
 			values.buttonLayoutRight = parseInt(values.buttonLayoutRight);
 		if (!!values.splashMode)
 			values.splashMode = parseInt(values.splashMode);
+		if (!!values.splashChoice)
+			values.splashChoice = parseInt(values.splashChoice);
 		if (!!values.splashDuration)
 			values.splashDuration = parseInt(values.splashDuration);
+		await WebApi.setDisplayOptions(values, true)
 	}, [values, setValues]);
+
+	useEffect(async () => {
+		if (!!values.enabled)
+			values.enabled = parseInt(values.enabled);
+		if (!!values.i2cBlock)
+			values.i2cBlock = parseInt(values.i2cBlock);
+		if (!!values.flipDisplay)
+			values.flipDisplay = parseInt(values.flipDisplay);
+		if (!!values.invertDisplay)
+			values.invertDisplay = parseInt(values.invertDisplay);
+		if (!!values.buttonLayout)
+			values.buttonLayout = parseInt(values.buttonLayout);
+		if (!!values.buttonLayoutRight)
+			values.buttonLayoutRight = parseInt(values.buttonLayoutRight);
+		if (!!values.splashMode)
+			values.splashMode = parseInt(values.splashMode);
+		if (!!values.splashChoice)
+			values.splashChoice = parseInt(values.splashChoice);
+
+		await WebApi.setDisplayOptions(values, true)
+	}, [values.splashImage]);
 
 	return null;
 };
+
+const isButtonLayoutCustom = (values) => values.buttonLayout == 12 || values.buttonLayoutRight == 16
 
 export default function DisplayConfigPage() {
 	const [saveMessage, setSaveMessage] = useState('');
 
 	const onSuccess = async (values) => {
-		const success = await WebApi.setDisplayOptions(values).then(() => WebApi.setSplashImage(values));
+		const success = await WebApi.setDisplayOptions(values, false)
+		.then(() => WebApi.setSplashImage(values));
 		setSaveMessage(success ? 'Saved! Please Restart Your Device' : 'Unable to Save');
 	};
 
@@ -366,6 +430,96 @@ export default function DisplayConfigPage() {
 							>
 								{SPLASH_MODES.map((o, i) => <option key={`splashMode-option-${i}`} value={o.value}>{o.label}</option>)}
 							</FormSelect>
+						</Row>
+						{isButtonLayoutCustom(values) && <Row className="mb-3">
+							<FormLabel>Custom Button Layout Params</FormLabel>
+							<Col sm="6">
+								<Form.Group as={Row}
+									name="buttonLayoutCustomOptions">
+									<Form.Label column>Layout Left</Form.Label>
+									<FormSelect
+										name="buttonLayoutCustomOptions.params.layout"
+										className="form-select-sm"
+										groupClassName="col-sm-10 mb-1"
+										value={values.buttonLayoutCustomOptions.params.layout}
+										onChange={handleChange}
+									>
+										{BUTTON_LAYOUTS.slice(0, -1).map((o, i) => <option key={`buttonLayout-option-${i}`} value={o.value}>{o.label}</option>)}
+									</FormSelect>
+								</Form.Group>
+								<Form.Group as={Row}>
+									<Form.Label column>Start X</Form.Label>
+									<Col sm="10">
+										<Field column className="mb-1" name="buttonLayoutCustomOptions.params.startX"
+												type="number" as={Form.Control}/>
+									</Col>
+								</Form.Group>
+								<Form.Group as={Row}>
+									<Form.Label column>Start Y</Form.Label>
+									<Col sm="10">
+										<Field column className="mb-1" name="buttonLayoutCustomOptions.params.startY"
+												type="number" as={Form.Control}/>
+									</Col>
+								</Form.Group>	
+									<Form.Group as={Row}>
+									<Form.Label column>Button Radius</Form.Label>
+									<Col sm="10">
+										<Field column className="mb-1" name="buttonLayoutCustomOptions.params.buttonRadius"
+												type="number" as={Form.Control}/>
+									</Col>
+								</Form.Group>
+								<Form.Group as={Row}>
+									<Form.Label column>Button Padding</Form.Label>
+									<Col sm="10">
+										<Field column className="mb-1" name="buttonLayoutCustomOptions.params.buttonPadding"
+												type="number" as={Form.Control}/>
+									</Col>
+								</Form.Group>		
+							</Col>
+							<Col sm="6">
+								<Form.Group as={Row}>
+									<Form.Label column>Layout Right</Form.Label>
+								<FormSelect
+									name="buttonLayoutCustomOptions.paramsRight.layout"
+									className="form-select-sm"
+									groupClassName="col-sm-10 mb-1"
+									value={values.buttonLayoutCustomOptions.paramsRight.layout}
+									onChange={handleChange}
+								>
+									{BUTTON_LAYOUTS_RIGHT.slice(0, -1).map((o, i) => <option key={`buttonLayoutRight-option-${i}`} value={o.value}>{o.label}</option>)}
+								</FormSelect>
+								</Form.Group>
+								<Form.Group as={Row}>
+									<Form.Label column>Start X</Form.Label>
+									<Col sm="10">
+										<Field column className="mb-1" name="buttonLayoutCustomOptions.paramsRight.startX"
+												type="number" as={Form.Control}/>
+									</Col>
+								</Form.Group>
+								<Form.Group as={Row}>
+									<Form.Label column>Start Y</Form.Label>
+									<Col sm="10">
+										<Field column className="mb-1" name="buttonLayoutCustomOptions.paramsRight.startY"
+												type="number" as={Form.Control}/>
+									</Col>
+								</Form.Group>	
+									<Form.Group as={Row}>
+									<Form.Label column>Button Radius</Form.Label>
+									<Col sm="10">
+										<Field column className="mb-1" name="buttonLayoutCustomOptions.paramsRight.buttonRadius"
+												type="number" as={Form.Control}/>
+									</Col>
+								</Form.Group>
+								<Form.Group as={Row}>
+									<Form.Label column>Button Padding</Form.Label>
+									<Col sm="10">
+										<Field column className="mb-1" name="buttonLayoutCustomOptions.paramsRight.buttonPadding"
+												type="number" as={Form.Control}/>
+									</Col>
+								</Form.Group>
+							</Col>
+						</Row>}
+						<Row className="mb-3">
 							<FormSelect
 									label="Splash Duration"
 									name="splashDuration"
