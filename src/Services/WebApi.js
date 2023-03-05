@@ -35,6 +35,8 @@ async function getDisplayOptions() {
 		.then((response) => {
 			if (response.data.i2cAddress)
 				response.data.i2cAddress = '0x' + response.data.i2cAddress.toString(16);
+			response.data.splashDuration = response.data.splashDuration / 1000; // milliseconds to seconds 
+			response.data.displaySaverTimeout = response.data.displaySaverTimeout / 60000; // milliseconds to minutes 
 
 			return response.data;
 		})
@@ -47,6 +49,8 @@ async function setDisplayOptions(options, isPreview) {
 	newOptions.buttonLayout = parseInt(options.buttonLayout);
 	newOptions.buttonLayoutRight = parseInt(options.buttonLayoutRight);
 	newOptions.splashMode = parseInt(options.splashMode);
+	newOptions.splashDuration = parseInt(options.splashDuration) * 1000; // seconds to milliseconds
+	newOptions.displaySaverTimeout = parseInt(options.displaySaverTimeout) * 60000; // minutes to milliseconds
 	newOptions.splashChoice = parseInt(options.splashChoice);
 	newOptions.buttonLayoutCustomOptions.params.layout = parseInt(options.buttonLayoutCustomOptions.params.layout);
 	newOptions.buttonLayoutCustomOptions.paramsRight.layout = parseInt(options.buttonLayoutCustomOptions.paramsRight.layout);
