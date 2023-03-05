@@ -27,7 +27,7 @@ function correctincludes() {
 }
 
 function makefsdata() {
-      exec(path.normalize(`${root}/tools/makefsdata`), [path.normalize(`${rootwww}/build`), '-defl:1', '-xc:png,ico,json', `-f:`+ path.normalize(`${root}/lib/httpd/fsdata.c`)], function(error, data) {
+      exec(path.normalize(process.platform !== "darwin" ? `${root}/tools/makefsdata` : `${root}/tools/makefsdata.darwin`), [path.normalize(`${rootwww}/build`), '-defl:1', '-xc:png,ico,json', `-f:`+ path.normalize(`${root}/lib/httpd/fsdata.c`)], function(error, data) {
         if (error) {
             console.error(error);
         } else {
