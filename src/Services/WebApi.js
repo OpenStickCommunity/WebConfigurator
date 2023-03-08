@@ -44,7 +44,7 @@ async function getDisplayOptions() {
 }
 
 async function setDisplayOptions(options, isPreview) {
-	let newOptions = { ...options };
+	let newOptions = sanitizeRequest(options);
 	newOptions.i2cAddress = parseInt(options.i2cAddress);
 	newOptions.buttonLayout = parseInt(options.buttonLayout);
 	newOptions.buttonLayoutRight = parseInt(options.buttonLayoutRight);
@@ -52,9 +52,13 @@ async function setDisplayOptions(options, isPreview) {
 	newOptions.splashDuration = parseInt(options.splashDuration) * 1000; // seconds to milliseconds
 	newOptions.displaySaverTimeout = parseInt(options.displaySaverTimeout) * 60000; // minutes to milliseconds
 	newOptions.splashChoice = parseInt(options.splashChoice);
-	newOptions.buttonLayoutCustomOptions.params.layout = parseInt(options.buttonLayoutCustomOptions.params.layout);
-	newOptions.buttonLayoutCustomOptions.paramsRight.layout = parseInt(options.buttonLayoutCustomOptions.paramsRight.layout);
-	newOptions.splashImage = '';
+	
+	if (newOptions.buttonLayoutCustomOptions) {
+		newOptions.buttonLayoutCustomOptions.params.layout = parseInt(options.buttonLayoutCustomOptions?.params?.layout);
+		newOptions.buttonLayoutCustomOptions.paramsRight.layout = parseInt(options.buttonLayoutCustomOptions?.paramsRight?.layout);
+	}
+
+	delete newOptions.splashImage;
 	const url = !isPreview ? `${baseUrl}/api/setDisplayOptions` : `${baseUrl}/api/setPreviewDisplayOptions`;
 	return axios.post(url, newOptions)
 		.then((response) => {
@@ -89,7 +93,7 @@ async function getGamepadOptions() {
 }
 
 async function setGamepadOptions(options) {
-	return axios.post(`${baseUrl}/api/setGamepadOptions`, options)
+	return axios.post(`${baseUrl}/api/setGamepadOptions`, sanitizeRequest(options))
 		.then((response) => {
 			console.log(response.data);
 			return true;
@@ -107,7 +111,7 @@ async function getLedOptions() {
 }
 
 async function setLedOptions(options) {
-	return axios.post(`${baseUrl}/api/setLedOptions`, options)
+	return axios.post(`${baseUrl}/api/setLedOptions`, sanitizeRequest(options))
 		.then((response) => {
 			console.log(response.data);
 			return true;
@@ -134,7 +138,7 @@ async function setPinMappings(mappings) {
 	let data = {};
 	Object.keys(mappings).map((button, i) => data[button] = mappings[button].pin);
 
-	return axios.post(`${baseUrl}/api/setPinMappings`, data)
+	return axios.post(`${baseUrl}/api/setPinMappings`, sanitizeRequest(data))
 		.then((response) => {
 			console.log(response.data);
 			return true;
@@ -152,7 +156,7 @@ async function getAddonsOptions() {
 }
 
 async function setAddonsOptions(options) {
-	return axios.post(`${baseUrl}/api/setAddonsOptions`, options)
+	return axios.post(`${baseUrl}/api/setAddonsOptions`, sanitizeRequest(options))
 		.then((response) => {
 			console.log(response.data);
 			return true;
@@ -179,6 +183,12 @@ async function reboot() {
 	return axios.get(`${baseUrl}/api/reboot`)
 		.then((response) => response.data)
 		.catch(console.error);
+}
+
+function sanitizeRequest(request) {
+	const newRequest = {...request};
+	delete newRequest.usedPins;
+	return newRequest;
 }
 
 const WebApi = {

@@ -56,12 +56,12 @@ export default function BackupPage() {
 
 		let validated = {};
 		for (const [key, value] of Object.entries(data)) {
-			if (nextData[key] && typeof value == typeof nextData[key]) {
-				if (typeof nextData[key] == "object") {
-					validated[key] = validateValues(value, nextData[key]);
+			const nextDataValue = nextData[key];
+			if ((nextDataValue != null || nextDataValue != undefined) && typeof value == typeof nextDataValue) {
+				if (typeof nextDataValue == "object") {
+					validated[key] = validateValues(value, nextDataValue);
 				} else {
-					validated[key] = nextData[key];
-
+					validated[key] = nextDataValue;
 				}
 			}
 		}
@@ -88,7 +88,7 @@ export default function BackupPage() {
 	const handleSave = async (values) => {
 		let exportData = {};
 		for (const [key, value] of Object.entries(checkValues)) {
-			if (key.match("export_") && value) {
+			if (key.match("export_") && (value != null || value != undefined)) {
 				let skey = key.slice(7, key.length);
 				if (optionState[skey] != undefined || optionState[skey] != null) {
 					exportData[skey] = optionState[skey];
@@ -158,7 +158,7 @@ export default function BackupPage() {
 				// filter by known values
 				let filteredData = {};
 				for (const [key, value] of Object.entries(checkValues)) {
-					if (key.match("import_") && value) {
+					if (key.match("import_") && (value != null || value != undefined)) {
 						let skey = key.slice(7, key.length);
 						if (newData[skey] != undefined || newData[skey] != null) {
 							filteredData[skey] = newData[skey];
