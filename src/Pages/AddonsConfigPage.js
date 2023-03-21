@@ -31,6 +31,11 @@ const DUAL_COMBINE_MODES = [
 	{ label: 'None', value: 3 }
 ];
 
+const SHMUP_MIXED_MODES = [
+	{ label: 'Turbo Priority', value: 0 },
+	{ label: 'Charge Priority', value: 1}
+];
+
 const ANALOG_PINS = [
 	-1,26,27,28
 ];
@@ -56,6 +61,12 @@ const BUTTON_MASKS = [
 	{ label: 'Left',  value:  (1 << 16)  },
 	{ label: 'Right', value:  (1 << 17)  },
 ]
+
+const REVERSE_ACTION = [
+	{ label: 'Disable', value: 0 },
+	{ label: 'Enable', value: 1 },
+	{ label: 'Neutral', value: 2 },
+];
 
 const schema = yup.object().shape({
 	turboPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Turbo Pin'),
@@ -85,6 +96,21 @@ const schema = yup.object().shape({
 	extraButtonPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Extra Button Pin'),
 	extraButtonMap : yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('Extra Button Map'),
 	playerNumber: yup.number().required().min(1).max(4).label('Player Number'),
+	shmupMode: yup.number().required().label('Shmup Mode Enabled'),
+	shmupMixMode: yup.number().required().oneOf(DUAL_STICK_MODES.map(o => o.value)).label('Shmup Mix Priority'),
+	shmupAlwaysOn1: yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('Turbo-Button 1 (Always On)'),
+	shmupAlwaysOn2: yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('Turbo-Button 2 (Always On)'),
+	shmupAlwaysOn3: yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('Turbo-Button 3 (Always On)'),
+	shmupAlwaysOn4: yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('Turbo-Button 4 (Always On)'),
+	pinShmupBtn1: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Charge Shot 1 Pin'),
+	pinShmupBtn2: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Charge Shot 2 Pin'),
+	pinShmupBtn3: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Chrage Shot 3 Pin'),
+	pinShmupBtn4: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Charge Shot 4 Pin'),
+	shmupBtnMask1: yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('Charge Shot Button 1 Map'),
+	shmupBtnMask2: yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('Charge Shot Button 2 Map'),
+	shmupBtnMask3: yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('Charge Shot Button 3 Map'),
+	shmupBtnMask4: yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('Charge Shot Button 4 Map'),
+	pinShmupDial: yup.number().required().test('', '${originalValue} is unavailable/already assigned!', (value) => usedPins.indexOf(value) === -1).label('Shmup Dial Pin'),
 	AnalogInputEnabled: yup.number().required().label('Analog Input Enabled'),
 	BoardLedAddonEnabled: yup.number().required().label('Board LED Add-On Enabled'),
 	BuzzerSpeakerAddonEnabled: yup.number().required().label('Buzzer Speaker Add-On Enabled'),
@@ -126,6 +152,21 @@ const defaultValues = {
 	extrabuttonPin: -1,
 	extraButtonMap: 0,
 	playerNumber: 1,
+	shmupMode: 0,
+	shmupMixMode: 0,
+	shmupAlwaysOn1: 0,
+	shmupAlwaysOn2: 0,
+	shmupAlwaysOn3: 0,
+	shmupAlwaysOn4: 0,
+	pinShmupBtn1: -1,
+	pinShmupBtn2: -1,
+	pinShmupBtn3: -1,
+	pinShmupBtn4: -1,
+	shmupBtnMask1: 0,
+	shmupBtnMask2: 0,
+	shmupBtnMask3: 0,
+	shmupBtnMask4: 0,
+	pinShmupDial: -1,
 	AnalogInputEnabled: 0,
 	BoardLedAddonEnabled: 0,
 	BuzzerSpeakerAddonEnabled: 0,
@@ -138,12 +179,6 @@ const defaultValues = {
 	ReverseInputEnabled: 0,
 	TurboInputEnabled: 0
 };
-
-const REVERSE_ACTION = [
-	{ label: 'Disable', value: 0 },
-	{ label: 'Enable', value: 1 },
-	{ label: 'Neutral', value: 2 },
-];
 
 let usedPins = [];
 
@@ -219,7 +254,37 @@ const FormContext = () => {
 		if (!!values.extrabuttonPin)
 			values.extrabuttonPin = parseInt(values.extrabuttonPin);
 		if (!!values.playerNumber)
-			values.playerNumber = parseInt(values.playerNumber);	
+			values.playerNumber = parseInt(values.playerNumber);
+		if (!!values.shmupMode)
+			values.shmupMode = parseInt(values.shmupMode);
+		if (!!values.shmupMixMode)
+			values.shmupMixMode = parseInt(values.shmupMixMode);
+		if (!!values.shmupAlwaysOn1)
+			values.shmupAlwaysOn1 = parseInt(values.shmupAlwaysOn1);
+		if (!!values.shmupAlwaysOn2)
+			values.shmupAlwaysOn2 = parseInt(values.shmupAlwaysOn2);
+		if (!!values.shmupAlwaysOn3)
+			values.shmupAlwaysOn3 = parseInt(values.shmupAlwaysOn3);
+		if (!!values.shmupAlwaysOn4)
+			values.shmupAlwaysOn4 = parseInt(values.shmupAlwaysOn4);
+		if (!!values.pinShmupBtn1)
+			values.pinShmupBtn1 = parseInt(values.pinShmupBtn1);
+		if (!!values.pinShmupBtn2)
+			values.pinShmupBtn2 = parseInt(values.pinShmupBtn2);
+		if (!!values.pinShmupBtn3)
+			values.pinShmupBtn3 = parseInt(values.pinShmupBtn3);
+		if (!!values.pinShmupBtn4)
+			values.pinShmupBtn4 = parseInt(values.pinShmupBtn4);
+		if (!!values.shmupBtnMask1)
+			values.shmupBtnMask1 = parseInt(values.shmupBtnMask1);
+		if (!!values.shmupBtnMask2)
+			values.shmupBtnMask2 = parseInt(values.shmupBtnMask2);
+		if (!!values.shmupBtnMask3)
+			values.shmupBtnMask3 = parseInt(values.shmupBtnMask3);
+		if (!!values.shmupBtnMask4)
+			values.shmupBtnMask4 = parseInt(values.shmupBtnMask4);
+		if (!!values.pinShmupDial)
+			values.pinShmupDial = parseInt(values.pinShmupDial);
 		if (!!values.AnalogInputEnabled)
 			values.AnalogInputEnabled = parseInt(values.AnalogInputEnabled);
 		if (!!values.BoardLedAddonEnabled)
@@ -413,6 +478,193 @@ export default function AddonsConfigPage() {
 								min={2}
 								max={30}
 							/>
+							<FormSelect
+								label="Turbo Dial (ADC ONLY)"
+								name="pinShmupDial"
+								className="form-select-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.pinShmupDial}
+								error={errors.pinShmupDial}
+								isInvalid={errors.pinShmupDial}
+								onChange={handleChange}
+							>
+								{ANALOG_PINS.map((i) => <option key={`turboDialPins-option-${i}`} value={i}>{i}</option>)}
+							</FormSelect>
+							<FormCheck
+								label="SHMUP MODE"
+								type="switch"
+								id="ShmupMode"
+								error={false}
+								isInvalid={false}
+								checked={Boolean(values.shmupMode)}
+								onChange={(e) => {handleCheckbox("shmupMode", values); handleChange(e);}}
+							/>
+							<div
+								id="ShmupOptions"
+								hidden={!values.shmupMode}>
+								<Row class="mb-3">
+									<FormSelect
+										label="Turbo Always On 1"
+										name="shmupAlwaysOn1"
+										className="form-select-sm"
+										groupClassName="col-sm-3 mb-3"
+										value={values.shmupAlwaysOn1}
+										error={errors.shmupAlwaysOn1}
+										isInvalid={errors.shmupAlwaysOn1}
+										onChange={handleChange}
+									>
+										{BUTTON_MASKS.map((o, i) => <option key={`shmupAlwaysOn1-option-${i}`} value={o.value}>{o.label}</option>)}
+									</FormSelect>
+									<FormSelect
+										label="Turbo Always On 2"
+										name="shmupAlwaysOn2"
+										className="form-select-sm"
+										groupClassName="col-sm-3 mb-3"
+										value={values.shmupAlwaysOn2}
+										error={errors.shmupAlwaysOn2}
+										isInvalid={errors.shmupAlwaysOn2}
+										onChange={handleChange}
+									>
+										{BUTTON_MASKS.map((o, i) => <option key={`shmupAlwaysOn2-option-${i}`} value={o.value}>{o.label}</option>)}
+									</FormSelect>
+									<FormSelect
+										label="Turbo Always On 3"
+										name="shmupAlwaysOn3"
+										className="form-select-sm"
+										groupClassName="col-sm-3 mb-3"
+										value={values.shmupAlwaysOn3}
+										error={errors.shmupAlwaysOn3}
+										isInvalid={errors.shmupAlwaysOn3}
+										onChange={handleChange}
+									>
+										{BUTTON_MASKS.map((o, i) => <option key={`shmupAlwaysOn3-option-${i}`} value={o.value}>{o.label}</option>)}
+									</FormSelect>
+									<FormSelect
+										label="Turbo Always On 4"
+										name="shmupAlwaysOn4"
+										className="form-select-sm"
+										groupClassName="col-sm-3 mb-3"
+										value={values.shmupAlwaysOn4}
+										error={errors.shmupAlwaysOn4}
+										isInvalid={errors.shmupAlwaysOn4}
+										onChange={handleChange}
+									>
+										{BUTTON_MASKS.map((o, i) => <option key={`shmupAlwaysOn4-option-${i}`} value={o.value}>{o.label}</option>)}
+									</FormSelect>
+								</Row>
+								<Row class="mb-3">
+									<FormControl type="number"
+										label="Charge Button 1 Pin"
+										name="pinShmupBtn1"
+										className="form-control-sm"
+										groupClassName="col-sm-3 mb-3"
+										value={values.pinShmupBtn1}
+										error={errors.pinShmupBtn1}
+										isInvalid={errors.pinShmupBtn1}
+										onChange={handleChange}
+										min={-1}
+										max={29}
+									/>
+									<FormControl type="number"
+										label="Charge Button 2 Pin"
+										name="pinShmupBtn1"
+										className="form-control-sm"
+										groupClassName="col-sm-3 mb-3"
+										value={values.pinShmupBtn2}
+										error={errors.pinShmupBtn2}
+										isInvalid={errors.pinShmupBtn2}
+										onChange={handleChange}
+										min={-1}
+										max={29}
+									/>
+									<FormControl type="number"
+										label="Charge Button 3 Pin"
+										name="pinShmupBtn3"
+										className="form-control-sm"
+										groupClassName="col-sm-3 mb-3"
+										value={values.pinShmupBtn3}
+										error={errors.pinShmupBtn3}
+										isInvalid={errors.pinShmupBtn3}
+										onChange={handleChange}
+										min={-1}
+										max={29}
+									/>
+									<FormControl type="number"
+										label="Charge Button 4 Pin"
+										name="pinShmupBtn4"
+										className="form-control-sm"
+										groupClassName="col-sm-3 mb-3"
+										value={values.pinShmupBtn4}
+										error={errors.pinShmupBtn4}
+										isInvalid={errors.pinShmupBtn4}
+										onChange={handleChange}
+										min={-1}
+										max={29}
+									/>
+								</Row>
+								<Row class="mb-3">
+									<FormSelect
+										label="Charge Button 1 Assignment"
+										name="shmupBtnMask1"
+										className="form-select-sm"
+										groupClassName="col-sm-3 mb-3"
+										value={values.shmupBtnMask1}
+										error={errors.shmupBtnMask1}
+										isInvalid={errors.shmupBtnMask1}
+										onChange={handleChange}
+									>
+										{BUTTON_MASKS.map((o, i) => <option key={`shmupBtnMask1-option-${i}`} value={o.value}>{o.label}</option>)}
+									</FormSelect>
+									<FormSelect
+										label="Charge Button 2 Assignment"
+										name="shmupBtnMask1"
+										className="form-select-sm"
+										groupClassName="col-sm-3 mb-3"
+										value={values.shmupBtnMask2}
+										error={errors.shmupBtnMask2}
+										isInvalid={errors.shmupBtnMask2}
+										onChange={handleChange}
+									>
+										{BUTTON_MASKS.map((o, i) => <option key={`shmupBtnMask2-option-${i}`} value={o.value}>{o.label}</option>)}
+									</FormSelect>
+									<FormSelect
+										label="Charge Button 3 Assignment"
+										name="shmupBtnMask1"
+										className="form-select-sm"
+										groupClassName="col-sm-3 mb-3"
+										value={values.shmupBtnMask3}
+										error={errors.shmupBtnMask3}
+										isInvalid={errors.shmupBtnMask3}
+										onChange={handleChange}
+									>
+										{BUTTON_MASKS.map((o, i) => <option key={`shmupBtnMask3-option-${i}`} value={o.value}>{o.label}</option>)}
+									</FormSelect>
+									<FormSelect
+										label="Charge Button 4 Assignment"
+										name="shmupBtnMask1"
+										className="form-select-sm"
+										groupClassName="col-sm-3 mb-3"
+										value={values.shmupBtnMask4}
+										error={errors.shmupBtnMask4}
+										isInvalid={errors.shmupBtnMask4}
+										onChange={handleChange}
+									>
+										{BUTTON_MASKS.map((o, i) => <option key={`shmupBtnMask4-option-${i}`} value={o.value}>{o.label}</option>)}
+									</FormSelect>
+								</Row>
+								<FormSelect
+									label="Simultaneous Priority Mode"
+									name="shmupMixMode"
+									className="form-select-sm"
+									groupClassName="col-sm-3 mb-3"
+									value={values.shmupMixMode}
+									error={errors.shmupMixMode}
+									isInvalid={errors.shmupMixMode}
+									onChange={handleChange}
+								>
+									{SHMUP_MIXED_MODES.map((o, i) => <option key={`button-shmupMixedMode-option-${i}`} value={o.value}>{o.label}</option>)}
+								</FormSelect>
+							</div>
 						</Row>
 						</div>
 						<FormCheck
