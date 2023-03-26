@@ -8,6 +8,12 @@ import BUTTONS from '../Data/Buttons.json';
 import './Navigation.scss';
 import WebApi from '../Services/WebApi';
 
+const BOOT_MODES = {
+	GAMEPAD: 0,
+	WEBCONFIG: 1,
+	BOOTSEL: 2
+};
+
 const Navigation = (props) => {
 	const { buttonLabels, setButtonLabels } = useContext(AppContext);
 
@@ -16,11 +22,11 @@ const Navigation = (props) => {
 
 	const handleClose = () => setShow(false);
 	const handleShow = () => { setIsRebooting(null); setShow(true); }
-	const handleReboot = async () => {
+	const handleReboot = async (bootMode) => {
 		if (isRebooting == false) { setShow(false); return; }
-		setIsRebooting(true);
-		await WebApi.reboot();
-		setIsRebooting(false);
+		setIsRebooting(bootMode);
+		await WebApi.reboot(bootMode);
+		setIsRebooting(-1);
 	};
 
 	const updateButtonLabels = (e) => {
@@ -74,16 +80,19 @@ const Navigation = (props) => {
 
 			<Modal show={show} onHide={handleClose}>
 				<Modal.Header closeButton>
-					<Modal.Title>Reboot controller?</Modal.Title>
+					<Modal.Title>Reboot?</Modal.Title>
 				</Modal.Header>
-				<Modal.Body>{ isRebooting == false ? "Done rebooting, this browser tab can now be closed."
-								: "Reboot to regular controller mode to play?" }</Modal.Body>
+				<Modal.Body>{ isRebooting === -1 ? "Done rebooting, this browser tab can now be closed."
+								: "Select a mode to reboot to" }</Modal.Body>
 				<Modal.Footer>
-					<Button variant="secondary" onClick={handleClose}>
-						No
+					<Button variant="secondary" onClick={() => handleReboot(BOOT_MODES.BOOTSEL)}>
+						{ isRebooting !== BOOT_MODES.BOOTSEL ? "USB (BOOTSEL)" : (isRebooting ? "Rebooting" : "Done!") }
 					</Button>
-					<Button variant="primary" onClick={handleReboot}>
-						{ isRebooting == null ? "Yes" : (isRebooting ? "Rebooting" : "Done!") }
+					<Button variant="primary" onClick={() => handleReboot(BOOT_MODES.WEBCONFIG)}>
+						{ isRebooting !== BOOT_MODES.WEBCONFIG ? "Web-config" : (isRebooting ? "Rebooting" : "Done!") }
+					</Button>
+					<Button variant="success" onClick={() => handleReboot(BOOT_MODES.GAMEPAD)}>
+						{ isRebooting !== BOOT_MODES.GAMEPAD ? "Controller" : (isRebooting ? "Rebooting" : "Done!") }
 					</Button>
 				</Modal.Footer>
 			</Modal>
