@@ -179,8 +179,8 @@ async function getMemoryReport() {
 		.catch(console.error);
 }
 
-async function reboot() {
-	return axios.get(`${baseUrl}/api/reboot`)
+async function reboot(bootMode) {
+	return axios.post(`${baseUrl}/api/reboot`, { bootMode })
 		.then((response) => response.data)
 		.catch(console.error);
 }
