@@ -60,6 +60,20 @@ const BUTTON_MASKS = [
 	{ label: 'Down',  value:  (1 << 15)  },
 	{ label: 'Left',  value:  (1 << 16)  },
 	{ label: 'Right', value:  (1 << 17)  },
+];
+
+const TURBO_MASKS = [
+	{ label: 'None',  value:  0          },
+	{ label: 'B1',    value:  (1 << 0)   },
+	{ label: 'B2',    value:  (1 << 1)   },
+	{ label: 'B3',    value:  (1 << 2)   },
+	{ label: 'B4',    value:  (1 << 3)   },
+	{ label: 'L1',    value:  (1 << 4)   },
+	{ label: 'R1',    value:  (1 << 5)   },
+	{ label: 'L2',    value:  (1 << 6)   },
+	{ label: 'R2',    value:  (1 << 7)   },
+	{ label: 'L3',    value:  (1 << 10)  },
+	{ label: 'R3',    value:  (1 << 11)  }
 ]
 
 const REVERSE_ACTION = [
@@ -104,7 +118,7 @@ const schema = yup.object().shape({
 	shmupAlwaysOn4: yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('Turbo-Button 4 (Always On)'),
 	pinShmupBtn1: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Charge Shot 1 Pin'),
 	pinShmupBtn2: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Charge Shot 2 Pin'),
-	pinShmupBtn3: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Chrage Shot 3 Pin'),
+	pinShmupBtn3: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Charge Shot 3 Pin'),
 	pinShmupBtn4: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Charge Shot 4 Pin'),
 	shmupBtnMask1: yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('Charge Shot Button 1 Map'),
 	shmupBtnMask2: yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('Charge Shot Button 2 Map'),
@@ -513,7 +527,7 @@ export default function AddonsConfigPage() {
 										isInvalid={errors.shmupAlwaysOn1}
 										onChange={handleChange}
 									>
-										{BUTTON_MASKS.map((o, i) => <option key={`shmupAlwaysOn1-option-${i}`} value={o.value}>{o.label}</option>)}
+										{TURBO_MASKS.map((o, i) => <option key={`shmupAlwaysOn1-option-${i}`} value={o.value}>{o.label}</option>)}
 									</FormSelect>
 									<FormSelect
 										label="Turbo Always On 2"
@@ -525,7 +539,7 @@ export default function AddonsConfigPage() {
 										isInvalid={errors.shmupAlwaysOn2}
 										onChange={handleChange}
 									>
-										{BUTTON_MASKS.map((o, i) => <option key={`shmupAlwaysOn2-option-${i}`} value={o.value}>{o.label}</option>)}
+										{TURBO_MASKS.map((o, i) => <option key={`shmupAlwaysOn2-option-${i}`} value={o.value}>{o.label}</option>)}
 									</FormSelect>
 									<FormSelect
 										label="Turbo Always On 3"
@@ -537,7 +551,7 @@ export default function AddonsConfigPage() {
 										isInvalid={errors.shmupAlwaysOn3}
 										onChange={handleChange}
 									>
-										{BUTTON_MASKS.map((o, i) => <option key={`shmupAlwaysOn3-option-${i}`} value={o.value}>{o.label}</option>)}
+										{TURBO_MASKS.map((o, i) => <option key={`shmupAlwaysOn3-option-${i}`} value={o.value}>{o.label}</option>)}
 									</FormSelect>
 									<FormSelect
 										label="Turbo Always On 4"
@@ -549,7 +563,7 @@ export default function AddonsConfigPage() {
 										isInvalid={errors.shmupAlwaysOn4}
 										onChange={handleChange}
 									>
-										{BUTTON_MASKS.map((o, i) => <option key={`shmupAlwaysOn4-option-${i}`} value={o.value}>{o.label}</option>)}
+										{TURBO_MASKS.map((o, i) => <option key={`shmupAlwaysOn4-option-${i}`} value={o.value}>{o.label}</option>)}
 									</FormSelect>
 								</Row>
 								<Row class="mb-3">
@@ -613,7 +627,7 @@ export default function AddonsConfigPage() {
 										isInvalid={errors.shmupBtnMask1}
 										onChange={handleChange}
 									>
-										{BUTTON_MASKS.map((o, i) => <option key={`shmupBtnMask1-option-${i}`} value={o.value}>{o.label}</option>)}
+										{TURBO_MASKS.map((o, i) => <option key={`shmupBtnMask1-option-${i}`} value={o.value}>{o.label}</option>)}
 									</FormSelect>
 									<FormSelect
 										label="Charge Button 2 Assignment"
@@ -625,7 +639,7 @@ export default function AddonsConfigPage() {
 										isInvalid={errors.shmupBtnMask2}
 										onChange={handleChange}
 									>
-										{BUTTON_MASKS.map((o, i) => <option key={`shmupBtnMask2-option-${i}`} value={o.value}>{o.label}</option>)}
+										{TURBO_MASKS.map((o, i) => <option key={`shmupBtnMask2-option-${i}`} value={o.value}>{o.label}</option>)}
 									</FormSelect>
 									<FormSelect
 										label="Charge Button 3 Assignment"
@@ -637,7 +651,7 @@ export default function AddonsConfigPage() {
 										isInvalid={errors.shmupBtnMask3}
 										onChange={handleChange}
 									>
-										{BUTTON_MASKS.map((o, i) => <option key={`shmupBtnMask3-option-${i}`} value={o.value}>{o.label}</option>)}
+										{TURBO_MASKS.map((o, i) => <option key={`shmupBtnMask3-option-${i}`} value={o.value}>{o.label}</option>)}
 									</FormSelect>
 									<FormSelect
 										label="Charge Button 4 Assignment"
@@ -649,7 +663,7 @@ export default function AddonsConfigPage() {
 										isInvalid={errors.shmupBtnMask4}
 										onChange={handleChange}
 									>
-										{BUTTON_MASKS.map((o, i) => <option key={`shmupBtnMask4-option-${i}`} value={o.value}>{o.label}</option>)}
+										{TURBO_MASKS.map((o, i) => <option key={`shmupBtnMask4-option-${i}`} value={o.value}>{o.label}</option>)}
 									</FormSelect>
 								</Row>
 								<FormSelect
