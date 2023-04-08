@@ -156,6 +156,8 @@ app.get('/api/getAddonsOptions', (req, res) => {
 		turboPinLED: -1,
 		sliderLSPin: -1,
 		sliderRSPin: -1,
+		sliderSOCDUpPin: -1,
+		sliderSOCDSecondPin: -1,
 		turboShotCount: 20,
 		reversePin: -1,
 		reversePinLED: -1,
