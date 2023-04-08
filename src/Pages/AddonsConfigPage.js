@@ -508,6 +508,8 @@ export default function AddonsConfigPage() {
 								label="SHMUP MODE"
 								type="switch"
 								id="ShmupMode"
+								className="col-sm-3 ms-2"
+								groupClassName="col-sm-3 mb-3"
 								error={false}
 								isInvalid={false}
 								checked={Boolean(values.shmupMode)}
@@ -581,7 +583,7 @@ export default function AddonsConfigPage() {
 									/>
 									<FormControl type="number"
 										label="Charge Button 2 Pin"
-										name="pinShmupBtn1"
+										name="pinShmupBtn2"
 										className="form-control-sm"
 										groupClassName="col-sm-3 mb-3"
 										value={values.pinShmupBtn2}
