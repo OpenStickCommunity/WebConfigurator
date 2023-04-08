@@ -87,6 +87,8 @@ const schema = yup.object().shape({
 	turboPinLED: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Turbo Pin LED'),
 	sliderLSPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Slider LS Pin'),
 	sliderRSPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Slider RS Pin'),
+	sliderSOCDUpPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Slider SOCD Up Priority Pin'),
+	sliderSOCDSecondPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Slider SOCD Second Priority Pin'),
 	turboShotCount: yup.number().required().min(5).max(30).label('Turbo Shot Count'),
 	reversePin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Reverse Pin'),
 	reversePinLED: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Reverse Pin LED'),
@@ -133,6 +135,7 @@ const schema = yup.object().shape({
 	ExtraButtonAddonEnabled: yup.number().required().label('Extra Button Add-On Enabled'),
 	I2CAnalog1219InputEnabled: yup.number().required().label('I2C Analog1219 Input Enabled'),
 	JSliderInputEnabled: yup.number().required().label('JSlider Input Enabled'),
+	SliderSOCDInputEnabled: yup.number().required().label('Slider SOCD Input Enabled'),
 	PlayerNumAddonEnabled: yup.number().required().label('Player Number Add-On Enabled'),
 	ReverseInputEnabled: yup.number().required().label('Reverse Input Enabled'),
 	TurboInputEnabled: yup.number().required().label('Turbo Input Enabled')
@@ -143,6 +146,8 @@ const defaultValues = {
 	turboPinLED: -1,
 	sliderLSPin: -1,
 	sliderRSPin: -1,
+	sliderSOCDUpPin: -1,
+	sliderSOCDSecondPin: -1,
 	turboShotCount: 5,
 	reversePin: -1,
 	reversePinLED: -1,
@@ -189,6 +194,7 @@ const defaultValues = {
 	ExtraButtonAddonEnabled: 0,
 	I2CAnalog1219InputEnabled: 0,
 	JSliderInputEnabled: 0,
+	SliderSOCDInputEnabled: 0,
 	PlayerNumAddonEnabled: 0,
 	ReverseInputEnabled: 0,
 	TurboInputEnabled: 0
@@ -217,6 +223,10 @@ const FormContext = () => {
 			values.sliderLSPin = parseInt(values.sliderLSPin);
 		if (!!values.sliderRSPin)
 			values.sliderRSPin = parseInt(values.sliderRSPin);
+		if (!!values.sliderSOCDUpPin)
+			values.sliderSOCDUpPin = parseInt(values.sliderSOCDUpPin);
+		if (!!values.sliderSOCDSecondPin)
+			values.sliderSOCDSecondPin = parseInt(values.sliderSOCDSecondPin);
 		if (!!values.turboShotCount)
 			values.turboShotCount = parseInt(values.turboShotCount);
 		if (!!values.reversePin)
@@ -315,6 +325,8 @@ const FormContext = () => {
 			values.I2CAnalog1219InputEnabled = parseInt(values.I2CAnalog1219InputEnabled);
 		if (!!values.JSliderInputEnabled)
 			values.JSliderInputEnabled = parseInt(values.JSliderInputEnabled);
+		if (!!values.SliderSOCDInputEnabled)
+			values.SliderSOCDInputEnabled = parseInt(values.SliderSOCDInputEnabled);
 		if (!!values.PlayerNumAddonEnabled)
 			values.PlayerNumAddonEnabled = parseInt(values.PlayerNumAddonEnabled);
 		if (!!values.ReverseInputEnabled)
@@ -1112,6 +1124,48 @@ export default function AddonsConfigPage() {
 							isInvalid={false}
 							checked={Boolean(values.PlayerNumAddonEnabled)}
 							onChange={(e) => {handleCheckbox("PlayerNumAddonEnabled", values); handleChange(e);}}
+						/>
+					</Section>
+					<Section title="SOCD Selection Slider">
+						<div
+							id="SliderSOCDInputOptions"
+							hidden={!values.SliderSOCDInputEnabled}>
+						<Row class="mb-3">
+							<FormControl type="number"
+								label="Slider SOCD Up Priority Pin"
+								name="sliderSOCDUpPin"
+								className="form-select-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.sliderSOCDUpPin}
+								error={errors.sliderSOCDUpPin}
+								isInvalid={errors.sliderSOCDUpPin}
+								onChange={handleChange}
+								min={-1}
+								max={29}
+							/>
+							<FormControl type="number"
+								label="Slider SOCD Second Input Priority Pin"
+								name="sliderSOCDSecondPin"
+								className="form-control-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.sliderSOCDSecondPin}
+								error={errors.sliderSOCDSecondPin}
+								isInvalid={errors.sliderSOCDSecondPin}
+								onChange={handleChange}
+								min={-1}
+								max={29}
+							/>
+						</Row>
+						</div>
+						<FormCheck
+							label="Enabled"
+							type="switch"
+							id="SliderSOCDInputButton"
+							reverse="true"
+							error={false}
+							isInvalid={false}
+							checked={Boolean(values.SliderSOCDInputEnabled)}
+							onChange={(e) => {handleCheckbox("SliderSOCDInputEnabled", values); handleChange(e);}}
 						/>
 					</Section>
 					<div className="mt-3">
