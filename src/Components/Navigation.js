@@ -23,7 +23,7 @@ const Navigation = (props) => {
 	const handleClose = () => setShow(false);
 	const handleShow = () => { setIsRebooting(null); setShow(true); }
 	const handleReboot = async (bootMode) => {
-		if (isRebooting == false) { setShow(false); return; }
+		if (isRebooting === false) { setShow(false); return; }
 		setIsRebooting(bootMode);
 		await WebApi.reboot(bootMode);
 		setIsRebooting(-1);

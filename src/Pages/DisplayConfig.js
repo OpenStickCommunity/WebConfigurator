@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Button, Form, Row, Col, FormLabel } from 'react-bootstrap';
-import { Formik, useFormikContext, ErrorMessage, Field } from 'formik';
+import { Formik, useFormikContext, Field } from 'formik';
 import * as yup from 'yup';
 import FormControl from '../Components/FormControl';
 import FormSelect from '../Components/FormSelect';
@@ -227,7 +227,7 @@ const FormContext = () => {
 	return null;
 };
 
-const isButtonLayoutCustom = (values) => values.buttonLayout == 12 || values.buttonLayoutRight == 16
+const isButtonLayoutCustom = (values) => values.buttonLayout === 12 || values.buttonLayoutRight === 16
 
 export default function DisplayConfigPage() {
 	const [saveMessage, setSaveMessage] = useState('');
