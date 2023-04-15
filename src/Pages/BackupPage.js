@@ -7,11 +7,11 @@ const FILE_EXTENSION = ".gp2040"
 const FILENAME = "gp2040ce_backup_{DATE}" + FILE_EXTENSION;
 
 const API_BINDING = {
-	"display":		{label: "Display",		get: WebApi.getDisplayOptions,	set: WebApi.setDisplayOptions},
-	"gamepad":		{label: "Gamepad",		get: WebApi.getGamepadOptions,	set: WebApi.setGamepadOptions},
-	"led": 			{label: "LED",			get: WebApi.getLedOptions,		set: WebApi.setLedOptions},
-	"pinmappings":	{label: "Pin Mappings", get: WebApi.getPinMappings,		set: WebApi.setPinMappings},
-	"addons":		{label: "Add-Ons",		get: WebApi.getAddonsOptions,	set: WebApi.setAddonsOptions},
+	"display":     {label: "Display",      get: WebApi.getDisplayOptions, set: WebApi.setDisplayOptions},
+	"gamepad":     {label: "Gamepad",      get: WebApi.getGamepadOptions, set: WebApi.setGamepadOptions},
+	"led":         {label: "LED",          get: WebApi.getLedOptions,     set: WebApi.setLedOptions},
+	"pinmappings": {label: "Pin Mappings", get: WebApi.getPinMappings,    set: WebApi.setPinMappings},
+	"addons":      {label: "Add-Ons",      get: WebApi.getAddonsOptions,  set: WebApi.setAddonsOptions},
 	// new api, add it here
 	// "example":	{label: "Example",		get: WebApi.getNewAPI,			set: WebApi.setNewAPI},
 };
@@ -57,7 +57,7 @@ export default function BackupPage() {
 		let validated = {};
 		for (const [key, value] of Object.entries(data)) {
 			const nextDataValue = nextData[key];
-			if ((nextDataValue != null || nextDataValue != undefined) && typeof value == typeof nextDataValue) {
+			if (nextDataValue !== null && typeof nextDataValue !== 'undefined' && typeof value == typeof nextDataValue) {
 				if (typeof nextDataValue == "object") {
 					validated[key] = validateValues(value, nextDataValue);
 				} else {
@@ -88,9 +88,9 @@ export default function BackupPage() {
 	const handleSave = async (values) => {
 		let exportData = {};
 		for (const [key, value] of Object.entries(checkValues)) {
-			if (key.match("export_") && (value != null || value != undefined)) {
+			if (key.match("export_") && (value != null || value !== undefined)) {
 				let skey = key.slice(7, key.length);
-				if (optionState[skey] != undefined || optionState[skey] != null) {
+				if (optionState[skey] !== undefined || optionState[skey] != null) {
 					exportData[skey] = optionState[skey];
 				}
 			}
@@ -103,7 +103,7 @@ export default function BackupPage() {
 		a.href = "data:" + fileData;
 		a.download = name;
 		a.innerHTML = "Save Backup";
-		
+
 		let container = document.getElementById("root");
 		container.appendChild(a);
 
@@ -123,13 +123,13 @@ export default function BackupPage() {
 			setNoticeMessage(`Unknown browser error, missing event data!`);
 			return;
 		}
-		if (input.files.length == 0) {
+		if (input.files.length === 0) {
 			setNoticeMessage(`No files are loaded.`);
 			return;
 		}
 
 		const fileName = input.files[0].name;
-	  
+
 		let reader = new FileReader();
 		reader.onload = function() {
 			let fileData = undefined;
@@ -158,9 +158,9 @@ export default function BackupPage() {
 				// filter by known values
 				let filteredData = {};
 				for (const [key, value] of Object.entries(checkValues)) {
-					if (key.match("import_") && (value != null || value != undefined)) {
+					if (key.match("import_") && (value != null || value !== undefined)) {
 						let skey = key.slice(7, key.length);
-						if (newData[skey] != undefined || newData[skey] != null) {
+						if (newData[skey] !== undefined || newData[skey] != null) {
 							filteredData[skey] = newData[skey];
 						}
 					}
@@ -173,7 +173,7 @@ export default function BackupPage() {
 
 				setLoadMessage(`Loaded ${fileName}`);
 				setNoticeMessage('');
-		
+
 				setTimeout(() => {
 					setLoadMessage('');
 				}, 5000);
@@ -195,7 +195,14 @@ export default function BackupPage() {
 					<Form.Group className={"row mb-3"}>
 						<div className={"col-sm-3"}>
 							{Object.entries(API_BINDING).map(api =>
-								<Form.Check id={`export_${api[0]}`} key={`export_${api[0]}`} label={`Export ${api[1].label} Options`} type={"checkbox"} checked={checkValues[`export_${api[0]}`]} onChange={handleChange}/>
+								<Form.Check
+									id={`export_${api[0]}`}
+									key={`export_${api[0]}`}
+									label={`Export ${api[1].label} Options`}
+									type={"checkbox"}
+									checked={checkValues[`export_${api[0]}`] ?? false}
+									onChange={handleChange}
+								/>
 							)}
 						</div>
 					</Form.Group>
@@ -231,7 +238,14 @@ export default function BackupPage() {
 					<Form.Group className={"row mb-3"}>
 						<div className={"col-sm-3"}>
 							{Object.entries(API_BINDING).map(api =>
-								<Form.Check id={`import_${api[0]}`} key={`import_${api[0]}`} label={`Import ${api[1].label} Options`} type={"checkbox"} checked={checkValues[`import_${api[0]}`]} onChange={handleChange}/>
+								<Form.Check
+									id={`import_${api[0]}`}
+									key={`import_${api[0]}`}
+									label={`Import ${api[1].label} Options`}
+									type={"checkbox"}
+									checked={checkValues[`import_${api[0]}`] ?? false}
+									onChange={handleChange}
+								/>
 							)}
 						</div>
 					</Form.Group>

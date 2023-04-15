@@ -172,47 +172,56 @@ const FormContext = () => {
 		fetchData();
 	}, [setValues]);
 
-	useEffect(async () => {
-		if (!!values.enabled)
-			values.enabled = parseInt(values.enabled);
-		if (!!values.i2cBlock)
-			values.i2cBlock = parseInt(values.i2cBlock);
-		if (!!values.flipDisplay)
-			values.flipDisplay = parseInt(values.flipDisplay);
-		if (!!values.invertDisplay)
-			values.invertDisplay = parseInt(values.invertDisplay);
-		if (!!values.buttonLayout)
-			values.buttonLayout = parseInt(values.buttonLayout);
-		if (!!values.buttonLayoutRight)
-			values.buttonLayoutRight = parseInt(values.buttonLayoutRight);
-		if (!!values.splashMode)
-			values.splashMode = parseInt(values.splashMode);
-		if (!!values.splashChoice)
-			values.splashChoice = parseInt(values.splashChoice);
-		if (!!values.splashDuration)
-			values.splashDuration = parseInt(values.splashDuration);
-		await WebApi.setDisplayOptions(values, true)
+	useEffect(() => {
+		async function setDisplayOptions() {
+			if (!!values.enabled)
+				values.enabled = parseInt(values.enabled);
+			if (!!values.i2cBlock)
+				values.i2cBlock = parseInt(values.i2cBlock);
+			if (!!values.flipDisplay)
+				values.flipDisplay = parseInt(values.flipDisplay);
+			if (!!values.invertDisplay)
+				values.invertDisplay = parseInt(values.invertDisplay);
+			if (!!values.buttonLayout)
+				values.buttonLayout = parseInt(values.buttonLayout);
+			if (!!values.buttonLayoutRight)
+				values.buttonLayoutRight = parseInt(values.buttonLayoutRight);
+			if (!!values.splashMode)
+				values.splashMode = parseInt(values.splashMode);
+			if (!!values.splashChoice)
+				values.splashChoice = parseInt(values.splashChoice);
+			if (!!values.splashDuration)
+				values.splashDuration = parseInt(values.splashDuration);
+
+			await WebApi.setDisplayOptions(values, true);
+		}
+
+		setDisplayOptions();
 	}, [values, setValues]);
 
-	useEffect(async () => {
-		if (!!values.enabled)
-			values.enabled = parseInt(values.enabled);
-		if (!!values.i2cBlock)
-			values.i2cBlock = parseInt(values.i2cBlock);
-		if (!!values.flipDisplay)
-			values.flipDisplay = parseInt(values.flipDisplay);
-		if (!!values.invertDisplay)
-			values.invertDisplay = parseInt(values.invertDisplay);
-		if (!!values.buttonLayout)
-			values.buttonLayout = parseInt(values.buttonLayout);
-		if (!!values.buttonLayoutRight)
-			values.buttonLayoutRight = parseInt(values.buttonLayoutRight);
-		if (!!values.splashMode)
-			values.splashMode = parseInt(values.splashMode);
-		if (!!values.splashChoice)
-			values.splashChoice = parseInt(values.splashChoice);
+	useEffect(() => {
+		async function setSplashImage() {
+			if (!!values.enabled)
+				values.enabled = parseInt(values.enabled);
+			if (!!values.i2cBlock)
+				values.i2cBlock = parseInt(values.i2cBlock);
+			if (!!values.flipDisplay)
+				values.flipDisplay = parseInt(values.flipDisplay);
+			if (!!values.invertDisplay)
+				values.invertDisplay = parseInt(values.invertDisplay);
+			if (!!values.buttonLayout)
+				values.buttonLayout = parseInt(values.buttonLayout);
+			if (!!values.buttonLayoutRight)
+				values.buttonLayoutRight = parseInt(values.buttonLayoutRight);
+			if (!!values.splashMode)
+				values.splashMode = parseInt(values.splashMode);
+			if (!!values.splashChoice)
+				values.splashChoice = parseInt(values.splashChoice);
 
-		await WebApi.setDisplayOptions(values, true)
+			await WebApi.setDisplayOptions(values, true);
+		}
+
+		setSplashImage();
 	}, [values.splashImage]);
 
 	return null;
@@ -232,7 +241,7 @@ export default function DisplayConfigPage() {
 	const onChangeCanvas = (base64, form, field) => {
 		return form.setFieldValue(field.name, base64)
 	}
-	
+
 	return (
 		<Formik validationSchema={schema} onSubmit={onSuccess} initialValues={defaultValues}>
 			{({
@@ -460,7 +469,7 @@ export default function DisplayConfigPage() {
 										<Field column className="mb-1" name="buttonLayoutCustomOptions.params.startY"
 												type="number" as={Form.Control}/>
 									</Col>
-								</Form.Group>	
+								</Form.Group>
 									<Form.Group as={Row}>
 									<Form.Label column>Button Radius</Form.Label>
 									<Col sm="10">
@@ -474,7 +483,7 @@ export default function DisplayConfigPage() {
 										<Field column className="mb-1" name="buttonLayoutCustomOptions.params.buttonPadding"
 												type="number" as={Form.Control}/>
 									</Col>
-								</Form.Group>		
+								</Form.Group>
 							</Col>
 							<Col sm="6">
 								<Form.Group as={Row}>
@@ -502,7 +511,7 @@ export default function DisplayConfigPage() {
 										<Field column className="mb-1" name="buttonLayoutCustomOptions.paramsRight.startY"
 												type="number" as={Form.Control}/>
 									</Col>
-								</Form.Group>	
+								</Form.Group>
 									<Form.Group as={Row}>
 									<Form.Label column>Button Radius</Form.Label>
 									<Col sm="10">
@@ -622,7 +631,7 @@ const Canvas = ({value: bitsArray, onChange}) => {
 	// binary to RGBA
 	useEffect(() => {
 		if (canvasContext == null) return;
-		
+
 		const w = canvasContext.canvas.width;
 		const h = canvasContext.canvas.height;
 		const rgbToRgba = [];
@@ -633,7 +642,7 @@ const Canvas = ({value: bitsArray, onChange}) => {
 			const full = Array(8 - bits.length).fill(0).concat(bits);
 			return full.map(a => a === 1 ? 255 : 0)
 		})
-		
+
 		// fill up the new array as RGBA
 		bitsArrayArray.forEach((x) => {
 			rgbToRgba.push(x);
