@@ -645,7 +645,7 @@ export default function AddonsConfigPage() {
 									</FormSelect>
 									<FormSelect
 										label="Charge Button 2 Assignment"
-										name="shmupBtnMask1"
+										name="shmupBtnMask2"
 										className="form-select-sm"
 										groupClassName="col-sm-3 mb-3"
 										value={values.shmupBtnMask2}
@@ -657,7 +657,7 @@ export default function AddonsConfigPage() {
 									</FormSelect>
 									<FormSelect
 										label="Charge Button 3 Assignment"
-										name="shmupBtnMask1"
+										name="shmupBtnMask3"
 										className="form-select-sm"
 										groupClassName="col-sm-3 mb-3"
 										value={values.shmupBtnMask3}
@@ -669,7 +669,7 @@ export default function AddonsConfigPage() {
 									</FormSelect>
 									<FormSelect
 										label="Charge Button 4 Assignment"
-										name="shmupBtnMask1"
+										name="shmupBtnMask4"
 										className="form-select-sm"
 										groupClassName="col-sm-3 mb-3"
 										value={values.shmupBtnMask4}
