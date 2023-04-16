@@ -97,12 +97,19 @@ const schema = yup.object().shape({
 	i2cAnalog1219Block: yup.number().required().oneOf(I2C_BLOCKS.map(o => o.value)).label('I2C Analog1219 Block'),
 	i2cAnalog1219Speed: yup.number().required().label('I2C Analog1219 Speed'),
 	i2cAnalog1219Address: yup.number().required().label('I2C Analog1219 Address'),
+	gpDaughterSDAPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Daughter Board SDA Pin'),
+	gpDaughterSCLPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Daughter Board SCL Pin'),
+	gpDaughterBlock: yup.number().required().oneOf(I2C_BLOCKS.map(o => o.value)).label('Daughter Board Block'),
+	gpDaughterSpeed: yup.number().required().label('Daughter Board Speed'),
+	gpDaughterAddress: yup.number().required().label('Daughter Board Address'),
+	gpDaughterADCMap: yup.string().optional().label('Daughter Board Analog Map'),
+	gpDaughterPinMap: yup.string().optional().label('Daughter Board Digital Map'),
 	onBoardLedMode: yup.number().required().oneOf(ON_BOARD_LED_MODES.map(o => o.value)).label('On-Board LED Mode'),
 	dualDirUpPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Dual Directional Up Pin'),
 	dualDirDownPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Dual Directional Down Pin'),
 	dualDirLeftPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Dual Directional Left Pin'),
 	dualDirRightPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Dual Directional Right Pin'),
-	dualDirDpadMode : yup.number().required().oneOf(DUAL_STICK_MODES.map(o => o.value)).label('Dual Stick Mode'), 
+	dualDirDpadMode : yup.number().required().oneOf(DUAL_STICK_MODES.map(o => o.value)).label('Dual Stick Mode'),
 	dualDirCombineMode : yup.number().required().oneOf(DUAL_COMBINE_MODES.map(o => o.value)).label('Dual Combination Mode'),
 	analogAdcPinX : yup.number().required().test('', '${originalValue} is unavailable/already assigned!', (value) => usedPins.indexOf(value) === -1).label('Analog Stick Pin X'),
  	analogAdcPinY : yup.number().required().test('', '${originalValue} is unavailable/already assigned!', (value) => usedPins.indexOf(value) === -1).label('Analog Stick Pin Y'),
@@ -134,6 +141,7 @@ const schema = yup.object().shape({
 	DualDirectionalInputEnabled: yup.number().required().label('Dual Directional Input Enabled'),
 	ExtraButtonAddonEnabled: yup.number().required().label('Extra Button Add-On Enabled'),
 	I2CAnalog1219InputEnabled: yup.number().required().label('I2C Analog1219 Input Enabled'),
+	GPDaughterInputEnabled: yup.number().required().label('Daughter Board Input Enabled'),
 	JSliderInputEnabled: yup.number().required().label('JSlider Input Enabled'),
 	SliderSOCDInputEnabled: yup.number().required().label('Slider SOCD Input Enabled'),
 	PlayerNumAddonEnabled: yup.number().required().label('Player Number Add-On Enabled'),
@@ -156,6 +164,13 @@ const defaultValues = {
 	i2cAnalog1219Block: 0,
 	i2cAnalog1219Speed: 400000,
 	i2cAnalog1219Address: 0x40,
+	gpDaughterSDAPin: -1,
+	gpDaughterSCLPin: -1,
+	gpDaughterBlock: 1,
+	gpDaughterSpeed: 100000,
+	gpDaughterAddress: 0x37,
+	gpDaughterADCMap: "lx,ly,rx,ry,l2,r2",
+	gpDaughterPinMap: "",
 	onBoardLedMode: 0,
 	dualUpPin: -1,
 	dualDownPin: -1,
@@ -193,6 +208,7 @@ const defaultValues = {
 	DualDirectionalInputEnabled: 0,
 	ExtraButtonAddonEnabled: 0,
 	I2CAnalog1219InputEnabled: 0,
+	GPDaughterInputEnabled: 0,
 	JSliderInputEnabled: 0,
 	SliderSOCDInputEnabled: 0,
 	PlayerNumAddonEnabled: 0,
@@ -251,6 +267,16 @@ const FormContext = () => {
 			values.i2cAnalog1219Speed = parseInt(values.i2cAnalog1219Speed);
 		if (!!values.i2cAnalog1219Address)
 			values.i2cAnalog1219Address = parseInt(values.i2cAnalog1219Address);
+		if (!!values.gpDaughterSDAPin)
+			values.gpDaughterSDAPin = parseInt(values.gpDaughterSDAPin);
+		if (!!values.gpDaughterSCLPin)
+			values.gpDaughterSCLPin = parseInt(values.gpDaughterSCLPin);
+		if (!!values.gpDaughterBlock)
+			values.gpDaughterBlock = parseInt(values.gpDaughterBlock);
+		if (!!values.gpDaughterSpeed)
+			values.gpDaughterSpeed = parseInt(values.gpDaughterSpeed);
+		if (!!values.gpDaughterAddress)
+			values.gpDaughterAddress = parseInt(values.gpDaughterAddress);
 		if (!!values.onBoardLedMode)
 			values.onBoardLedMode = parseInt(values.onBoardLedMode);
 		if (!!values.dualDownPin)
@@ -323,6 +349,8 @@ const FormContext = () => {
 			values.ExtraButtonAddonEnabled = parseInt(values.ExtraButtonAddonEnabled);
 		if (!!values.I2CAnalog1219InputEnabled)
 			values.I2CAnalog1219InputEnabled = parseInt(values.I2CAnalog1219InputEnabled);
+		if (!!values.GPDaughterInputEnabled)
+			values.GPDaughterInputEnabled = parseInt(values.GPDaughterInputEnabled);
 		if (!!values.JSliderInputEnabled)
 			values.JSliderInputEnabled = parseInt(values.JSliderInputEnabled);
 		if (!!values.SliderSOCDInputEnabled)
@@ -916,6 +944,106 @@ export default function AddonsConfigPage() {
 							isInvalid={false}
 							checked={Boolean(values.I2CAnalog1219InputEnabled)}
 							onChange={(e) => {handleCheckbox("I2CAnalog1219InputEnabled", values); handleChange(e);}}
+						/>
+					</Section>
+					<Section title="Daughter Board">
+						<div
+							id="GPDaughterInputOptions"
+							hidden={!values.GPDaughterInputEnabled}>
+						<Row class="mb-3">
+							<FormControl type="number"
+								label="Daughter Board SDA Pin"
+								name="gpDaughterSDAPin"
+								className="form-control-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.gpDaughterSDAPin}
+								error={errors.gpDaughterSDAPin}
+								isInvalid={errors.gpDaughterSDAPin}
+								onChange={handleChange}
+								min={-1}
+								max={29}
+							/>
+							<FormControl type="number"
+								label="Daughter Board SCL Pin"
+								name="gpDaughterSCLPin"
+								className="form-select-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.gpDaughterSCLPin}
+								error={errors.gpDaughterSCLPin}
+								isInvalid={errors.gpDaughterSCLPin}
+								onChange={handleChange}
+								min={-1}
+								max={29}
+							/>
+							<FormSelect
+								label="Daughter Board Block"
+								name="gpDaughterBlock"
+								className="form-select-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.gpDaughterBlock}
+								error={errors.gpDaughterBlock}
+								isInvalid={errors.gpDaughterBlock}
+								onChange={handleChange}
+							>
+								{I2C_BLOCKS.map((o, i) => <option key={`i2cBlock-option-${i}`} value={o.value}>{o.label}</option>)}
+							</FormSelect>
+							<FormControl
+								label="Daughter Board Speed"
+								name="gpDaughterSpeed"
+								className="form-control-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.gpDaughterSpeed}
+								error={errors.gpDaughterSpeed}
+								isInvalid={errors.gpDaughterSpeed}
+								onChange={handleChange}
+								min={100000}
+							/>
+						</Row>
+						<Row class="mb-3">
+							<FormControl
+								label="Daughter Board Address"
+								name="gpDaughterAddress"
+								className="form-control-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.gpDaughterAddress}
+								error={errors.gpDaughterAddress}
+								isInvalid={errors.gpDaughterAddress}
+								onChange={handleChange}
+								maxLength={4}
+							/>
+							<FormControl
+								label="Daughter Board Analog Map"
+								name="gpDaughterADCMap"
+								className="form-control-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.gpDaughterADCMap}
+								error={errors.gpDaughterADCMap}
+								isInvalid={errors.gpDaughterADCMap}
+								onChange={handleChange}
+								maxLength={32}
+							/>
+							<FormControl
+								label="Daughter Board Digital Map"
+								name="gpDaughterPinMap"
+								className="form-control-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.gpDaughterPinMap}
+								error={errors.gpDaughterPinMap}
+								isInvalid={errors.gpDaughterPinMap}
+								onChange={handleChange}
+								maxLength={32}
+							/>
+						</Row>
+						</div>
+						<FormCheck
+							label="Enabled"
+							type="switch"
+							id="GPDaughterInputButton"
+							reverse="true"
+							error={false}
+							isInvalid={false}
+							checked={Boolean(values.GPDaughterInputEnabled)}
+							onChange={(e) => {handleCheckbox("GPDaughterInputEnabled", values); handleChange(e);}}
 						/>
 					</Section>
 					<Section title="Dual Directional Input">
