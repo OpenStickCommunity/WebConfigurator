@@ -97,13 +97,13 @@ const schema = yup.object().shape({
 	i2cAnalog1219Block: yup.number().required().oneOf(I2C_BLOCKS.map(o => o.value)).label('I2C Analog1219 Block'),
 	i2cAnalog1219Speed: yup.number().required().label('I2C Analog1219 Speed'),
 	i2cAnalog1219Address: yup.number().required().label('I2C Analog1219 Address'),
-	gpDaughterSDAPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Daughter Board SDA Pin'),
-	gpDaughterSCLPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Daughter Board SCL Pin'),
-	gpDaughterBlock: yup.number().required().oneOf(I2C_BLOCKS.map(o => o.value)).label('Daughter Board Block'),
-	gpDaughterSpeed: yup.number().required().label('Daughter Board Speed'),
-	gpDaughterAddress: yup.number().required().label('Daughter Board Address'),
-	gpDaughterADCMap: yup.string().optional().label('Daughter Board Analog Map'),
-	gpDaughterPinMap: yup.string().optional().label('Daughter Board Digital Map'),
+	i2cInputExpansionSDAPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('I2C Input Expansion SDA Pin'),
+	i2cInputExpansionSCLPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('I2C Input Expansion SCL Pin'),
+	i2cInputExpansionBlock: yup.number().required().oneOf(I2C_BLOCKS.map(o => o.value)).label('I2C Input Expansion Block'),
+	i2cInputExpansionSpeed: yup.number().required().label('I2C Input Expansion Speed'),
+	i2cInputExpansionAddress: yup.number().required().label('I2C Input Expansion Address'),
+	i2cInputExpansionAnalogMap: yup.string().optional().label('I2C Input Expansion Analog Map'),
+	i2cInputExpansionDigitalMap: yup.string().optional().label('I2C Input Expansion Digital Map'),
 	onBoardLedMode: yup.number().required().oneOf(ON_BOARD_LED_MODES.map(o => o.value)).label('On-Board LED Mode'),
 	dualDirUpPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Dual Directional Up Pin'),
 	dualDirDownPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Dual Directional Down Pin'),
@@ -141,7 +141,7 @@ const schema = yup.object().shape({
 	DualDirectionalInputEnabled: yup.number().required().label('Dual Directional Input Enabled'),
 	ExtraButtonAddonEnabled: yup.number().required().label('Extra Button Add-On Enabled'),
 	I2CAnalog1219InputEnabled: yup.number().required().label('I2C Analog1219 Input Enabled'),
-	GPDaughterInputEnabled: yup.number().required().label('Daughter Board Input Enabled'),
+	I2CInputExpansionEnabled: yup.number().required().label('I2C Input Expansion Input Enabled'),
 	JSliderInputEnabled: yup.number().required().label('JSlider Input Enabled'),
 	SliderSOCDInputEnabled: yup.number().required().label('Slider SOCD Input Enabled'),
 	PlayerNumAddonEnabled: yup.number().required().label('Player Number Add-On Enabled'),
@@ -164,13 +164,13 @@ const defaultValues = {
 	i2cAnalog1219Block: 0,
 	i2cAnalog1219Speed: 400000,
 	i2cAnalog1219Address: 0x40,
-	gpDaughterSDAPin: -1,
-	gpDaughterSCLPin: -1,
-	gpDaughterBlock: 1,
-	gpDaughterSpeed: 100000,
-	gpDaughterAddress: 0x37,
-	gpDaughterADCMap: "lx,ly,rx,ry,l2,r2",
-	gpDaughterPinMap: "",
+	i2cInputExpansionSDAPin: -1,
+	i2cInputExpansionSCLPin: -1,
+	i2cInputExpansionBlock: 1,
+	i2cInputExpansionSpeed: 100000,
+	i2cInputExpansionAddress: 0x37,
+	i2cInputExpansionAnalogMap: "lx,ly,rx,ry,l2,r2",
+	i2cInputExpansionDigitalMap: "",
 	onBoardLedMode: 0,
 	dualUpPin: -1,
 	dualDownPin: -1,
@@ -208,7 +208,7 @@ const defaultValues = {
 	DualDirectionalInputEnabled: 0,
 	ExtraButtonAddonEnabled: 0,
 	I2CAnalog1219InputEnabled: 0,
-	GPDaughterInputEnabled: 0,
+	I2CInputExpansionEnabled: 0,
 	JSliderInputEnabled: 0,
 	SliderSOCDInputEnabled: 0,
 	PlayerNumAddonEnabled: 0,
@@ -267,16 +267,16 @@ const FormContext = () => {
 			values.i2cAnalog1219Speed = parseInt(values.i2cAnalog1219Speed);
 		if (!!values.i2cAnalog1219Address)
 			values.i2cAnalog1219Address = parseInt(values.i2cAnalog1219Address);
-		if (!!values.gpDaughterSDAPin)
-			values.gpDaughterSDAPin = parseInt(values.gpDaughterSDAPin);
-		if (!!values.gpDaughterSCLPin)
-			values.gpDaughterSCLPin = parseInt(values.gpDaughterSCLPin);
-		if (!!values.gpDaughterBlock)
-			values.gpDaughterBlock = parseInt(values.gpDaughterBlock);
-		if (!!values.gpDaughterSpeed)
-			values.gpDaughterSpeed = parseInt(values.gpDaughterSpeed);
-		if (!!values.gpDaughterAddress)
-			values.gpDaughterAddress = parseInt(values.gpDaughterAddress);
+		if (!!values.i2cInputExpansionSDAPin)
+			values.i2cInputExpansionSDAPin = parseInt(values.i2cInputExpansionSDAPin);
+		if (!!values.i2cInputExpansionSCLPin)
+			values.i2cInputExpansionSCLPin = parseInt(values.i2cInputExpansionSCLPin);
+		if (!!values.i2cInputExpansionBlock)
+			values.i2cInputExpansionBlock = parseInt(values.i2cInputExpansionBlock);
+		if (!!values.i2cInputExpansionSpeed)
+			values.i2cInputExpansionSpeed = parseInt(values.i2cInputExpansionSpeed);
+		if (!!values.i2cInputExpansionAddress)
+			values.i2cInputExpansionAddress = parseInt(values.i2cInputExpansionAddress);
 		if (!!values.onBoardLedMode)
 			values.onBoardLedMode = parseInt(values.onBoardLedMode);
 		if (!!values.dualDownPin)
@@ -349,8 +349,8 @@ const FormContext = () => {
 			values.ExtraButtonAddonEnabled = parseInt(values.ExtraButtonAddonEnabled);
 		if (!!values.I2CAnalog1219InputEnabled)
 			values.I2CAnalog1219InputEnabled = parseInt(values.I2CAnalog1219InputEnabled);
-		if (!!values.GPDaughterInputEnabled)
-			values.GPDaughterInputEnabled = parseInt(values.GPDaughterInputEnabled);
+		if (!!values.I2CInputExpansionEnabled)
+			values.I2CInputExpansionEnabled = parseInt(values.I2CInputExpansionEnabled);
 		if (!!values.JSliderInputEnabled)
 			values.JSliderInputEnabled = parseInt(values.JSliderInputEnabled);
 		if (!!values.SliderSOCDInputEnabled)
@@ -946,90 +946,90 @@ export default function AddonsConfigPage() {
 							onChange={(e) => {handleCheckbox("I2CAnalog1219InputEnabled", values); handleChange(e);}}
 						/>
 					</Section>
-					<Section title="Daughter Board">
+					<Section title="I2C Input Expansion">
 						<div
-							id="GPDaughterInputOptions"
-							hidden={!values.GPDaughterInputEnabled}>
+							id="I2CInputExpansionOptions"
+							hidden={!values.I2CInputExpansionEnabled}>
 						<Row class="mb-3">
 							<FormControl type="number"
-								label="Daughter Board SDA Pin"
-								name="gpDaughterSDAPin"
+								label="I2C Input Expansion SDA Pin"
+								name="i2cInputExpansionSDAPin"
 								className="form-control-sm"
 								groupClassName="col-sm-3 mb-3"
-								value={values.gpDaughterSDAPin}
-								error={errors.gpDaughterSDAPin}
-								isInvalid={errors.gpDaughterSDAPin}
+								value={values.i2cInputExpansionSDAPin}
+								error={errors.i2cInputExpansionSDAPin}
+								isInvalid={errors.i2cInputExpansionSDAPin}
 								onChange={handleChange}
 								min={-1}
 								max={29}
 							/>
 							<FormControl type="number"
-								label="Daughter Board SCL Pin"
-								name="gpDaughterSCLPin"
+								label="I2C Input Expansion SCL Pin"
+								name="i2cInputExpansionSCLPin"
 								className="form-select-sm"
 								groupClassName="col-sm-3 mb-3"
-								value={values.gpDaughterSCLPin}
-								error={errors.gpDaughterSCLPin}
-								isInvalid={errors.gpDaughterSCLPin}
+								value={values.i2cInputExpansionSCLPin}
+								error={errors.i2cInputExpansionSCLPin}
+								isInvalid={errors.i2cInputExpansionSCLPin}
 								onChange={handleChange}
 								min={-1}
 								max={29}
 							/>
 							<FormSelect
-								label="Daughter Board Block"
-								name="gpDaughterBlock"
+								label="I2C Input Expansion Block"
+								name="i2cInputExpansionBlock"
 								className="form-select-sm"
 								groupClassName="col-sm-3 mb-3"
-								value={values.gpDaughterBlock}
-								error={errors.gpDaughterBlock}
-								isInvalid={errors.gpDaughterBlock}
+								value={values.i2cInputExpansionBlock}
+								error={errors.i2cInputExpansionBlock}
+								isInvalid={errors.i2cInputExpansionBlock}
 								onChange={handleChange}
 							>
 								{I2C_BLOCKS.map((o, i) => <option key={`i2cBlock-option-${i}`} value={o.value}>{o.label}</option>)}
 							</FormSelect>
 							<FormControl
-								label="Daughter Board Speed"
-								name="gpDaughterSpeed"
+								label="I2C Input Expansion Speed"
+								name="i2cInputExpansionSpeed"
 								className="form-control-sm"
 								groupClassName="col-sm-3 mb-3"
-								value={values.gpDaughterSpeed}
-								error={errors.gpDaughterSpeed}
-								isInvalid={errors.gpDaughterSpeed}
+								value={values.i2cInputExpansionSpeed}
+								error={errors.i2cInputExpansionSpeed}
+								isInvalid={errors.i2cInputExpansionSpeed}
 								onChange={handleChange}
 								min={100000}
 							/>
 						</Row>
 						<Row class="mb-3">
 							<FormControl
-								label="Daughter Board Address"
-								name="gpDaughterAddress"
+								label="I2C Input Expansion Address"
+								name="i2cInputExpansionAddress"
 								className="form-control-sm"
 								groupClassName="col-sm-3 mb-3"
-								value={values.gpDaughterAddress}
-								error={errors.gpDaughterAddress}
-								isInvalid={errors.gpDaughterAddress}
+								value={values.i2cInputExpansionAddress}
+								error={errors.i2cInputExpansionAddress}
+								isInvalid={errors.i2cInputExpansionAddress}
 								onChange={handleChange}
 								maxLength={4}
 							/>
 							<FormControl
-								label="Daughter Board Analog Map"
-								name="gpDaughterADCMap"
+								label="I2C Input Expansion Analog Map"
+								name="i2cInputExpansionAnalogMap"
 								className="form-control-sm"
 								groupClassName="col-sm-3 mb-3"
-								value={values.gpDaughterADCMap}
-								error={errors.gpDaughterADCMap}
-								isInvalid={errors.gpDaughterADCMap}
+								value={values.i2cInputExpansionAnalogMap}
+								error={errors.i2cInputExpansionAnalogMap}
+								isInvalid={errors.i2cInputExpansionAnalogMap}
 								onChange={handleChange}
 								maxLength={32}
 							/>
 							<FormControl
-								label="Daughter Board Digital Map"
-								name="gpDaughterPinMap"
+								label="I2C Input Expansion Digital Map"
+								name="i2cInputExpansionDigitalMap"
 								className="form-control-sm"
 								groupClassName="col-sm-3 mb-3"
-								value={values.gpDaughterPinMap}
-								error={errors.gpDaughterPinMap}
-								isInvalid={errors.gpDaughterPinMap}
+								value={values.i2cInputExpansionDigitalMap}
+								error={errors.i2cInputExpansionDigitalMap}
+								isInvalid={errors.i2cInputExpansionDigitalMap}
 								onChange={handleChange}
 								maxLength={32}
 							/>
@@ -1038,12 +1038,12 @@ export default function AddonsConfigPage() {
 						<FormCheck
 							label="Enabled"
 							type="switch"
-							id="GPDaughterInputButton"
+							id="I2CInputExpansionButton"
 							reverse="true"
 							error={false}
 							isInvalid={false}
-							checked={Boolean(values.GPDaughterInputEnabled)}
-							onChange={(e) => {handleCheckbox("GPDaughterInputEnabled", values); handleChange(e);}}
+							checked={Boolean(values.I2CInputExpansionEnabled)}
+							onChange={(e) => {handleCheckbox("I2CInputExpansionEnabled", values); handleChange(e);}}
 						/>
 					</Section>
 					<Section title="Dual Directional Input">
