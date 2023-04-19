@@ -4,24 +4,24 @@ import { chunk } from 'lodash';
 const baseUrl = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8080';
 
 export const baseButtonMappings = {
-	Up:    { pin: -1, error: null },
-	Down:  { pin: -1, error: null },
-	Left:  { pin: -1, error: null },
-	Right: { pin: -1, error: null },
-	B1:    { pin: -1, error: null },
-	B2:    { pin: -1, error: null },
-	B3:    { pin: -1, error: null },
-	B4:    { pin: -1, error: null },
-	L1:    { pin: -1, error: null },
-	R1:    { pin: -1, error: null },
-	L2:    { pin: -1, error: null },
-	R2:    { pin: -1, error: null },
-	S1:    { pin: -1, error: null },
-	S2:    { pin: -1, error: null },
-	L3:    { pin: -1, error: null },
-	R3:    { pin: -1, error: null },
-	A1:    { pin: -1, error: null },
-	A2:    { pin: -1, error: null },
+	Up:    { pin: -1, key: 0, error: null },
+	Down:  { pin: -1, key: 0, error: null },
+	Left:  { pin: -1, key: 0, error: null },
+	Right: { pin: -1, key: 0, error: null },
+	B1:    { pin: -1, key: 0, error: null },
+	B2:    { pin: -1, key: 0, error: null },
+	B3:    { pin: -1, key: 0, error: null },
+	B4:    { pin: -1, key: 0, error: null },
+	L1:    { pin: -1, key: 0, error: null },
+	R1:    { pin: -1, key: 0, error: null },
+	L2:    { pin: -1, key: 0, error: null },
+	R2:    { pin: -1, key: 0, error: null },
+	S1:    { pin: -1, key: 0, error: null },
+	S2:    { pin: -1, key: 0, error: null },
+	L3:    { pin: -1, key: 0, error: null },
+	R3:    { pin: -1, key: 0, error: null },
+	A1:    { pin: -1, key: 0, error: null },
+	A2:    { pin: -1, key: 0, error: null },
 };
 
 async function resetSettings() {
@@ -149,6 +149,32 @@ async function setPinMappings(mappings) {
 		});
 }
 
+async function getKeyMappings() {
+	return axios.get(`${baseUrl}/api/getKeyMappings`)
+		.then((response) => {
+			let mappings = { ...baseButtonMappings };
+			for (let prop of Object.keys(response.data))
+				mappings[prop].key = parseInt(response.data[prop]);
+
+			return mappings;
+		})
+		.catch(console.error);
+}
+
+async function setKeyMappings(mappings) {
+	let data = {};
+	Object.keys(mappings).map((button, i) => data[button] = mappings[button].key);
+
+	return axios.post(`${baseUrl}/api/setKeyMappings`, sanitizeRequest(data))
+		.then((response) => {
+			console.log(response.data);
+			return true;
+		})
+		.catch((err) => {
+			console.error(err);
+			return false;
+		});
+}
 async function getAddonsOptions() {
 	return axios.get(`${baseUrl}/api/getAddonsOptions`)
 		.then((response) => response.data)
@@ -201,6 +227,8 @@ const WebApi = {
 	setLedOptions,
 	getPinMappings,
 	setPinMappings,
+	getKeyMappings,
+	setKeyMappings,
 	getAddonsOptions,
 	setAddonsOptions,
 	getSplashImage,

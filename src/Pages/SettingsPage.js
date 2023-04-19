@@ -9,6 +9,7 @@ const INPUT_MODES = [
 	{ label: 'XInput', value: 0 },
 	{ label: 'Nintendo Switch', value: 1 },
 	{ label: 'PS3/DirectInput', value: 2 },
+	{ label: 'Keyboard', value: 3 },
 ];
 
 const DPAD_MODES = [
