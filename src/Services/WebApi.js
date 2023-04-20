@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { chunk } from 'lodash';
 
 const baseUrl = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8080';
 
