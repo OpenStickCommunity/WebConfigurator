@@ -44,11 +44,12 @@ const Navigation = (props) => {
 					<Nav.Link as={NavLink} exact="true" to="/">Home</Nav.Link>
 					<Nav.Link as={NavLink} exact="true" to="/settings">Settings</Nav.Link>
 					<NavDropdown title="Configuration">
-						<NavDropdown.Item as={NavLink} exact="true" to="/pin-mapping">Pin Mapping</NavDropdown.Item>
-						<NavDropdown.Item as={NavLink} exact="true" to="/led-config">LED Configuration</NavDropdown.Item>
-						<NavDropdown.Item as={NavLink} exact="true" to="/display-config">Display Configuration</NavDropdown.Item>
-						<NavDropdown.Item as={NavLink} exact="true" to="/add-ons">Add-Ons Configuration</NavDropdown.Item>
-						<NavDropdown.Item as={NavLink} exact="true" to="/backup">Data Backup and Restoration</NavDropdown.Item>
+						<NavDropdown.Item as={NavLink} exact={true} to="/pin-mapping">Pin Mapping</NavDropdown.Item>
+						<NavDropdown.Item as={NavLink} exact={true} to="/keyboard-mapping">Keyboard Mapping</NavDropdown.Item>
+						<NavDropdown.Item as={NavLink} exact={true} to="/led-config">LED Configuration</NavDropdown.Item>
+						<NavDropdown.Item as={NavLink} exact={true} to="/display-config">Display Configuration</NavDropdown.Item>
+						<NavDropdown.Item as={NavLink} exact={true} to="/add-ons">Add-Ons Configuration</NavDropdown.Item>
+						<NavDropdown.Item as={NavLink} exact={true} to="/backup">Data Backup and Restoration</NavDropdown.Item>
 					</NavDropdown>
 					<NavDropdown title="Links">
 						<NavDropdown.Item as={NavLink} to={{ pathname: "https://gp2040-ce.info/" }} target="_blank">Documentation</NavDropdown.Item>

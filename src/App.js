@@ -5,6 +5,7 @@ import Navigation from './Components/Navigation'
 
 import HomePage from './Pages/HomePage'
 import PinMappingPage from "./Pages/PinMapping";
+import KeyboardMappingPage from "./Pages/KeyboardMapping";
 import ResetSettingsPage from './Pages/ResetSettingsPage';
 import SettingsPage from './Pages/SettingsPage';
 import DisplayConfigPage from './Pages/DisplayConfig';
@@ -33,7 +34,8 @@ const App = () => {
 						<Route exact path="/" element={<HomePage />} />
 						<Route path="/settings" element={<SettingsPage />} />
 						<Route path="/pin-mapping" element={<PinMappingPage />} />
-						<Route path="/reset-settings" element={<ResetSettingsPage />} />
+						<Route path="/keyboard-mapping" element={<KeyboardMappingPage />} />
+            <Route path="/reset-settings" element={<ResetSettingsPage />} />
 						<Route path="/led-config" element={<LEDConfigPage />} />
 						<Route path="/display-config" element={<DisplayConfigPage />} />
 						<Route path="/add-ons" element={<AddonsConfigPage />} />
