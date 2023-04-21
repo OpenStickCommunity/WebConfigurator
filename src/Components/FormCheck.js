@@ -3,7 +3,7 @@ import { Form } from 'react-bootstrap';
 
 import './FormCheck.scss'
 
-const FormControl = ({ label, error, groupClassName, ...props }) => {
+const FormCheck = ({ label, error, groupClassName, ...props }) => {
 	return (
 		<Form.Group className={groupClassName}>
 			<Form.Label>{label}</Form.Label>
@@ -13,4 +13,4 @@ const FormControl = ({ label, error, groupClassName, ...props }) => {
 	);
 };
 
-export default FormControl;
+export default FormCheck;
