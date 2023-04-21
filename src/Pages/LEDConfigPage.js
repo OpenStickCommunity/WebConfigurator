@@ -1,15 +1,32 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Button, Form, Row } from 'react-bootstrap';
+import Button from 'react-bootstrap/Button';
+import ButtonGroup from 'react-bootstrap/ButtonGroup';
+import Form from 'react-bootstrap/Form';
+import Container from 'react-bootstrap/Container';
+import Col from 'react-bootstrap/Col';
+import Row from 'react-bootstrap/Row';
+import Modal from 'react-bootstrap/Modal';
+import Overlay from 'react-bootstrap/Overlay';
+import Popover from 'react-bootstrap/Popover';
+import Stack from 'react-bootstrap/Stack';
+import Table from 'react-bootstrap/Table';
+import FormCheck from 'react-bootstrap/FormCheck';
+import { SketchPicker } from 'react-color';
 import { Formik, useFormikContext } from 'formik';
-import { orderBy } from 'lodash';
+import find from 'lodash/find';
+import orderBy from 'lodash/orderBy';
 import * as yup from 'yup';
+
 import { AppContext } from '../Contexts/AppContext';
 import Section from '../Components/Section';
 import DraggableListGroup from '../Components/DraggableListGroup';
 import FormControl from '../Components/FormControl';
 import FormSelect from '../Components/FormSelect';
-import BUTTONS from '../Data/Buttons.json';
 import WebApi from '../Services/WebApi';
+import { BUTTONS, MAIN_BUTTONS, AUX_BUTTONS } from '../Data/Buttons';
+import LEDColors from '../Data/LEDColors';
+
+import './LEDConfigPage.scss';
 
 const LED_FORMATS = [
 	{ label: 'GRB', value: 0 },
@@ -19,10 +36,40 @@ const LED_FORMATS = [
 ];
 
 const BUTTON_LAYOUTS = [
-	{ label: '8-Button Layout', value: 0 },
-	{ label: 'Hit Box Layout', value: 1 },
-	{ label: 'WASD Layout', value: 2 },
+	{
+		label: 'Stick',
+		value: 0,
+		stickLayout: 'standard',
+	},
+	{
+		label: 'Stickless',
+		value: 1,
+		stickLayout: 'stickless',
+	},
+	{
+		label: 'WASD',
+		value: 2,
+		stickLayout: 'keyboard',
+	},
 ];
+
+const BUTTON_TYPE = [
+	{ name: "30mm", value: 30, radius: 15 },
+	{ name: "24mm", value: 24, radius: 12 },
+	{ name: "keycap", value: 19 },
+	{ name: "joystick", value: 35, radius: 17.5 },
+];
+
+const PICKER_TYPE = ['normal', 'pressed'];
+
+const defaultCustomLeds = Object.keys(BUTTONS.gp2040)
+	?.filter(p => p !== 'label' && p !== 'value')
+	.reduce((a, p) => {
+		a[p] = { normal: '#000000', pressed: '#000000' };
+		return a;
+	}, {});
+
+defaultCustomLeds['ALL'] = { normal: '#000000', pressed: '#000000' };
 
 const defaultValue = {
 	brightnessMaximum: 255,
@@ -72,7 +119,36 @@ const getLedMap = (buttonLabels, ledButtons, excludeNulls) => {
 	return map;
 }
 
-const FormContext = ({ buttonLabels, ledButtonMap, ledFormat, setDataSources }) => {
+const LEDButton = ({ id, name, buttonType, buttonColor, buttonPressedColor, className, labelUnder, onClick, ...props }) => {
+	const [pressed, setPressed] = useState(false);
+
+	const handlePressedShow = (e) => {
+		// Show pressed state on right-click
+		if (e.button === 2)
+			setPressed(true);
+	};
+
+	const handlePressedHide = (e) => {
+		// Revert to normal state
+		setPressed(false);
+	};
+
+	return (
+		<div
+			className={`led-button ${className}`}
+			style={{ backgroundColor: pressed ? buttonPressedColor : buttonColor }}
+			onClick={onClick}
+			onMouseDown={(e) => handlePressedShow(e)}
+			onMouseUp={(e) => handlePressedHide(e)}
+			onMouseLeave={(e) => handlePressedHide(e)}
+			onContextMenu={(e) => e.preventDefault()}
+		>
+			<span className={`button-label ${labelUnder ? 'under' : ''}`}>{name}</span>
+		</div>
+	);
+};
+
+const FormContext = ({ buttonLabels, ledButtonMap, ledFormat, setDataSources, setCustomLeds, setUseCustomLeds }) => {
 	const { setFieldValue, setValues } = useFormikContext();
 
 	useEffect(() => {
@@ -96,6 +172,8 @@ const FormContext = ({ buttonLabels, ledButtonMap, ledFormat, setDataSources }) 
 			usedPins = data.usedPins;
 			setDataSources(dataSources);
 			setValues(data);
+			setUseCustomLeds(data.useCustomLeds);
+			setCustomLeds(data.customLeds);
 		}
 		fetchData();
 	}, [buttonLabels]);
@@ -117,14 +195,74 @@ export default function LEDConfigPage() {
 	const [saveMessage, setSaveMessage] = useState('');
 	const [ledButtonMap, setLedButtonMap] = useState([]);
 	const [dataSources, setDataSources] = useState([[], []]);
+	const [pickerType, setPickerType] = useState(null);
+	const [selectedButton, setSelectedButton] = useState('');
+	const [selectedColor, setSelectedColor] = useState('#000000');
+	const [useCustomLeds, setUseCustomLeds] = useState(false);
+	const [customLeds, setCustomLeds] = useState({ ...defaultCustomLeds });
+	const [ledOverlayTarget, setLedOverlayTarget] = useState(null);
+	const [modalVisible, setModalVisible] = useState(false);
 
 	const ledOrderChanged = (ledOrderArrays) => {
 		if (ledOrderArrays.length === 2)
 			setLedButtonMap(getLedMap(buttonLabels, ledOrderArrays[1]));
 	};
 
+	const toggleSelectedButton = (e, buttonName) => {
+		e.stopPropagation();
+		if (selectedButton === buttonName) {
+			setSelectedButton(null);
+		}
+		else {
+			setLedOverlayTarget(e.target);
+			setSelectedButton(buttonName);
+			setSelectedColor(buttonName === 'ALL' ? '#000000' : customLeds[buttonName].normal);
+			setPickerType({ type: 'normal', button: buttonName });
+		}
+	};
+
+	const confirmClearAll = () => {
+		setLedOverlayTarget(null);
+		setSelectedButton(null);
+		setSelectedColor(null);
+
+		// Reset all custom LEDs
+		Object.keys(customLeds).forEach((b, i) => {
+			Object.keys(customLeds[b]).forEach((s, i) => {
+				customLeds[b][s] = '#000000';
+			});
+		});
+		setCustomLeds(customLeds);
+		setModalVisible(false);
+	};
+
+	const handleLedColorClick = (pickerType) => {
+		setSelectedColor(customLeds[selectedButton][pickerType]);
+		setPickerType({ type: pickerType, button: selectedButton });
+	};
+
+	const handleLedColorChange = (c) => {
+		if (selectedButton) {
+			if (selectedButton === 'ALL')
+				Object.keys(customLeds).forEach(p => customLeds[p][pickerType.type] = c.hex);
+			else
+				customLeds[selectedButton][pickerType.type] = c.hex;
+		}
+
+		setCustomLeds(customLeds);
+		setSelectedColor(c);
+	};
+
+	const handleLedColorDeselect = (e) => {
+		setSelectedButton('');
+	};
+
+	const toggleCustomLeds = (e) => {
+		setUseCustomLeds(e.target.checked);
+	};
+
 	const onSuccess = async (values) => {
-		const success = WebApi.setLedOptions(values);
+		const success = WebApi.setLedOptions({ ...values, useCustomLeds, customLeds });
 		setSaveMessage(success ? 'Saved! Please Restart Your Device' : 'Unable to Save');
 	};
 
@@ -231,14 +369,156 @@ export default function LEDConfigPage() {
 							onChange={ledOrderChanged}
 						/>
 					</Section>
+					<Section title="Custom LED Theme">
+						<div>
+							<p>
+								Here you can enable and configure a custom LED theme.
+								The custom theme will be selectable using the Next and Previous Animation shortcuts on your controller.
+							</p>
+							{useCustomLeds &&
+								<>
+									<Stack>
+										<div className="d-flex justify-content-around">
+											<FormSelect
+												label="LED Layout"
+												name="ledLayout"
+												value={values.ledLayout}
+												error={errors.ledLayout}
+												isInvalid={errors.ledLayout}
+												onChange={handleChange}
+												style={{ width: 150 }}
+											>
+												{BUTTON_LAYOUTS.map((o, i) => <option key={`ledLayout-option-${i}`} value={o.value}>{o.label}</option>)}
+											</FormSelect>
+											<div className="d-flex d-none d-md-block">
+												<ul>
+													<li>Click a button to bring up the normal and pressed color selection.</li>
+													<li>Click on the controller background to dismiss the color selection.</li>
+													<li>Right-click a button to preview the button's pressed color.</li>
+												</ul>
+											</div>
+										</div>
+										<div className="d-flex led-preview-container">
+											<div
+												className={`led-preview led-preview-${BUTTON_LAYOUTS[values.ledLayout]?.stickLayout}`}
+												onClick={(e) => handleLedColorDeselect(e)}
+												onContextMenu={(e) => e.preventDefault()}
+											>
+												<div className="container-aux">
+													{AUX_BUTTONS.map(buttonName => (
+														<LEDButton
+															key={`led-button-${buttonName}`}
+															className={`${buttonName} ${selectedButton === buttonName ? 'selected' : ''}`}
+															name={BUTTONS[buttonLabels][buttonName]}
+															buttonColor={customLeds[buttonName]?.normal}
+															buttonPressedColor={customLeds[buttonName]?.pressed}
+															labelUnder={true}
+															onClick={(e) => toggleSelectedButton(e, buttonName)}
+														/>
+													))}
+												</div>
+												<div className="container-main">
+													{MAIN_BUTTONS.map(buttonName => (
+														<LEDButton
+															key={`led-button-${buttonName}`}
+															className={`${buttonName} ${selectedButton === buttonName ? 'selected' : ''}`}
+															name={BUTTONS[buttonLabels][buttonName]}
+															buttonColor={customLeds[buttonName]?.normal}
+															buttonPressedColor={customLeds[buttonName]?.pressed}
+															labelUnder={false}
+															onClick={(e) => toggleSelectedButton(e, buttonName)}
+														/>
+													))}
+												</div>
+											</div>
+										</div>
+									</Stack>
+									<ButtonGroup>
+										<Button onClick={(e) => setModalVisible(true)}>Clear All</Button>
+										<Button onClick={(e) => toggleSelectedButton(e, 'ALL')}>Set All To Color</Button>
+									</ButtonGroup>
+								</>
+							}
+							<Overlay
+								show={!!selectedButton}
+								target={ledOverlayTarget}
+								placement="top"
+								container={this}
+								containerPadding={20}
+							>
+								<Popover>
+									<Container className="led-color-picker">
+										<h5 className="text-center">{selectedButton === 'ALL' ? selectedButton : BUTTONS[buttonLabels][selectedButton]}</h5>
+										<Form.Group as={Row}
+											className={`led-color-option ${pickerType?.type === 'normal' ? 'selected' : ''}`}
+											onClick={() => handleLedColorClick('normal')}
+										>
+											<Form.Label column lg={8} className="p-3">Normal</Form.Label>
+											<Col sm={2}>
+												<div
+													className={`led-color led-color-normal`}
+													style={{ backgroundColor: customLeds[selectedButton]?.normal }}
+												></div>
+											</Col>
+										</Form.Group>
+										<Form.Group as={Row}
+											className={`led-color-option ${pickerType?.type === 'pressed' ? 'selected' : ''}`}
+											onClick={() => handleLedColorClick('pressed')}
+										>
+											<Form.Label column lg={8} className="p-3">Pressed</Form.Label>
+											<Col sm={2}>
+												<div
+													className={`led-color led-color-pressed`}
+													style={{ backgroundColor: customLeds[selectedButton]?.pressed }}
+												></div>
+											</Col>
+										</Form.Group>
+										<Row>
+											<Col>
+												<SketchPicker
+													color={selectedColor}
+													onChange={(c) => handleLedColorChange(c)}
+													disableAlpha={true}
+													presetColors={LEDColors.map(c => ({ title: c.name, color: c.value}))}
+													width={180}
+												/>
+											</Col>
+										</Row>
+									</Container>
+								</Popover>
+							</Overlay>
+						</div>
+						<FormCheck
+							label="Enable"
+							type="switch"
+							id="useCustomLeds"
+							reverse="true"
+							error={undefined}
+							isInvalid={false}
+							checked={useCustomLeds}
+							onChange={(e) => toggleCustomLeds(e)}
+						/>
+					</Section>
 					<Button type="submit">Save</Button>
 					{saveMessage ? <span className="alert">{saveMessage}</span> : null}
 					<FormContext {...{
 						buttonLabels,
 						ledButtonMap,
 						setDataSources,
+						setCustomLeds,
+						setUseCustomLeds,
 						ledFormat: values.ledFormat
 					}} />
+					<Modal show={modalVisible} onHide={() => setModalVisible(false)}>
+						<Modal.Header closeButton>
+							<Modal.Title>Confirm Clear Custom LEDs</Modal.Title>
+						</Modal.Header>
+						<Modal.Body>Are you sure you would like to clear your current custom LED theme?</Modal.Body>
+						<Modal.Footer>
+							<Button variant="danger" onClick={() => setModalVisible(false)}>No</Button>
+							<Button variant="success" onClick={() => confirmClearAll()}>Yes</Button>
+						</Modal.Footer>
+					</Modal>
 				</Form>
 			)}
 		</Formik>

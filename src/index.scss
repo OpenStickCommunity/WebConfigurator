@@ -16,6 +16,7 @@ body {
 		sans-serif;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+	min-width: 880px;
 }
 
 h1 {
@@ -50,3 +51,14 @@ input.form-control {
 	background-color: $primary;
 	color: $white;
 }
+
+.popover {
+	position: absolute;
+	z-index: 2;
+
+	.cover {
+		position: fixed;
+		top: 0; right: 0; bottom: 0; left: 0;
+	}
+}
+

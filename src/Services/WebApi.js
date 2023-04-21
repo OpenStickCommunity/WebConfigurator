@@ -1,27 +1,28 @@
 import axios from 'axios';
 import { chunk } from 'lodash';
+import { intToHex, hexToInt, rgbIntToHex } from './Utilities';
 
 const baseUrl = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8080';
 
 export const baseButtonMappings = {
-	Up:    { pin: -1, key: 0, error: null },
-	Down:  { pin: -1, key: 0, error: null },
-	Left:  { pin: -1, key: 0, error: null },
-	Right: { pin: -1, key: 0, error: null },
-	B1:    { pin: -1, key: 0, error: null },
-	B2:    { pin: -1, key: 0, error: null },
-	B3:    { pin: -1, key: 0, error: null },
-	B4:    { pin: -1, key: 0, error: null },
-	L1:    { pin: -1, key: 0, error: null },
-	R1:    { pin: -1, key: 0, error: null },
-	L2:    { pin: -1, key: 0, error: null },
-	R2:    { pin: -1, key: 0, error: null },
-	S1:    { pin: -1, key: 0, error: null },
-	S2:    { pin: -1, key: 0, error: null },
-	L3:    { pin: -1, key: 0, error: null },
-	R3:    { pin: -1, key: 0, error: null },
-	A1:    { pin: -1, key: 0, error: null },
-	A2:    { pin: -1, key: 0, error: null },
+	Up:    { pin: -1, error: null },
+	Down:  { pin: -1, error: null },
+	Left:  { pin: -1, error: null },
+	Right: { pin: -1, error: null },
+	B1:    { pin: -1, error: null },
+	B2:    { pin: -1, error: null },
+	B3:    { pin: -1, error: null },
+	B4:    { pin: -1, error: null },
+	L1:    { pin: -1, error: null },
+	R1:    { pin: -1, error: null },
+	L2:    { pin: -1, error: null },
+	R2:    { pin: -1, error: null },
+	S1:    { pin: -1, error: null },
+	S2:    { pin: -1, error: null },
+	L3:    { pin: -1, error: null },
+	R3:    { pin: -1, error: null },
+	A1:    { pin: -1, error: null },
+	A2:    { pin: -1, error: null },
 };
 
 async function resetSettings() {
@@ -106,11 +107,38 @@ async function setGamepadOptions(options) {
 
 async function getLedOptions() {
 	return axios.get(`${baseUrl}/api/getLedOptions`)
-		.then((response) => response.data)
+		.then((response) => {
+			// Transform ARGB int value to hex for easy use on frontend
+			Object.keys(response.data.customLeds)
+				.forEach((p) => {
+					response.data.customLeds[p] = {
+						normal: `#${rgbIntToHex(response.data.customLeds[p].normal)}`,
+						pressed: `#${rgbIntToHex(response.data.customLeds[p].pressed)}`,
+					};
+				});
+
+			// Add synthetic 'ALL' option
+			if (!response.data.customLeds['ALL'])
+				response.data.customLeds['ALL'] = { normal: '#000000', pressed: '#000000' };
+
+			console.log(response.data);
+			return response.data;
+		})
 		.catch(console.error);
 }
 
 async function setLedOptions(options) {
+	let data = sanitizeRequest(options);
+
+	// Transform RGB hex values to ARGB int before sending back to API
+	Object.keys(data.customLeds)
+		.forEach((p) => {
+			data.customLeds[p] = {
+				normal: hexToInt(data.customLeds[p].normal.replace('#', '')),
+				pressed: hexToInt(data.customLeds[p].pressed.replace('#', '')),
+			};
+		});
+
 	return axios.post(`${baseUrl}/api/setLedOptions`, sanitizeRequest(options))
 		.then((response) => {
 			console.log(response.data);
@@ -214,6 +242,7 @@ async function reboot(bootMode) {
 function sanitizeRequest(request) {
 	const newRequest = {...request};
 	delete newRequest.usedPins;
+	delete newRequest.ALL; // Synthetic option for custom LEDs
 	return newRequest;
 }
 

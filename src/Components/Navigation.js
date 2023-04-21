@@ -4,7 +4,7 @@ import { NavLink } from "react-router-dom";
 import { AppContext } from '../Contexts/AppContext';
 import FormSelect from './FormSelect';
 import { saveButtonLabels } from '../Services/Storage';
-import BUTTONS from '../Data/Buttons.json';
+import { BUTTONS } from '../Data/Buttons';
 import './Navigation.scss';
 import WebApi from '../Services/WebApi';
 

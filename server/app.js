@@ -131,6 +131,27 @@ app.get('/api/getLedOptions', (req, res) => {
 			A2: null,
 		},
 		usedPins,
+		useCustomLeds: true,
+		customLeds: {
+			Up: { normal: 16711680, pressed: 255 },
+			Down: { normal: 16711680, pressed: 255 },
+			Left: { normal: 16711680, pressed: 255 },
+			Right: { normal: 16711680, pressed: 255 },
+			B1: { normal: 65280, pressed: 16711680 },
+			B2: { normal: 65280, pressed: 16711680 },
+			B3: { normal: 255, pressed: 65280 },
+			B4: { normal: 255, pressed: 65280 },
+			L1: { normal: 255, pressed: 65280 },
+			R1: { normal: 255, pressed: 65280 },
+			L2: { normal: 65280, pressed: 16711680 },
+			R2: { normal: 65280, pressed: 16711680 },
+			S1: { normal: 65535, pressed: 16776960 },
+			S2: { normal: 65535, pressed: 16776960 },
+			L3: { normal: 65416, pressed: 16746496 },
+			R3: { normal: 65416, pressed: 16746496 },
+			A1: { normal: 8913151, pressed: 65416 },
+			A2: { normal: 8913151, pressed: 65416 },
+		},
 	});
 });
 
