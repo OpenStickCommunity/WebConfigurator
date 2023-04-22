@@ -99,9 +99,11 @@ export default function BackupPage() {
 
 		const fileDate = new Date().toISOString().replace(/[^0-9]/g, '');
 		const name = FILENAME.replace("{DATE}", fileDate);
-		const fileData = "text/json;charset=utf-8," + JSON.stringify(exportData);
+		const json = JSON.stringify(exportData);
+		const file = new Blob([json], { type: 'text/json;charset=utf-8' });
+
 		let a = document.createElement('a');
-		a.href = "data:" + fileData;
+		a.href = URL.createObjectURL(file);
 		a.download = name;
 		a.innerHTML = "Save Backup";
 
