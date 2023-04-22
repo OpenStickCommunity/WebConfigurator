@@ -373,7 +373,14 @@ export default function LEDConfigPage() {
 							{useCustomLeds &&
 								<>
 									<Stack>
-										<div className="d-flex justify-content-around">
+										<div className="d-flex justify-content-between">
+											<div className="d-flex d-none d-md-block">
+												<ul>
+													<li>Click a button to bring up the normal and pressed color selection.</li>
+													<li>Click on the controller background to dismiss the color selection.</li>
+													<li>Right-click a button to preview the button's pressed color.</li>
+												</ul>
+											</div>
 											<FormSelect
 												label="LED Layout"
 												name="ledLayout"
@@ -385,13 +392,6 @@ export default function LEDConfigPage() {
 											>
 												{BUTTON_LAYOUTS.map((o, i) => <option key={`ledLayout-option-${i}`} value={o.value}>{o.label}</option>)}
 											</FormSelect>
-											<div className="d-flex d-none d-md-block">
-												<ul>
-													<li>Click a button to bring up the normal and pressed color selection.</li>
-													<li>Click on the controller background to dismiss the color selection.</li>
-													<li>Right-click a button to preview the button's pressed color.</li>
-												</ul>
-											</div>
 										</div>
 										<div className="d-flex led-preview-container">
 											<div
