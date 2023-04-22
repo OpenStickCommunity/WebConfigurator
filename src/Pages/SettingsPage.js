@@ -22,6 +22,7 @@ const SOCD_MODES = [
 	{ label: 'Up Priority', value: 0 },
 	{ label: 'Neutral', value: 1 },
 	{ label: 'Last Win', value: 2 },
+	{ label: 'First Win', value: 3 },
 ];
 
 const schema = yup.object().shape({
