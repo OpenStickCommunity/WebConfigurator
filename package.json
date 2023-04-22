@@ -17,7 +17,7 @@
     "yup": "^0.32.11"
   },
   "scripts": {
-    "analyze": "npm run build && source-map-explorer 'build/static/js/*.js'",
+    "analyze": "react-scripts build && source-map-explorer 'build/static/js/*.js'",
     "build": "react-scripts build && npm run makefsdata",
     "makefsdata": "node makefsdata.js",
     "start": "react-scripts start",
