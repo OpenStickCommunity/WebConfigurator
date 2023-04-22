@@ -32,14 +32,16 @@ const baseButtonMappings = {
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use((req, res, next) => {
+	console.log("Request:", req.method, req.url);
+	next();
+});
 
 app.get("/api/resetSettings", (req, res) => {
-	console.log("/api/resetSettings");
 	return res.send({ success: true });
 });
 
 app.get("/api/getDisplayOptions", (req, res) => {
-	console.log("/api/getDisplayOptions");
 	const data = {
 		enabled: 1,
 		sdaPin: 0,
@@ -79,7 +81,6 @@ app.get("/api/getDisplayOptions", (req, res) => {
 });
 
 app.get("/api/getSplashImage", (req, res) => {
-	console.log("/api/getSplashImage");
 	const data = {
 		splashImage: Array(16 * 64).fill(255),
 	};
@@ -88,7 +89,6 @@ app.get("/api/getSplashImage", (req, res) => {
 });
 
 app.get("/api/getGamepadOptions", (req, res) => {
-	console.log("/api/getGamepadOptions");
 	return res.send({
 		dpadMode: 0,
 		inputMode: 1,
@@ -97,7 +97,6 @@ app.get("/api/getGamepadOptions", (req, res) => {
 });
 
 app.get("/api/getLedOptions", (req, res) => {
-	console.log("/api/getLedOptions");
 	let usedPins = [];
 	for (let prop of Object.keys(controllers["pico"]))
 		if (!isNaN(parseInt(controllers["pico"][prop])))
@@ -135,7 +134,6 @@ app.get("/api/getLedOptions", (req, res) => {
 });
 
 app.get("/api/getPinMappings", (req, res) => {
-	console.log("/api/getPinMappings");
 	let mappings = { ...baseButtonMappings };
 	for (let prop of Object.keys(controllers["pico"])) {
 		if (mappings[prop]) mappings[prop] = parseInt(controllers["pico"][prop]);
@@ -145,7 +143,6 @@ app.get("/api/getPinMappings", (req, res) => {
 });
 
 app.get("/api/getKeyMappings", (req, res) => {
-	console.log("/api/getKeyMappings");
 	let mappings = { ...baseButtonMappings };
 	for (let prop of Object.keys(baseButtonMappings)) {
 		if (mappings[prop]) mappings[prop] = parseInt(baseButtonMappings[prop].key);
@@ -154,7 +151,6 @@ app.get("/api/getKeyMappings", (req, res) => {
 });
 
 app.get("/api/getAddonsOptions", (req, res) => {
-	console.log("/api/getAddonsOptions");
 	let usedPins = [];
 	for (let prop of Object.keys(controllers["pico"]))
 		if (!isNaN(parseInt(controllers["pico"][prop])))
@@ -224,14 +220,12 @@ app.get("/api/getAddonsOptions", (req, res) => {
 });
 
 app.get("/api/getFirmwareVersion", (req, res) => {
-	console.log("/api/getFirmwareVersion");
 	return res.send({
 		version: process.env.REACT_APP_CURRENT_VERSION,
 	});
 });
 
 app.get("/api/getButtonLayoutCustomOptions", (req, res) => {
-	console.log("/api/getButtonLayoutCustomOptions");
 	return res.send({
 		params: {
 			layout: 2,
@@ -251,12 +245,10 @@ app.get("/api/getButtonLayoutCustomOptions", (req, res) => {
 });
 
 app.get("/api/reboot", (req, res) => {
-	console.log("/api/reboot");
 	return res.send({});
 });
 
 app.get("/api/getMemoryReport", (req, res) => {
-	console.log("/api/getMemoryReport");
 	return res.send({
 		totalFlash: 2048,
 		usedFlash: 1048,
@@ -267,10 +259,9 @@ app.get("/api/getMemoryReport", (req, res) => {
 });
 
 app.post("/api/*", (req, res) => {
-	console.log(req.url);
 	return res.send(req.body);
 });
 
 app.listen(port, () => {
-	console.log(`Example app listening at http://localhost:${port}`);
+	console.log(`Dev app listening at http://localhost:${port}`);
 });
