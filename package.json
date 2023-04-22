@@ -17,6 +17,7 @@
     "yup": "^0.32.11"
   },
   "scripts": {
+    "analyze": "npm run build && source-map-explorer 'build/static/js/*.js'",
     "build": "react-scripts build && npm run makefsdata",
     "makefsdata": "node makefsdata.js",
     "start": "react-scripts start",
@@ -49,6 +50,7 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "node-sass": "^8.0.0",
-    "nodemon": "^2.0.15"
+    "nodemon": "^2.0.15",
+    "source-map-explorer": "^2.5.3"
   }
 }
