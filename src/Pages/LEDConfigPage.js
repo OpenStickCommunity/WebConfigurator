@@ -53,15 +53,6 @@ const BUTTON_LAYOUTS = [
 	},
 ];
 
-const BUTTON_TYPE = [
-	{ name: "30mm", value: 30, radius: 15 },
-	{ name: "24mm", value: 24, radius: 12 },
-	{ name: "keycap", value: 19 },
-	{ name: "joystick", value: 35, radius: 17.5 },
-];
-
-const PICKER_TYPE = ['normal', 'pressed'];
-
 const defaultCustomLeds = Object.keys(BUTTONS.gp2040)
 	?.filter(p => p !== 'label' && p !== 'value')
 	.reduce((a, p) => {
@@ -173,6 +164,8 @@ const FormContext = ({ buttonLabels, ledButtonMap, ledFormat, setDataSources, se
 			setDataSources(dataSources);
 			setValues(data);
 			setUseCustomLeds(data.useCustomLeds);
+			if (!data.customLeds['ALL'])
+				data.customLeds['ALL'] = { normal: '#000000', pressed: '#000000' };
 			setCustomLeds(data.customLeds);
 		}
 		fetchData();
@@ -262,7 +255,9 @@ export default function LEDConfigPage() {
 	};
 
 	const onSuccess = async (values) => {
-		const success = WebApi.setLedOptions({ ...values, useCustomLeds, customLeds });
+		const leds = { ...customLeds };
+		delete leds['ALL'];
+		const success = WebApi.setLedOptions({ ...values, useCustomLeds, customLeds: leds });
 		setSaveMessage(success ? 'Saved! Please Restart Your Device' : 'Unable to Save');
 	};
 

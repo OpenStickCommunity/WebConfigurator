@@ -117,10 +117,6 @@ async function getLedOptions() {
 					};
 				});
 
-			// Add synthetic 'ALL' option
-			if (!response.data.customLeds['ALL'])
-				response.data.customLeds['ALL'] = { normal: '#000000', pressed: '#000000' };
-
 			console.log(response.data);
 			return response.data;
 		})
@@ -242,7 +238,6 @@ async function reboot(bootMode) {
 function sanitizeRequest(request) {
 	const newRequest = {...request};
 	delete newRequest.usedPins;
-	delete newRequest.ALL; // Synthetic option for custom LEDs
 	return newRequest;
 }
 
