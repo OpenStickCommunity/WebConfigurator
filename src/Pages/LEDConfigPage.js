@@ -11,7 +11,7 @@ import Popover from 'react-bootstrap/Popover';
 import Stack from 'react-bootstrap/Stack';
 import Table from 'react-bootstrap/Table';
 import FormCheck from 'react-bootstrap/FormCheck';
-import { SketchPicker } from 'react-color';
+import { SketchPicker } from '@hello-pangea/color-picker';
 import { Formik, useFormikContext } from 'formik';
 import find from 'lodash/find';
 import orderBy from 'lodash/orderBy';
