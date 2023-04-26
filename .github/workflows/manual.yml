@@ -1,6 +1,8 @@
 name: Send submodule updates to parent repo
 
 on:
+  workflow_dispatch:
+  workflow_call:
   push:
     branches: 
       - main
