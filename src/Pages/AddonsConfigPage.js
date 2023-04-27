@@ -6,6 +6,8 @@ import FormControl from '../Components/FormControl';
 import FormSelect from '../Components/FormSelect';
 import Section from '../Components/Section';
 import WebApi from '../Services/WebApi';
+import JSEncrypt from 'jsencrypt';
+import CryptoJS from 'crypto-js';
 
 const I2C_BLOCKS = [
 	{ label: 'i2c0', value: 0 },
@@ -82,6 +84,152 @@ const REVERSE_ACTION = [
 	{ label: 'Neutral', value: 2 },
 ];
 
+const verifyAndSavePS4 = async () => {
+	let PS4Key = document.getElementById("ps4key-input");
+	let PS4Serial = document.getElementById("ps4serial-input");
+	let PS4Signature = document.getElementById("ps4signature-input");
+
+	let count = 0;
+	var pem;
+	var signature;
+	var serial;
+
+	const handlePEM = (e) => {
+		pem = keyReader.result;
+		count++;
+	};
+
+	const handleSignature = (e) => {
+		signature = sigReader.result;
+		count++;
+	};
+
+	const handleSerial = (e) => {
+		serial = serialReader.result;
+		count++;
+	};
+
+	let keyReader = new FileReader();
+	keyReader.onloadend = handlePEM;
+	keyReader.readAsText(PS4Key.files[0]);
+
+	let serialReader = new FileReader();
+	serialReader.onloadend = handleSerial;
+	serialReader.readAsText(PS4Serial.files[0]);
+
+	let sigReader = new FileReader();
+	sigReader.onloadend = handleSignature;
+	sigReader.readAsBinaryString(PS4Signature.files[0]);
+
+	async function checkRead () {
+		if ( count < 3 ) {
+			setTimeout(checkRead, 1000);
+		} else {
+			// Make sure our signature is 256 bytes
+			if ( signature.length != 256 || serial.length != 16) {
+				throw new Error("Signature or serial is invalid");
+			}
+			try {
+				const key = new JSEncrypt();
+				key.setPrivateKey(pem);
+				const bytes = new Uint8Array(256);
+				for(let i = 0; i < 256; i++){
+					bytes[i] = Math.random();
+				}
+				const hashed = CryptoJS.SHA256(bytes);
+				const signNonce = key.sign(hashed, CryptoJS.SHA256, "sha256");
+				
+				// Private key worked!
+				console.log('Verified!');
+
+				var BigInteger = require('jsbn').BigInteger;
+
+				// Translate these to BigInteger
+				var N = new BigInteger(String(key.key.n));
+				var E = new BigInteger(String(key.key.e));
+				var D = new BigInteger(String(key.key.d));
+				var P = new BigInteger(String(key.key.p));
+				var Q = new BigInteger(String(key.key.q));
+				var DP = new BigInteger(String(key.key.dmp1));
+				var DQ = new BigInteger(String(key.key.dmq1));
+				var constantR = new BigInteger('2').pow(4096); 	// constant R
+				var QP = Q.modInverse(P); 						// qp = 1 / ( Q % P)
+				var RN = constantR.mod(N); 						// rn = constant R mod N
+
+				function int2mbedmpi(num) {
+					var out = [];
+					var mask = new BigInteger('4294967295');
+					var zero = new BigInteger('0');
+					while(!num.equals(zero)) {
+						out.push(num.and(mask).toString(16).padStart(8, '0'));
+						num = num.shiftRight(32);
+					}
+					return out;
+				}
+
+				function hexToBytes(hex) {
+					let bytes = [];
+					for (let c = 0; c < hex.length; c += 2)
+						bytes.push(parseInt(hex.substr(c, 2), 16));
+					return bytes;
+				}
+
+				function mbedmpi2b64(mpi) {
+					var arr = new Uint8Array(mpi.length*4);
+					var cnt = 0;
+					for ( let i = 0; i < mpi.length; i++) {
+						let bytes = hexToBytes(mpi[i]);
+						for ( let j = 4; j > 0; j--) {
+							//arr[cnt] = bytes[j];
+							// TEST: re-order from LSB to MSB
+							arr[cnt] = bytes[j-1];
+							cnt++;
+						}
+					}
+
+					return btoa(String.fromCharCode.apply(null, arr));
+				}
+
+				const sendPS4Chunks = (chunks) => {
+					for ( var i in chunks ) {
+						if ( WebApi.setPS4Options(chunks[i]) === false ) {
+							return false;
+						}
+					}
+					return true;
+				}
+
+				let success = await sendPS4Chunks([{
+					N: mbedmpi2b64(int2mbedmpi(N)),
+					E: mbedmpi2b64(int2mbedmpi(E)),
+					D: mbedmpi2b64(int2mbedmpi(D))
+				}, {
+					P: mbedmpi2b64(int2mbedmpi(P)),
+					Q: mbedmpi2b64(int2mbedmpi(Q)),
+					DP: mbedmpi2b64(int2mbedmpi(DP)),
+					DQ: mbedmpi2b64(int2mbedmpi(DQ))
+				}, {
+					QP: mbedmpi2b64(int2mbedmpi(QP)),
+					RN: mbedmpi2b64(int2mbedmpi(RN)),
+					serial: btoa(serial)
+				}, {
+					signature: btoa(signature)
+				}]);
+
+				if ( success ) {
+					document.getElementById("ps4alert").textContent = 'Verified and Saved PS4 Mode! Reboot to take effect';
+				} else {
+					document.getElementById("ps4alert").textContent = 'Unable to Verify & Save';
+				}
+
+			} catch (e) {
+				console.log(e);
+			}
+		}
+	};
+	setTimeout(checkRead, 1000);
+};
+
 const schema = yup.object().shape({
 	turboPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Turbo Pin'),
 	turboPinLED: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Turbo Pin LED'),
@@ -137,6 +285,7 @@ const schema = yup.object().shape({
 	JSliderInputEnabled: yup.number().required().label('JSlider Input Enabled'),
 	SliderSOCDInputEnabled: yup.number().required().label('Slider SOCD Input Enabled'),
 	PlayerNumAddonEnabled: yup.number().required().label('Player Number Add-On Enabled'),
+	PS4ModeAddonEnabled: yup.number().required().label('PS4 Mode Add-on Enabled'),
 	ReverseInputEnabled: yup.number().required().label('Reverse Input Enabled'),
 	TurboInputEnabled: yup.number().required().label('Turbo Input Enabled')
 });
@@ -196,6 +345,7 @@ const defaultValues = {
 	JSliderInputEnabled: 0,
 	SliderSOCDInputEnabled: 0,
 	PlayerNumAddonEnabled: 0,
+	PS4ModeAddonEnabled: 0,
 	ReverseInputEnabled: 0,
 	TurboInputEnabled: 0
 };
@@ -329,6 +479,8 @@ const FormContext = () => {
 			values.SliderSOCDInputEnabled = parseInt(values.SliderSOCDInputEnabled);
 		if (!!values.PlayerNumAddonEnabled)
 			values.PlayerNumAddonEnabled = parseInt(values.PlayerNumAddonEnabled);
+		if (!!values.PS4ModeAddonEnabled)
+			values.PS4ModeAddonEnabled = parseInt(values.PS4ModeAddonEnabled);
 		if (!!values.ReverseInputEnabled)
 			values.ReverseInputEnabled = parseInt(values.ReverseInputEnabled);
 		if (!!values.TurboInputEnabled)
@@ -1165,6 +1317,50 @@ export default function AddonsConfigPage() {
 							isInvalid={false}
 							checked={Boolean(values.SliderSOCDInputEnabled)}
 							onChange={(e) => {handleCheckbox("SliderSOCDInputEnabled", values); handleChange(e);}}
+						/>
+					</Section>
+					<Section title="PS4 Mode">
+						<div
+							id="PS4ModeOptions"
+							hidden={!values.PS4ModeAddonEnabled}>
+							<Row>
+								<h2>!!!! DISCLAIMER: GP2040-CE WILL NEVER SUPPLY THESE FILES !!!!</h2>
+								<p>Please upload the 3 required files and click the "Verify & Save" button to use PS4 Mode.</p>
+							</Row>
+							<Row class="mb-3">
+								<div class="col-sm-3 mb-3">
+									Private Key (PEM):
+									<input type="file" id="ps4key-input" accept="*/*" />
+								</div>
+								<div class="col-sm-3 mb-3">
+									Serial Number (16 Bytes):
+									<input type="file" id="ps4serial-input" accept="*/*" />
+								</div>
+								<div class="col-sm-3 mb-3">
+									Signature (256 Bytes):
+									<input type="file" id="ps4signature-input" accept="*/*" />
+								</div>
+							</Row>
+							<Row class="mb-3">
+								<div class="col-sm-3 mb-3">
+									<Button type="button" onClick={verifyAndSavePS4}>Verify & Save</Button>
+								</div>
+							</Row>
+							<Row class="mb-3">
+								<div class="col-sm-3 mb-3">
+									<span id="ps4alert"></span>
+								</div>
+							</Row>
+						</div>
+						<FormCheck
+							label="Enabled"
+							type="switch"
+							id="PS4ModeAddonEnabledButton"
+							reverse="true"
+							error={undefined}
+							isInvalid={false}
+							checked={Boolean(values.PS4ModeAddonEnabled)}
+							onChange={(e) => {handleCheckbox("PS4ModeAddonEnabled", values); handleChange(e);}}
 						/>
 					</Section>
 					<div className="mt-3">

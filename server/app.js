@@ -231,7 +231,9 @@ app.get('/api/getAddonsOptions', (req, res) => {
 		I2CAnalog1219InputEnabled: 1,
 		JSliderInputEnabled: 1,
 		PlayerNumAddonEnabled: 1,
+		PS4ModeAddonEnabled: 1,
 		ReverseInputEnabled: 1,
+		SliderSOCDInputEnabled: 1,
 		TurboInputEnabled: 1,
 		usedPins,
 	});

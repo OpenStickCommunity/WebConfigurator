@@ -12,6 +12,7 @@ const INPUT_MODES = [
 	{ label: 'Nintendo Switch', value: 1 },
 	{ label: 'PS3/DirectInput', value: 2 },
 	{ label: 'Keyboard', value: 3 },
+	{ label: 'PS4', value: 4 }
 ];
 
 const DPAD_MODES = [
