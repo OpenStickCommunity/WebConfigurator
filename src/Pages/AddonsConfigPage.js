@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Form, Row, Col, FormCheck } from 'react-bootstrap';
+import { Button, Form, Row, FormCheck } from 'react-bootstrap';
 import { Formik, useFormikContext } from 'formik';
 import * as yup from 'yup';
 import FormControl from '../Components/FormControl';
@@ -102,7 +102,7 @@ const schema = yup.object().shape({
 	dualDirDownPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Dual Directional Down Pin'),
 	dualDirLeftPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Dual Directional Left Pin'),
 	dualDirRightPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Dual Directional Right Pin'),
-	dualDirDpadMode : yup.number().required().oneOf(DUAL_STICK_MODES.map(o => o.value)).label('Dual Stick Mode'), 
+	dualDirDpadMode : yup.number().required().oneOf(DUAL_STICK_MODES.map(o => o.value)).label('Dual Stick Mode'),
 	dualDirCombineMode : yup.number().required().oneOf(DUAL_COMBINE_MODES.map(o => o.value)).label('Dual Combination Mode'),
 	analogAdcPinX : yup.number().required().test('', '${originalValue} is unavailable/already assigned!', (value) => usedPins.indexOf(value) === -1).label('Analog Stick Pin X'),
  	analogAdcPinY : yup.number().required().test('', '${originalValue} is unavailable/already assigned!', (value) => usedPins.indexOf(value) === -1).label('Analog Stick Pin Y'),
@@ -387,7 +387,7 @@ export default function AddonsConfigPage() {
 							type="switch"
 							id="BootselButtonAddonButton"
 							reverse="true"
-							error={false}
+							error={undefined}
 							isInvalid={false}
 							checked={Boolean(values.BootselButtonAddonEnabled)}
 							onChange={(e) => { handleCheckbox("BootselButtonAddonEnabled", values); handleChange(e);}}
@@ -414,7 +414,7 @@ export default function AddonsConfigPage() {
 							type="switch"
 							id="BoardLedAddonButton"
 							reverse="true"
-							error={false}
+							error={undefined}
 							isInvalid={false}
 							checked={Boolean(values.BoardLedAddonEnabled)}
 							onChange={(e) => {handleCheckbox("BoardLedAddonEnabled", values); handleChange(e);}}
@@ -425,7 +425,7 @@ export default function AddonsConfigPage() {
 							id="AnalogInputOptions"
 							hidden={!values.AnalogInputEnabled}>
 						<p>Available pins: {ANALOG_PINS.join(", ")}</p>
-						<Row class="mb-3">
+						<Row className="mb-3">
 							<FormSelect
 								label="Analog Stick X Pin"
 								name="analogAdcPinX"
@@ -457,7 +457,7 @@ export default function AddonsConfigPage() {
 							type="switch"
 							id="AnalogInputButton"
 							reverse="true"
-							error={false}
+							error={undefined}
 							isInvalid={false}
 							checked={Boolean(values.AnalogInputEnabled)}
 							onChange={(e) => {handleCheckbox("AnalogInputEnabled", values); handleChange(e);}}
@@ -467,13 +467,13 @@ export default function AddonsConfigPage() {
 						<div
 							id="TurboInputOptions"
 							hidden={!values.TurboInputEnabled}>
-						<Row class="mb-3">
+						<Row className="mb-3">
 							<FormControl type="number"
 								label="Turbo Pin"
 								name="turboPin"
 								className="form-select-sm"
 								groupClassName="col-sm-3 mb-3"
-								value={values.turboPin}
+								value={values.turboPin || -1}
 								error={errors.turboPin}
 								isInvalid={errors.turboPin}
 								onChange={handleChange}
@@ -485,7 +485,7 @@ export default function AddonsConfigPage() {
 								name="turboPinLED"
 								className="form-select-sm"
 								groupClassName="col-sm-3 mb-3"
-								value={values.turboPinLED}
+								value={values.turboPinLED || -1}
 								error={errors.turboPinLED}
 								isInvalid={errors.turboPinLED}
 								onChange={handleChange}
@@ -509,7 +509,7 @@ export default function AddonsConfigPage() {
 								name="pinShmupDial"
 								className="form-select-sm"
 								groupClassName="col-sm-3 mb-3"
-								value={values.pinShmupDial}
+								value={values.pinShmupDial || -1}
 								error={errors.pinShmupDial}
 								isInvalid={errors.pinShmupDial}
 								onChange={handleChange}
@@ -521,8 +521,7 @@ export default function AddonsConfigPage() {
 								type="switch"
 								id="ShmupMode"
 								className="col-sm-3 ms-2"
-								groupClassName="col-sm-3 mb-3"
-								error={false}
+								error={undefined}
 								isInvalid={false}
 								checked={Boolean(values.shmupMode)}
 								onChange={(e) => {handleCheckbox("shmupMode", values); handleChange(e);}}
@@ -530,7 +529,7 @@ export default function AddonsConfigPage() {
 							<div
 								id="ShmupOptions"
 								hidden={!values.shmupMode}>
-								<Row class="mb-3">
+								<Row className="mb-3">
 									<FormSelect
 										label="Turbo Always On 1"
 										name="shmupAlwaysOn1"
@@ -580,7 +579,7 @@ export default function AddonsConfigPage() {
 										{TURBO_MASKS.map((o, i) => <option key={`shmupAlwaysOn4-option-${i}`} value={o.value}>{o.label}</option>)}
 									</FormSelect>
 								</Row>
-								<Row class="mb-3">
+								<Row className="mb-3">
 									<FormControl type="number"
 										label="Charge Button 1 Pin"
 										name="pinShmupBtn1"
@@ -630,7 +629,7 @@ export default function AddonsConfigPage() {
 										max={29}
 									/>
 								</Row>
-								<Row class="mb-3">
+								<Row className="mb-3">
 									<FormSelect
 										label="Charge Button 1 Assignment"
 										name="shmupBtnMask1"
@@ -700,7 +699,7 @@ export default function AddonsConfigPage() {
 							type="switch"
 							id="TurboInputButton"
 							reverse="true"
-							error={false}
+							error={undefined}
 							isInvalid={false}
 							checked={Boolean(values.TurboInputEnabled)}
 							onChange={(e) => {handleCheckbox("TurboInputEnabled", values); handleChange(e);}}
@@ -710,7 +709,7 @@ export default function AddonsConfigPage() {
 						<div
 							id="JSliderInputOptions"
 							hidden={!values.JSliderInputEnabled}>
-						<Row class="mb-3">
+						<Row className="mb-3">
 							<FormControl type="number"
 								label="Slider LS Pin"
 								name="sliderLSPin"
@@ -742,7 +741,7 @@ export default function AddonsConfigPage() {
 							type="switch"
 							id="JSliderInputButton"
 							reverse="true"
-							error={false}
+							error={undefined}
 							isInvalid={false}
 							checked={Boolean(values.JSliderInputEnabled)}
 							onChange={(e) => {handleCheckbox("JSliderInputEnabled", values); handleChange(e);}}
@@ -752,7 +751,7 @@ export default function AddonsConfigPage() {
 						<div
 							id="ReverseInputOptions"
 							hidden={!values.ReverseInputEnabled}>
-						<Row class="mb-3">
+						<Row className="mb-3">
 							<FormControl type="number"
 								label="Reverse Input Pin"
 								name="reversePin"
@@ -778,7 +777,7 @@ export default function AddonsConfigPage() {
 								max={29}
 							/>
 						</Row>
-						<Row class="mb-3">
+						<Row className="mb-3">
 							<FormSelect
 								label="Reverse Up"
 								name="reverseActionUp"
@@ -834,7 +833,7 @@ export default function AddonsConfigPage() {
 							type="switch"
 							id="ReverseInputButton"
 							reverse="true"
-							error={false}
+							error={undefined}
 							isInvalid={false}
 							checked={Boolean(values.ReverseInputEnabled)}
 							onChange={(e) => {handleCheckbox("ReverseInputEnabled", values); handleChange(e);}}
@@ -844,7 +843,7 @@ export default function AddonsConfigPage() {
 						<div
 							id="I2CAnalog1219InputOptions"
 							hidden={!values.I2CAnalog1219InputEnabled}>
-						<Row class="mb-3">
+						<Row className="mb-3">
 							<FormControl type="number"
 								label="I2C Analog ADS1219 SDA Pin"
 								name="i2cAnalog1219SDAPin"
@@ -893,7 +892,7 @@ export default function AddonsConfigPage() {
 								min={100000}
 							/>
 						</Row>
-						<Row class="mb-3">
+						<Row className="mb-3">
 							<FormControl
 								label="I2C Analog ADS1219 Address"
 								name="i2cAnalog1219Address"
@@ -912,7 +911,7 @@ export default function AddonsConfigPage() {
 							type="switch"
 							id="I2CAnalog1219InputButton"
 							reverse="true"
-							error={false}
+							error={undefined}
 							isInvalid={false}
 							checked={Boolean(values.I2CAnalog1219InputEnabled)}
 							onChange={(e) => {handleCheckbox("I2CAnalog1219InputEnabled", values); handleChange(e);}}
@@ -922,13 +921,13 @@ export default function AddonsConfigPage() {
 						<div
 							id="DualDirectionalInputOptions"
 							hidden={!values.DualDirectionalInputEnabled}>
-						<Row class="mb-3">
+						<Row className="mb-3">
 							<FormControl type="number"
 								label="Dual Up Pin"
 								name="dualDirUpPin"
 								className="form-select-sm"
 								groupClassName="col-sm-3 mb-3"
-								value={values.dualDirUpPin}
+								value={values.dualDirUpPin || -1}
 								error={errors.dualDirUpPin}
 								isInvalid={errors.dualDirUpPin}
 								onChange={handleChange}
@@ -940,7 +939,7 @@ export default function AddonsConfigPage() {
 								name="dualDirDownPin"
 								className="form-select-sm"
 								groupClassName="col-sm-3 mb-3"
-								value={values.dualDirDownPin}
+								value={values.dualDirDownPin || -1}
 								error={errors.dualDirDownPin}
 								isInvalid={errors.dualDirDownPin}
 								onChange={handleChange}
@@ -952,7 +951,7 @@ export default function AddonsConfigPage() {
 								name="dualDirLeftPin"
 								className="form-select-sm"
 								groupClassName="col-sm-3 mb-3"
-								value={values.dualDirLeftPin}
+								value={values.dualDirLeftPin || -1}
 								error={errors.dualDirLeftPin}
 								isInvalid={errors.dualDirLeftPin}
 								onChange={handleChange}
@@ -964,7 +963,7 @@ export default function AddonsConfigPage() {
 								name="dualDirRightPin"
 								className="form-select-sm"
 								groupClassName="col-sm-3 mb-3"
-								value={values.dualDirRightPin}
+								value={values.dualDirRightPin || -1}
 								error={errors.dualDirRightPin}
 								isInvalid={errors.dualDirRightPin}
 								onChange={handleChange}
@@ -972,7 +971,7 @@ export default function AddonsConfigPage() {
 								max={29}
 							/>
 						</Row>
-						<Row class="mb-3">
+						<Row className="mb-3">
 							<FormSelect
 								label="Dual D-Pad Mode"
 								name="dualDirDpadMode"
@@ -1005,7 +1004,7 @@ export default function AddonsConfigPage() {
 							type="switch"
 							id="DualDirectionalInputButton"
 							reverse="true"
-							error={false}
+							error={undefined}
 							isInvalid={false}
 							checked={Boolean(values.DualDirectionalInputEnabled)}
 							onChange={(e) => {handleCheckbox("DualDirectionalInputEnabled", values); handleChange(e);}}
@@ -1015,7 +1014,7 @@ export default function AddonsConfigPage() {
 						<div
 							id="BuzzerSpeakerAddonOptions"
 							hidden={!values.BuzzerSpeakerAddonEnabled}>
-						<Row class="mb-3">	
+						<Row className="mb-3">
 							<FormControl type="number"
 								label="Buzzer Pin"
 								name="buzzerPin"
@@ -1047,7 +1046,7 @@ export default function AddonsConfigPage() {
 							type="switch"
 							id="BuzzerSpeakerAddonButton"
 							reverse="true"
-							error={false}
+							error={undefined}
 							isInvalid={false}
 							checked={Boolean(values.BuzzerSpeakerAddonEnabled)}
 							onChange={(e) => {handleCheckbox("BuzzerSpeakerAddonEnabled", values); handleChange(e);}}
@@ -1057,13 +1056,13 @@ export default function AddonsConfigPage() {
 						<div
 							id="ExtraButtonAddonOptions"
 							hidden={!values.ExtraButtonAddonEnabled}>
-							<Row class="mb-3">
+							<Row className="mb-3">
 								<FormControl type="number"
 									label="Extra Button Pin"
 									name="extraButtonPin"
 									className="form-select-sm"
 									groupClassName="col-sm-3 mb-3"
-									value={values.extraButtonPin}
+									value={values.extraButtonPin || -1}
 									error={errors.extraButtonPin}
 									isInvalid={errors.extraButtonPin}
 									onChange={handleChange}
@@ -1089,7 +1088,7 @@ export default function AddonsConfigPage() {
 							type="switch"
 							id="ExtraButtonAddonButton"
 							reverse="true"
-							error={false}
+							error={undefined}
 							isInvalid={false}
 							checked={Boolean(values.ExtraButtonAddonEnabled)}
 							onChange={(e) => { handleCheckbox("ExtraButtonAddonEnabled", values); handleChange(e);}}
@@ -1100,7 +1099,7 @@ export default function AddonsConfigPage() {
 							id="PlayerNumAddonOptions"
 							hidden={!values.PlayerNumAddonEnabled}>
 						<p><strong>WARNING: ONLY ENABLE THIS OPTION IF YOU ARE CONNECTING MULTIPLE GP2040-CE DEVICES WITH PLAYER NUMBER ENABLED</strong></p>
-						<Row class="mb-3">
+						<Row className="mb-3">
 							<FormControl type="number"
 								label="Player Number"
 								name="playerNumber"
@@ -1120,7 +1119,7 @@ export default function AddonsConfigPage() {
 							type="switch"
 							id="PlayerNumAddonButton"
 							reverse="true"
-							error={false}
+							error={undefined}
 							isInvalid={false}
 							checked={Boolean(values.PlayerNumAddonEnabled)}
 							onChange={(e) => {handleCheckbox("PlayerNumAddonEnabled", values); handleChange(e);}}
@@ -1130,7 +1129,7 @@ export default function AddonsConfigPage() {
 						<div
 							id="SliderSOCDInputOptions"
 							hidden={!values.SliderSOCDInputEnabled}>
-						<Row class="mb-3">
+						<Row className="mb-3">
 							<FormControl type="number"
 								label="Slider SOCD Up Priority Pin"
 								name="sliderSOCDUpPin"
@@ -1162,7 +1161,7 @@ export default function AddonsConfigPage() {
 							type="switch"
 							id="SliderSOCDInputButton"
 							reverse="true"
-							error={false}
+							error={undefined}
 							isInvalid={false}
 							checked={Boolean(values.SliderSOCDInputEnabled)}
 							onChange={(e) => {handleCheckbox("SliderSOCDInputEnabled", values); handleChange(e);}}

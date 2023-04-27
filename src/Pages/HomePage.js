@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { orderBy } from 'lodash';
+import orderBy from 'lodash/orderBy';
 
 import Section from '../Components/Section';
 
@@ -20,7 +20,7 @@ export default function HomePage() {
 			setCurrentVersion(response.version);
 		})
 		.catch(console.error);
-		
+
 		WebApi.getMemoryReport().then(response => {
 			const unit = 1024;
 			const {totalFlash, usedFlash, staticAllocs, totalHeap, usedHeap} = response;
@@ -35,7 +35,7 @@ export default function HomePage() {
 			});
 		})
 		.catch(console.error);
-		
+
 		axios.get('https://api.github.com/repos/OpenStickCommunity/GP2040-CE/releases')
 			.then((response) => {
 				const sortedData = orderBy(response.data, 'published_at', 'desc');
@@ -51,23 +51,24 @@ export default function HomePage() {
 			<p>Please select a menu option to proceed.</p>
 			<Section title="System Stats">
 				<div>
-					<p><div><strong>Version</strong></div>
+					<div><strong>Version</strong></div>
 					<div>Current: { currentVersion }</div>
 					<div>Latest: { latestVersion }</div>
 					{(latestVersion && currentVersion !== latestVersion) &&
-						<div className="mt-3">
+						<div className="mt-3 mb-3">
 							<a
 								target="_blank"
 								rel="noreferrer"
 								href={`https://github.com/OpenStickCommunity/GP2040-CE/releases/tag/${latestTag}`}
 								className="btn btn-primary"
 							>Get Latest Version</a>
-						</div>}</p>
+						</div>
+					}
 					{memoryReport &&
 						<div>
 							<strong>Memory (KB)</strong>
-							<div>Flash: {memoryReport.usedFlash} // {memoryReport.totalFlash} ({memoryReport.percentageFlash}%)</div>
-							<div>Heap: {memoryReport.usedHeap} // {memoryReport.totalHeap} ({memoryReport.percentageHeap}%)</div>
+							<div>Flash: {memoryReport.usedFlash} / {memoryReport.totalFlash} ({memoryReport.percentageFlash}%)</div>
+							<div>Heap: {memoryReport.usedHeap} / {memoryReport.totalHeap} ({memoryReport.percentageHeap}%)</div>
 							<div>Static Allocations: {memoryReport.staticAllocs}</div>
 						</div>
 					}

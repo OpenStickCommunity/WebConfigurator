@@ -82,7 +82,7 @@ export default function PinMappingPage() {
 				<p>Use the form below to reconfigure your button-to-pin mapping.</p>
 				<div className="alert alert-warning">
 					Mapping buttons to pins that aren't connected or available can leave the device in non-functional state. To clear the
-					the invalid configuration go to the <NavLink exact={true} to="/reset-settings">Reset Settings</NavLink> page.
+					the invalid configuration go to the <NavLink exact="true" to="/reset-settings">Reset Settings</NavLink> page.
 				</div>
 				<table className="table table-sm pin-mapping-table">
 					<thead className="table">

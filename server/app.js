@@ -9,24 +9,24 @@ const controllers = require('../src/Data/Controllers.json');
 
 const port = process.env.PORT || 8080;
 const baseButtonMappings = {
-	Up:    { pin: -1, error: null },
-	Down:  { pin: -1, error: null },
-	Left:  { pin: -1, error: null },
-	Right: { pin: -1, error: null },
-	B1:    { pin: -1, error: null },
-	B2:    { pin: -1, error: null },
-	B3:    { pin: -1, error: null },
-	B4:    { pin: -1, error: null },
-	L1:    { pin: -1, error: null },
-	R1:    { pin: -1, error: null },
-	L2:    { pin: -1, error: null },
-	R2:    { pin: -1, error: null },
-	S1:    { pin: -1, error: null },
-	S2:    { pin: -1, error: null },
-	L3:    { pin: -1, error: null },
-	R3:    { pin: -1, error: null },
-	A1:    { pin: -1, error: null },
-	A2:    { pin: -1, error: null },
+	Up:    { pin: -1, key: 26, error: null },
+	Down:  { pin: -1, key: 22, error: null },
+	Left:  { pin: -1, key: 4 , error: null },
+	Right: { pin: -1, key: 7 , error: null },
+	B1:    { pin: -1, key: 11, error: null },
+	B2:    { pin: -1, key: 13, error: null },
+	B3:    { pin: -1, key: 28, error: null },
+	B4:    { pin: -1, key: 24, error: null },
+	L1:    { pin: -1, key: 18, error: null },
+	R1:    { pin: -1, key: 15, error: null },
+	L2:    { pin: -1, key: 12, error: null },
+	R2:    { pin: -1, key: 14, error: null },
+	S1:    { pin: -1, key: 42, error: null },
+	S2:    { pin: -1, key: 40, error: null },
+	L3:    { pin: -1, key: 19, error: null },
+	R3:    { pin: -1, key: 51, error: null },
+	A1:    { pin: -1, key: 0 , error: null },
+	A2:    { pin: -1, key: 0, error: null },
 };
 
 const app = express();
@@ -142,6 +142,16 @@ app.get('/api/getPinMappings', (req, res) => {
 			mappings[prop] = parseInt(controllers['pico'][prop]);
 	}
 
+	return res.send(mappings);
+});
+
+app.get('/api/getKeyMappings', (req, res) => {
+	console.log('/api/getKeyMappings');
+	let mappings = { ...baseButtonMappings };
+	for (let prop of Object.keys(baseButtonMappings)) {
+		if (mappings[prop])
+			mappings[prop] = parseInt(baseButtonMappings[prop].key);
+	}
 	return res.send(mappings);
 });
 
