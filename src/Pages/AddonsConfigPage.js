@@ -56,10 +56,10 @@ const BUTTON_MASKS = [
 	{ label: 'R3',    value:  (1 << 11)  },
 	{ label: 'A1',    value:  (1 << 12)  },
 	{ label: 'A2',    value:  (1 << 13)  },
-	{ label: 'Up',    value:  (1 << 14)  },
-	{ label: 'Down',  value:  (1 << 15)  },
-	{ label: 'Left',  value:  (1 << 16)  },
-	{ label: 'Right', value:  (1 << 17)  },
+	{ label: 'Up',    value:  (1 << 16)  },
+	{ label: 'Down',  value:  (1 << 17)  },
+	{ label: 'Left',  value:  (1 << 18)  },
+	{ label: 'Right', value:  (1 << 19)  },
 ];
 
 const TURBO_MASKS = [
