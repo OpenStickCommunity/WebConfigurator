@@ -139,9 +139,11 @@ const verifyAndSavePS4 = async () => {
 				const hashed = CryptoJS.SHA256(bytes);
 				const signNonce = key.sign(hashed, CryptoJS.SHA256, "sha256");
 				
+				if (signNonce === false) {
+					throw new Error("Bad Private Key");
+				}
+				
 				// Private key worked!
-				console.log('Verified!');
-
 				var BigInteger = require('jsbn').BigInteger;
 
 				// Translate these to BigInteger
@@ -218,12 +220,13 @@ const verifyAndSavePS4 = async () => {
 
 				if ( success ) {
 					document.getElementById("ps4alert").textContent = 'Verified and Saved PS4 Mode! Reboot to take effect';
+					document.getElementById("save").click();
 				} else {
-					document.getElementById("ps4alert").textContent = 'Unable to Verify & Save';
+					throw Error("PS4 Chunks Error");
 				}
 
 			} catch (e) {
-				console.log(e);
+				document.getElementById("ps4alert").textContent = 'ERROR: Could not verify required files';
 			}
 		}
 	};
@@ -1333,11 +1336,11 @@ export default function AddonsConfigPage() {
 									<input type="file" id="ps4key-input" accept="*/*" />
 								</div>
 								<div class="col-sm-3 mb-3">
-									Serial Number (16 Bytes):
+									Serial Number (16 Bytes in Hex Ascii):
 									<input type="file" id="ps4serial-input" accept="*/*" />
 								</div>
 								<div class="col-sm-3 mb-3">
-									Signature (256 Bytes):
+									Signature (256 Bytes in Binary):
 									<input type="file" id="ps4signature-input" accept="*/*" />
 								</div>
 							</Row>
@@ -1364,7 +1367,7 @@ export default function AddonsConfigPage() {
 						/>
 					</Section>
 					<div className="mt-3">
-						<Button type="submit">Save</Button>
+						<Button type="submit" id="save">Save</Button>
 						{saveMessage ? <span className="alert">{saveMessage}</span> : null}
 					</div>
 					<FormContext />
