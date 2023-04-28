@@ -20,6 +20,7 @@
     "yup": "^1.1.1"
   },
   "scripts": {
+    "analyze": "cross-env GENERATE_SOURCEMAP=true react-scripts build && source-map-explorer 'build/static/js/*.js'",
     "build": "react-scripts build && npm run makefsdata",
     "makefsdata": "node makefsdata.js",
     "start": "react-scripts start",
@@ -42,10 +43,12 @@
   "devDependencies": {
     "concurrently": "^8.0.1",
     "cors": "^2.8.5",
+    "cross-env": "^7.0.3",
     "eslint": "^8.38.0",
     "eslint-plugin-react": "^7.32.2",
     "express": "^4.18.2",
     "node-sass": "^8.0.0",
-    "nodemon": "^2.0.22"
+    "nodemon": "^2.0.22",
+    "source-map-explorer": "^2.5.3"
   }
 }
