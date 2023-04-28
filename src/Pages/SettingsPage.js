@@ -44,6 +44,7 @@ const HOTKEY_ACTIONS = [
 	{ label: 'SOCD UP Priority', value: 1<<5 },
 	{ label: 'SOCD Neutral', value: 1<<6 },
 	{ label: 'SOCD Last Win', value: 1<<7 },
+	{ label: 'SOCD First Win', value: 1<<10 },
 	{ label: 'Invert X Axis', value: 1<<8 },
 	{ label: 'Invert Y Axis', value: 1<<9 },
 ];
