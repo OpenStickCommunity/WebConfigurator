@@ -130,6 +130,8 @@ const verifyAndSavePS4 = async () => {
 				throw new Error("Signature or serial is invalid");
 			}
 			try {
+				serial = serial.padStart(32,'0'); // Add our padding
+
 				const key = new JSEncrypt();
 				key.setPrivateKey(pem);
 				const bytes = new Uint8Array(256);
@@ -199,7 +201,10 @@ const verifyAndSavePS4 = async () => {
 						}
 					}
 					return true;
-				}
+				};
+
+
+				let serialBin = hexToBytes(serial);
 
 				let success = await sendPS4Chunks([{
 					N: mbedmpi2b64(int2mbedmpi(N)),
@@ -213,7 +218,7 @@ const verifyAndSavePS4 = async () => {
 				}, {
 					QP: mbedmpi2b64(int2mbedmpi(QP)),
 					RN: mbedmpi2b64(int2mbedmpi(RN)),
-					serial: btoa(serial)
+					serial: btoa(String.fromCharCode(...new Uint8Array(serialBin)))
 				}, {
 					signature: btoa(signature)
 				}]);
