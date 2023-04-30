@@ -82,13 +82,20 @@ const REVERSE_ACTION = [
 	{ label: 'Neutral', value: 2 },
 ];
 
+const SOCD_MODES = [
+	{ label: 'Up Priority', value: 0 },
+	{ label: 'Neutral', value: 1 },
+	{ label: 'Last Win', value: 2 },
+	{ label: 'First Win', value: 3 },
+];
+
 const schema = yup.object().shape({
 	turboPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Turbo Pin'),
 	turboPinLED: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Turbo Pin LED'),
 	sliderLSPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Slider LS Pin'),
 	sliderRSPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Slider RS Pin'),
-	sliderSOCDUpPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Slider SOCD Up Priority Pin'),
-	sliderSOCDSecondPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Slider SOCD Second Priority Pin'),
+	sliderSOCDPinOne: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Slider SOCD Up Priority Pin'),
+	sliderSOCDPinTwo: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Slider SOCD Second Priority Pin'),
 	turboShotCount: yup.number().required().min(5).max(30).label('Turbo Shot Count'),
 	reversePin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Reverse Pin'),
 	reversePinLED: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Reverse Pin LED'),
@@ -127,6 +134,9 @@ const schema = yup.object().shape({
 	shmupBtnMask3: yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('Charge Shot Button 3 Map'),
 	shmupBtnMask4: yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('Charge Shot Button 4 Map'),
 	pinShmupDial: yup.number().required().test('', '${originalValue} is unavailable/already assigned!', (value) => usedPins.indexOf(value) === -1).label('Shmup Dial Pin'),
+	sliderSOCDModeOne: yup.number().required().oneOf(SOCD_MODES.map(o => o.value)).label('SOCD Slider Mode One'),
+	sliderSOCDModeTwo: yup.number().required().oneOf(SOCD_MODES.map(o => o.value)).label('SOCD Slider Mode Two'),
+	sliderSOCDModeDefault: yup.number().required().oneOf(SOCD_MODES.map(o => o.value)).label('SOCD Slider Mode Default'),
 	AnalogInputEnabled: yup.number().required().label('Analog Input Enabled'),
 	BoardLedAddonEnabled: yup.number().required().label('Board LED Add-On Enabled'),
 	BuzzerSpeakerAddonEnabled: yup.number().required().label('Buzzer Speaker Add-On Enabled'),
@@ -146,8 +156,8 @@ const defaultValues = {
 	turboPinLED: -1,
 	sliderLSPin: -1,
 	sliderRSPin: -1,
-	sliderSOCDUpPin: -1,
-	sliderSOCDSecondPin: -1,
+	sliderSOCDPinOne: -1,
+	sliderSOCDPinTwo: -1,
 	turboShotCount: 5,
 	reversePin: -1,
 	reversePinLED: -1,
@@ -186,6 +196,9 @@ const defaultValues = {
 	shmupBtnMask3: 0,
 	shmupBtnMask4: 0,
 	pinShmupDial: -1,
+	sliderSOCDModeOne: 0,
+	sliderSOCDModeTwo: 2,
+	sliderSOCDModeDefault: 1,
 	AnalogInputEnabled: 0,
 	BoardLedAddonEnabled: 0,
 	BuzzerSpeakerAddonEnabled: 0,
@@ -223,10 +236,10 @@ const FormContext = () => {
 			values.sliderLSPin = parseInt(values.sliderLSPin);
 		if (!!values.sliderRSPin)
 			values.sliderRSPin = parseInt(values.sliderRSPin);
-		if (!!values.sliderSOCDUpPin)
-			values.sliderSOCDUpPin = parseInt(values.sliderSOCDUpPin);
-		if (!!values.sliderSOCDSecondPin)
-			values.sliderSOCDSecondPin = parseInt(values.sliderSOCDSecondPin);
+		if (!!values.sliderSOCDPinOne)
+			values.sliderSOCDPinOne = parseInt(values.sliderSOCDPinOne);
+		if (!!values.sliderSOCDPinTwo)
+			values.sliderSOCDPinTwo = parseInt(values.sliderSOCDPinTwo);
 		if (!!values.turboShotCount)
 			values.turboShotCount = parseInt(values.turboShotCount);
 		if (!!values.reversePin)
@@ -309,6 +322,12 @@ const FormContext = () => {
 			values.shmupBtnMask4 = parseInt(values.shmupBtnMask4);
 		if (!!values.pinShmupDial)
 			values.pinShmupDial = parseInt(values.pinShmupDial);
+		if (!!values.sliderSOCDModeOne)
+			values.sliderSOCDModeOne = parseInt(values.sliderSOCDModeOne);
+		if (!!values.sliderSOCDModeTwo)
+			values.sliderSOCDModeTwo = parseInt(values.sliderSOCDModeTwo);
+		if (!!values.sliderSOCDModeDefault)
+			values.sliderSOCDModeDefault = parseInt(values.sliderSOCDModeDefault);
 		if (!!values.AnalogInputEnabled)
 			values.AnalogInputEnabled = parseInt(values.AnalogInputEnabled);
 		if (!!values.BoardLedAddonEnabled)
@@ -1130,26 +1149,62 @@ export default function AddonsConfigPage() {
 							id="SliderSOCDInputOptions"
 							hidden={!values.SliderSOCDInputEnabled}>
 						<Row className="mb-3">
-							<FormControl type="number"
-								label="Slider SOCD Up Priority Pin"
-								name="sliderSOCDUpPin"
+							<FormSelect
+								label="SOCD Slider Mode Default"
+								name="sliderSOCDModeDefault"
 								className="form-select-sm"
 								groupClassName="col-sm-3 mb-3"
-								value={values.sliderSOCDUpPin}
-								error={errors.sliderSOCDUpPin}
-								isInvalid={errors.sliderSOCDUpPin}
+								value={values.sliderSOCDModeDefault}
+								error={errors.sliderSOCDModeDefault}
+								isInvalid={errors.sliderSOCDModeDefault}
+								onChange={handleChange}
+							>
+								{SOCD_MODES.map((o, i) => <option key={`sliderSOCDModeDefault-option-${i}`} value={o.value}>{o.label}</option>)}
+							</FormSelect>
+							<FormSelect
+								label="SOCD Slider Mode One"
+								name="sliderSOCDModeOne"
+								className="form-select-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.sliderSOCDModeOne}
+								error={errors.sliderSOCDModeOne}
+								isInvalid={errors.sliderSOCDModeOne}
+								onChange={handleChange}
+							>
+								{SOCD_MODES.map((o, i) => <option key={`sliderSOCDModeOne-option-${i}`} value={o.value}>{o.label}</option>)}
+							</FormSelect>
+							<FormControl type="number"
+								label="Pin One"
+								name="sliderSOCDPinOne"
+								className="form-select-sm"
+								groupClassName="col-sm-1 mb-3"
+								value={values.sliderSOCDPinOne}
+								error={errors.sliderSOCDPinOne}
+								isInvalid={errors.sliderSOCDPinOne}
 								onChange={handleChange}
 								min={-1}
 								max={29}
 							/>
-							<FormControl type="number"
-								label="Slider SOCD Second Input Priority Pin"
-								name="sliderSOCDSecondPin"
-								className="form-control-sm"
+							<FormSelect
+								label="SOCD Slider Mode Two"
+								name="sliderSOCDModeTwo"
+								className="form-select-sm"
 								groupClassName="col-sm-3 mb-3"
-								value={values.sliderSOCDSecondPin}
-								error={errors.sliderSOCDSecondPin}
-								isInvalid={errors.sliderSOCDSecondPin}
+								value={values.sliderSOCDModeTwo}
+								error={errors.sliderSOCDModeTwo}
+								isInvalid={errors.sliderSOCDModeTwo}
+								onChange={handleChange}
+							>
+								{SOCD_MODES.map((o, i) => <option key={`sliderSOCDModeTwo-option-${i}`} value={o.value}>{o.label}</option>)}
+							</FormSelect>
+							<FormControl type="number"
+								label="Pin Two"
+								name="sliderSOCDPinTwo"
+								className="form-control-sm"
+								groupClassName="col-sm-1 mb-3"
+								value={values.sliderSOCDPinTwo}
+								error={errors.sliderSOCDPinTwo}
+								isInvalid={errors.sliderSOCDPinTwo}
 								onChange={handleChange}
 								min={-1}
 								max={29}
