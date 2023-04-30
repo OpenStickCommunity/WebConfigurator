@@ -225,6 +225,10 @@ app.get('/api/getAddonsOptions', (req, res) => {
 		sliderSOCDModeOne: 0,
 		sliderSOCDModeTwo: 2,
 		sliderSOCDModeDefault: 1,
+		wiiExtensionSDAPin: -1,
+		wiiExtensionSCLPin: -1,
+		wiiExtensionBlock: 0,
+		wiiExtensionSpeed: 400000,
 		AnalogInputEnabled: 1,
 		BoardLedAddonEnabled: 1,
 		BuzzerSpeakerAddonEnabled: 1,
@@ -239,6 +243,7 @@ app.get('/api/getAddonsOptions', (req, res) => {
 		SliderSOCDInputEnabled: 1,
 		TurboInputEnabled: 1,
 		SliderSOCDInputEnabled: 1,
+		WiiExtensionAddonEnabled: 1,
 		usedPins,
 	});
 });
