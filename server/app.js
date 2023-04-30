@@ -178,8 +178,8 @@ app.get('/api/getAddonsOptions', (req, res) => {
 		turboPinLED: -1,
 		sliderLSPin: -1,
 		sliderRSPin: -1,
-		sliderSOCDUpPin: -1,
-		sliderSOCDSecondPin: -1,
+		sliderSOCDPinOne: -1,
+		sliderSOCDPinTwo: -1,
 		turboShotCount: 20,
 		reversePin: -1,
 		reversePinLED: -1,
@@ -222,6 +222,9 @@ app.get('/api/getAddonsOptions', (req, res) => {
 		shmupBtnMask3: 0,
 		shmupBtnMask4: 0,
 		pinShmupDial: -1,
+		sliderSOCDModeOne: 0,
+		sliderSOCDModeTwo: 2,
+		sliderSOCDModeDefault: 1,
 		AnalogInputEnabled: 1,
 		BoardLedAddonEnabled: 1,
 		BuzzerSpeakerAddonEnabled: 1,
@@ -233,6 +236,7 @@ app.get('/api/getAddonsOptions', (req, res) => {
 		PlayerNumAddonEnabled: 1,
 		ReverseInputEnabled: 1,
 		TurboInputEnabled: 1,
+		SliderSOCDInputEnabled: 1,
 		usedPins,
 	});
 });
