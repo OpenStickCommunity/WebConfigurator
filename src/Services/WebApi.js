@@ -192,6 +192,18 @@ async function setAddonsOptions(options) {
 		});
 }
 
+async function setPS4Options(options) {
+	return axios.post(`${baseUrl}/api/setPS4Options`, options)
+		.then((response) => {
+			console.log(response.data);
+			return true;
+		})
+		.catch((err) => {
+			console.error(err);
+			return false;
+		});
+}
+
 async function getFirmwareVersion() {
 	return axios.get(`${baseUrl}/api/getFirmwareVersion`)
 		.then((response) => response.data)
@@ -230,6 +242,7 @@ const WebApi = {
 	setKeyMappings,
 	getAddonsOptions,
 	setAddonsOptions,
+	setPS4Options,
 	getSplashImage,
 	setSplashImage,
 	getFirmwareVersion,
