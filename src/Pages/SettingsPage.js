@@ -81,6 +81,14 @@ const FormContext = () => {
 			values.inputMode = parseInt(values.inputMode);
 		if (!!values.socdMode)
 			values.socdMode = parseInt(values.socdMode);
+		values.hotkeyF1 = values.hotkeyF1?.map( i => ({
+			action: parseInt(i.action),
+			mask: parseInt(i.mask)
+		}));
+		values.hotkeyF2 = values.hotkeyF2?.map( i => ({
+			action: parseInt(i.action),
+			mask: parseInt(i.mask)
+		}));
 	}, [values, setValues]);
 
 	return null;
