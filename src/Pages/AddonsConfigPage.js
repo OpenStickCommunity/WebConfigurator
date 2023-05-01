@@ -126,7 +126,7 @@ const verifyAndSavePS4 = async () => {
 			setTimeout(checkRead, 1000);
 		} else {
 			// Make sure our signature is 256 bytes
-			if ( signature.length != 256 || serial.length != 16) {
+			if ( signature.length !== 256 || serial.length !== 16) {
 				throw new Error("Signature or serial is invalid");
 			}
 			try {
@@ -534,9 +534,7 @@ export default function AddonsConfigPage() {
 			{({
 				handleSubmit,
 				handleChange,
-				handleBlur,
 				values,
-				touched,
 				errors,
 			}) => (
 				<Form noValidate onSubmit={handleSubmit}>
@@ -565,8 +563,7 @@ export default function AddonsConfigPage() {
 							label="Enabled"
 							type="switch"
 							id="BootselButtonAddonButton"
-							reverse="true"
-							error={undefined}
+							reverse
 							isInvalid={false}
 							checked={Boolean(values.BootselButtonAddonEnabled)}
 							onChange={(e) => { handleCheckbox("BootselButtonAddonEnabled", values); handleChange(e);}}
@@ -592,8 +589,7 @@ export default function AddonsConfigPage() {
 							label="Enabled"
 							type="switch"
 							id="BoardLedAddonButton"
-							reverse="true"
-							error={undefined}
+							reverse
 							isInvalid={false}
 							checked={Boolean(values.BoardLedAddonEnabled)}
 							onChange={(e) => {handleCheckbox("BoardLedAddonEnabled", values); handleChange(e);}}
@@ -635,8 +631,7 @@ export default function AddonsConfigPage() {
 							label="Enabled"
 							type="switch"
 							id="AnalogInputButton"
-							reverse="true"
-							error={undefined}
+							reverse
 							isInvalid={false}
 							checked={Boolean(values.AnalogInputEnabled)}
 							onChange={(e) => {handleCheckbox("AnalogInputEnabled", values); handleChange(e);}}
@@ -700,7 +695,6 @@ export default function AddonsConfigPage() {
 								type="switch"
 								id="ShmupMode"
 								className="col-sm-3 ms-2"
-								error={undefined}
 								isInvalid={false}
 								checked={Boolean(values.shmupMode)}
 								onChange={(e) => {handleCheckbox("shmupMode", values); handleChange(e);}}
@@ -877,8 +871,7 @@ export default function AddonsConfigPage() {
 							label="Enabled"
 							type="switch"
 							id="TurboInputButton"
-							reverse="true"
-							error={undefined}
+							reverse
 							isInvalid={false}
 							checked={Boolean(values.TurboInputEnabled)}
 							onChange={(e) => {handleCheckbox("TurboInputEnabled", values); handleChange(e);}}
@@ -919,8 +912,7 @@ export default function AddonsConfigPage() {
 							label="Enabled"
 							type="switch"
 							id="JSliderInputButton"
-							reverse="true"
-							error={undefined}
+							reverse
 							isInvalid={false}
 							checked={Boolean(values.JSliderInputEnabled)}
 							onChange={(e) => {handleCheckbox("JSliderInputEnabled", values); handleChange(e);}}
@@ -1011,8 +1003,7 @@ export default function AddonsConfigPage() {
 							label="Enabled"
 							type="switch"
 							id="ReverseInputButton"
-							reverse="true"
-							error={undefined}
+							reverse
 							isInvalid={false}
 							checked={Boolean(values.ReverseInputEnabled)}
 							onChange={(e) => {handleCheckbox("ReverseInputEnabled", values); handleChange(e);}}
@@ -1089,8 +1080,7 @@ export default function AddonsConfigPage() {
 							label="Enabled"
 							type="switch"
 							id="I2CAnalog1219InputButton"
-							reverse="true"
-							error={undefined}
+							reverse
 							isInvalid={false}
 							checked={Boolean(values.I2CAnalog1219InputEnabled)}
 							onChange={(e) => {handleCheckbox("I2CAnalog1219InputEnabled", values); handleChange(e);}}
@@ -1182,8 +1172,7 @@ export default function AddonsConfigPage() {
 							label="Enabled"
 							type="switch"
 							id="DualDirectionalInputButton"
-							reverse="true"
-							error={undefined}
+							reverse
 							isInvalid={false}
 							checked={Boolean(values.DualDirectionalInputEnabled)}
 							onChange={(e) => {handleCheckbox("DualDirectionalInputEnabled", values); handleChange(e);}}
@@ -1224,8 +1213,7 @@ export default function AddonsConfigPage() {
 							label="Enabled"
 							type="switch"
 							id="BuzzerSpeakerAddonButton"
-							reverse="true"
-							error={undefined}
+							reverse
 							isInvalid={false}
 							checked={Boolean(values.BuzzerSpeakerAddonEnabled)}
 							onChange={(e) => {handleCheckbox("BuzzerSpeakerAddonEnabled", values); handleChange(e);}}
@@ -1266,8 +1254,7 @@ export default function AddonsConfigPage() {
 							label="Enabled"
 							type="switch"
 							id="ExtraButtonAddonButton"
-							reverse="true"
-							error={undefined}
+							reverse
 							isInvalid={false}
 							checked={Boolean(values.ExtraButtonAddonEnabled)}
 							onChange={(e) => { handleCheckbox("ExtraButtonAddonEnabled", values); handleChange(e);}}
@@ -1297,8 +1284,7 @@ export default function AddonsConfigPage() {
 							label="Enabled"
 							type="switch"
 							id="PlayerNumAddonButton"
-							reverse="true"
-							error={undefined}
+							reverse
 							isInvalid={false}
 							checked={Boolean(values.PlayerNumAddonEnabled)}
 							onChange={(e) => {handleCheckbox("PlayerNumAddonEnabled", values); handleChange(e);}}
@@ -1375,8 +1361,7 @@ export default function AddonsConfigPage() {
 							label="Enabled"
 							type="switch"
 							id="SliderSOCDInputButton"
-							reverse="true"
-							error={undefined}
+							reverse
 							isInvalid={false}
 							checked={Boolean(values.SliderSOCDInputEnabled)}
 							onChange={(e) => {handleCheckbox("SliderSOCDInputEnabled", values); handleChange(e);}}
@@ -1390,27 +1375,27 @@ export default function AddonsConfigPage() {
 								<h2>!!!! DISCLAIMER: GP2040-CE WILL NEVER SUPPLY THESE FILES !!!!</h2>
 								<p>Please upload the 3 required files and click the "Verify & Save" button to use PS4 Mode.</p>
 							</Row>
-							<Row class="mb-3">
-								<div class="col-sm-3 mb-3">
+							<Row className="mb-3">
+								<div className="col-sm-3 mb-3">
 									Private Key (PEM):
 									<input type="file" id="ps4key-input" accept="*/*" />
 								</div>
-								<div class="col-sm-3 mb-3">
+								<div className="col-sm-3 mb-3">
 									Serial Number (16 Bytes in Hex Ascii):
 									<input type="file" id="ps4serial-input" accept="*/*" />
 								</div>
-								<div class="col-sm-3 mb-3">
+								<div className="col-sm-3 mb-3">
 									Signature (256 Bytes in Binary):
 									<input type="file" id="ps4signature-input" accept="*/*" />
 								</div>
 							</Row>
-							<Row class="mb-3">
-								<div class="col-sm-3 mb-3">
+							<Row className="mb-3">
+								<div className="col-sm-3 mb-3">
 									<Button type="button" onClick={verifyAndSavePS4}>Verify & Save</Button>
 								</div>
 							</Row>
-							<Row class="mb-3">
-								<div class="col-sm-3 mb-3">
+							<Row className="mb-3">
+								<div className="col-sm-3 mb-3">
 									<span id="ps4alert"></span>
 								</div>
 							</Row>
@@ -1419,8 +1404,7 @@ export default function AddonsConfigPage() {
 							label="Enabled"
 							type="switch"
 							id="PS4ModeAddonEnabledButton"
-							reverse="true"
-							error={undefined}
+							reverse
 							isInvalid={false}
 							checked={Boolean(values.PS4ModeAddonEnabled)}
 							onChange={(e) => {handleCheckbox("PS4ModeAddonEnabled", values); handleChange(e);}}

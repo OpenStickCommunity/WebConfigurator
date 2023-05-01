@@ -108,9 +108,7 @@ export default function SettingsPage() {
 			{({
 				handleSubmit,
 				handleChange,
-				handleBlur,
 				values,
-				touched,
 				errors,
 			}) => console.log('errors', errors) || (
 				<div>
