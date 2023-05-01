@@ -37,17 +37,17 @@ const HOTKEY_MASKS = [
 
 const HOTKEY_ACTIONS = [
 	{ label: 'No Action', value: 0 },
-	{ label: 'Dpad Digital', value: 1<<0 },
-	{ label: 'Dpad Left Analog', value: 1<<1 },
-	{ label: 'Dpad Right Analog', value: 1<<2 },
-	{ label: 'Home Button', value: 1<<3 },
-	{ label: 'Capture Button', value: 1<<4 },
-	{ label: 'SOCD UP Priority', value: 1<<5 },
-	{ label: 'SOCD Neutral', value: 1<<6 },
-	{ label: 'SOCD Last Win', value: 1<<7 },
-	{ label: 'SOCD First Win', value: 1<<10 },
-	{ label: 'Invert X Axis', value: 1<<8 },
-	{ label: 'Invert Y Axis', value: 1<<9 },
+	{ label: 'Dpad Digital', value: 1 },
+	{ label: 'Dpad Left Analog', value: 2 },
+	{ label: 'Dpad Right Analog', value: 3 },
+	{ label: 'Home Button', value: 4 },
+	{ label: 'Capture Button', value: 5 },
+	{ label: 'SOCD UP Priority', value: 6 },
+	{ label: 'SOCD Neutral', value: 7 },
+	{ label: 'SOCD Last Win', value: 8 },
+	{ label: 'SOCD First Win', value: 11 },
+	{ label: 'Invert X Axis', value: 9 },
+	{ label: 'Invert Y Axis', value: 10 },
 ];
 
 const schema = yup.object().shape({
