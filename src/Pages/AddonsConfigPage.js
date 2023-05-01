@@ -194,9 +194,9 @@ const verifyAndSavePS4 = async () => {
 					return btoa(String.fromCharCode.apply(null, arr));
 				}
 
-				const sendPS4Chunks = (chunks) => {
+				const sendPS4Chunks = async (chunks) => {
 					for ( var i in chunks ) {
-						if ( WebApi.setPS4Options(chunks[i]) === false ) {
+						if (await WebApi.setPS4Options(chunks[i]) === false ) {
 							return false;
 						}
 					}
@@ -521,7 +521,7 @@ export default function AddonsConfigPage() {
 	const [saveMessage, setSaveMessage] = useState('');
 
 	const onSuccess = async (values) => {
-		const success = WebApi.setAddonsOptions(values);
+		const success = await WebApi.setAddonsOptions(values);
 		setSaveMessage(success ? 'Saved! Please Restart Your Device' : 'Unable to Save');
 	};
 
