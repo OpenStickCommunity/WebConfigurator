@@ -1,8 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Button, Form, Row } from 'react-bootstrap';
 import { Formik, useFormikContext } from 'formik';
-import { orderBy } from 'lodash';
+import orderBy from 'lodash/orderBy';
 import * as yup from 'yup';
+
 import { AppContext } from '../Contexts/AppContext';
 import Section from '../Components/Section';
 import DraggableListGroup from '../Components/DraggableListGroup';
@@ -124,7 +125,7 @@ export default function LEDConfigPage() {
 	};
 
 	const onSuccess = async (values) => {
-		const success = WebApi.setLedOptions(values);
+		const success = await WebApi.setLedOptions(values);
 		setSaveMessage(success ? 'Saved! Please Restart Your Device' : 'Unable to Save');
 	};
 

@@ -75,6 +75,18 @@ app.get("/api/getGamepadOptions", (req, res) => {
 		dpadMode: 0,
 		inputMode: 1,
 		socdMode: 2,
+		hotkeyF1: [ 
+			{ action: 1<<1, mask: 1<<0 },
+			{ action: 1<<2, mask: 1<<1 },
+			{ action: 1<<3, mask: 1<<2 },
+			{ action: 1<<4, mask: 1<<3 },
+		 ],
+		hotkeyF2: [ 
+			{ action: 1<<5, mask: 1<<0 },
+			{ action: 1<<6, mask: 1<<1 },
+			{ action: 1<<7, mask: 1<<2 },
+			{ action: 1<<8, mask: 1<<3 },
+		 ]
 	});
 });
 
@@ -124,8 +136,8 @@ app.get("/api/getAddonsOptions", (req, res) => {
 		turboPinLED: -1,
 		sliderLSPin: -1,
 		sliderRSPin: -1,
-		sliderSOCDUpPin: -1,
-		sliderSOCDSecondPin: -1,
+		sliderSOCDPinOne: -1,
+		sliderSOCDPinTwo: -1,
 		turboShotCount: 20,
 		reversePin: -1,
 		reversePinLED: -1,
@@ -168,6 +180,9 @@ app.get("/api/getAddonsOptions", (req, res) => {
 		shmupBtnMask3: 0,
 		shmupBtnMask4: 0,
 		pinShmupDial: -1,
+		sliderSOCDModeOne: 0,
+		sliderSOCDModeTwo: 2,
+		sliderSOCDModeDefault: 1,
 		AnalogInputEnabled: 1,
 		BoardLedAddonEnabled: 1,
 		BuzzerSpeakerAddonEnabled: 1,
@@ -177,7 +192,9 @@ app.get("/api/getAddonsOptions", (req, res) => {
 		I2CAnalog1219InputEnabled: 1,
 		JSliderInputEnabled: 1,
 		PlayerNumAddonEnabled: 1,
+		PS4ModeAddonEnabled: 1,
 		ReverseInputEnabled: 1,
+		SliderSOCDInputEnabled: 1,
 		TurboInputEnabled: 1,
 		usedPins: Object.values(picoController),
 	});

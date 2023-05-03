@@ -2,11 +2,12 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Button, Form, Row, Col, FormLabel } from 'react-bootstrap';
 import { Formik, useFormikContext, Field } from 'formik';
 import * as yup from 'yup';
+import chunk from 'lodash/chunk';
+
 import FormControl from '../Components/FormControl';
 import FormSelect from '../Components/FormSelect';
 import Section from '../Components/Section';
 import WebApi from '../Services/WebApi';
-import { chunk } from 'lodash';
 
 const ON_OFF_OPTIONS = [
 	{ label: 'Disabled', value: 0 },
