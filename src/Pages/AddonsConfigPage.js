@@ -1476,6 +1476,10 @@ export default function AddonsConfigPage() {
 							hidden={!values.WiiExtensionAddonEnabled}>
 							<Row>
 								<p>Note: If the Display is enabled at the same time, this Addon will be disabled.</p>
+                                <h3>Currently Supported Controllers</h3>
+                                <p>Classic/Classic Pro: Both Analogs and D-Pad Supported. B = B1, A = B2, Y = B3, X = B4, L = L1, ZL = L2, R = R1, ZR = R2, Minus = S1, Plus = S2, Home = A1</p>
+                                <p>Nunchuck: Analog Stick Supported. C = B1, Z = B2</p>
+                                <p>Guitar Hero Guitar: Analog Stick Supported. Green = B1, Red = B2, Blue = B3, Yellow = B4, Orange = L1, Strum Up = Up, Strum Down = Down, Minus = S1, Plus = S2</p>
 							</Row>
 							<Row className="mb-3">
 								<FormControl type="number"
