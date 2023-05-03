@@ -1470,62 +1470,62 @@ export default function AddonsConfigPage() {
 							onChange={(e) => {handleCheckbox("PS4ModeAddonEnabled", values); handleChange(e);}}
 						/>
 					</Section>
-                    <Section title="Wii Extension Configuration">
-                        <div
+					<Section title="Wii Extension Configuration">
+						<div
 							id="WiiExtensionAddonOptions"
 							hidden={!values.WiiExtensionAddonEnabled}>
 							<Row>
 								<p>Note: If the Display is enabled at the same time, this Addon will be disabled.</p>
 							</Row>
-                            <Row className="mb-3">
-                                <FormControl type="number"
-                                    label="I2C SDA Pin"
-                                    name="wiiExtensionSDAPin"
-                                    className="form-control-sm"
-                                    groupClassName="col-sm-3 mb-3"
-                                    value={values.wiiExtensionSDAPin}
-                                    error={errors.wiiExtensionSDAPin}
-                                    isInvalid={errors.wiiExtensionSDAPin}
-                                    onChange={handleChange}
-                                    min={-1}
-                                    max={29}
-                                />
-                                <FormControl type="number"
-                                    label="I2C SCL Pin"
-                                    name="wiiExtensionSCLPin"
-                                    className="form-select-sm"
-                                    groupClassName="col-sm-3 mb-3"
-                                    value={values.wiiExtensionSCLPin}
-                                    error={errors.wiiExtensionSCLPin}
-                                    isInvalid={errors.wiiExtensionSCLPin}
-                                    onChange={handleChange}
-                                    min={-1}
-                                    max={29}
-                                />
-                                <FormSelect
-                                    label="I2C Block"
-                                    name="wiiExtensionBlock"
-                                    className="form-select-sm"
-                                    groupClassName="col-sm-3 mb-3"
-                                    value={values.wiiExtensionBlock}
-                                    error={errors.wiiExtensionBlock}
-                                    isInvalid={errors.wiiExtensionBlock}
-                                    onChange={handleChange}
-                                >
-                                    {I2C_BLOCKS.map((o, i) => <option key={`wiiExtensionI2cBlock-option-${i}`} value={o.value}>{o.label}</option>)}
-                                </FormSelect>
-                                <FormControl
-                                    label="I2C Speed"
-                                    name="wiiExtensionSpeed"
-                                    className="form-control-sm"
-                                    groupClassName="col-sm-3 mb-3"
-                                    value={values.wiiExtensionSpeed}
-                                    error={errors.wiiExtensionSpeed}
-                                    isInvalid={errors.wiiExtensionSpeed}
-                                    onChange={handleChange}
-                                    min={100000}
-                                />
-                            </Row>
+							<Row className="mb-3">
+								<FormControl type="number"
+									label="I2C SDA Pin"
+									name="wiiExtensionSDAPin"
+									className="form-control-sm"
+									groupClassName="col-sm-3 mb-3"
+									value={values.wiiExtensionSDAPin}
+									error={errors.wiiExtensionSDAPin}
+									isInvalid={errors.wiiExtensionSDAPin}
+									onChange={handleChange}
+									min={-1}
+									max={29}
+								/>
+								<FormControl type="number"
+									label="I2C SCL Pin"
+									name="wiiExtensionSCLPin"
+									className="form-select-sm"
+									groupClassName="col-sm-3 mb-3"
+									value={values.wiiExtensionSCLPin}
+									error={errors.wiiExtensionSCLPin}
+									isInvalid={errors.wiiExtensionSCLPin}
+									onChange={handleChange}
+									min={-1}
+									max={29}
+								/>
+								<FormSelect
+									label="I2C Block"
+									name="wiiExtensionBlock"
+									className="form-select-sm"
+									groupClassName="col-sm-3 mb-3"
+									value={values.wiiExtensionBlock}
+									error={errors.wiiExtensionBlock}
+									isInvalid={errors.wiiExtensionBlock}
+									onChange={handleChange}
+								>
+									{I2C_BLOCKS.map((o, i) => <option key={`wiiExtensionI2cBlock-option-${i}`} value={o.value}>{o.label}</option>)}
+								</FormSelect>
+								<FormControl
+									label="I2C Speed"
+									name="wiiExtensionSpeed"
+									className="form-control-sm"
+									groupClassName="col-sm-3 mb-3"
+									value={values.wiiExtensionSpeed}
+									error={errors.wiiExtensionSpeed}
+									isInvalid={errors.wiiExtensionSpeed}
+									onChange={handleChange}
+									min={100000}
+								/>
+							</Row>
 						</div>
 						<FormCheck
 							label="Enabled"
