@@ -31,7 +31,7 @@ const App = () => {
 				<Navigation />
 				<div className="container-fluid body-content">
 					<Routes>
-						<Route exact path="/" element={<HomePage />} />
+						<Route path="/" element={<HomePage />} />
 						<Route path="/settings" element={<SettingsPage />} />
 						<Route path="/pin-mapping" element={<PinMappingPage />} />
 						<Route path="/keyboard-mapping" element={<KeyboardMappingPage />} />
