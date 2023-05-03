@@ -8,6 +8,8 @@ import Section from '../Components/Section';
 import WebApi from '../Services/WebApi';
 import JSEncrypt from 'jsencrypt';
 import CryptoJS from 'crypto-js';
+import get from 'lodash/get'
+import set from "lodash/set"
 
 const I2C_BLOCKS = [
 	{ label: 'i2c0', value: 0 },
@@ -373,7 +375,7 @@ const defaultValues = {
 
 let usedPins = [];
 
-const FormContext = () => {
+const FormContext = ({setStoredData}) => {
 	const { values, setValues } = useFormikContext();
 
 	useEffect(() => {
@@ -381,12 +383,20 @@ const FormContext = () => {
 			const data = await WebApi.getAddonsOptions();
 			usedPins = data.usedPins;
 			setValues(data);
+			setStoredData(JSON.parse(JSON.stringify(data))); // Do a deep copy to keep the original
 		}
 		fetchData();
 	}, [setValues]);
 
 	useEffect(() => {
-		if (!!values.turboPin)
+		sanitizeData(values);
+	}, [values, setValues]);
+
+	return null;
+};
+
+const sanitizeData = (values) => {
+	if (!!values.turboPin)
 			values.turboPin = parseInt(values.turboPin);
 		if (!!values.turboPinLED)
 			values.turboPinLED = parseInt(values.turboPinLED);
@@ -512,16 +522,46 @@ const FormContext = () => {
 			values.ReverseInputEnabled = parseInt(values.ReverseInputEnabled);
 		if (!!values.TurboInputEnabled)
 			values.TurboInputEnabled = parseInt(values.TurboInputEnabled);
-	}, [values, setValues]);
+}
 
-	return null;
-};
+function flattenObject(object) {
+	var toReturn = {};
+  
+	for (var i in object) {
+	  if (!object.hasOwnProperty(i)) continue;
+  
+	  if (typeof object[i] == "object" && object[i] !== null) {
+		var flatObject = flattenObject(object[i]);
+		for (var x in flatObject) {
+		  if (!flatObject.hasOwnProperty(x)) continue;
+  
+		  toReturn[i + "." + x] = flatObject[x];
+		}
+	  } else {
+		toReturn[i] = object[i];
+	  }
+	}
+	return toReturn;
+  }
 
 export default function AddonsConfigPage() {
 	const [saveMessage, setSaveMessage] = useState('');
+	const [storedData, setStoredData] = useState({});
 
 	const onSuccess = async (values) => {
-		const success = await WebApi.setAddonsOptions(values);
+		const flattened = flattenObject(storedData)
+		
+		// Compare what's changed and set it to resultObject
+		let resultObject = {}
+		Object.entries(flattened)?.map(entry => {
+			const [key, oldVal] = entry;
+			const newVal = get(values, key)
+			if (newVal !== oldVal) {
+				set(resultObject, key, newVal)
+			}
+		})
+		sanitizeData(resultObject);
+		const success = await WebApi.setAddonsOptions(resultObject);
 		setSaveMessage(success ? 'Saved! Please Restart Your Device' : 'Unable to Save');
 	};
 
@@ -1414,7 +1454,7 @@ export default function AddonsConfigPage() {
 						<Button type="submit" id="save">Save</Button>
 						{saveMessage ? <span className="alert">{saveMessage}</span> : null}
 					</div>
-					<FormContext />
+					<FormContext setStoredData={setStoredData}/>
 				</Form>
 			)}
 		</Formik>
