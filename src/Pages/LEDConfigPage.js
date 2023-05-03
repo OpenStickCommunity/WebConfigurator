@@ -125,7 +125,7 @@ export default function LEDConfigPage() {
 	};
 
 	const onSuccess = async (values) => {
-		const success = WebApi.setLedOptions(values);
+		const success = await WebApi.setLedOptions(values);
 		setSaveMessage(success ? 'Saved! Please Restart Your Device' : 'Unable to Save');
 	};
 

@@ -99,7 +99,7 @@ export default function SettingsPage() {
 	const [saveMessage, setSaveMessage] = useState('');
 
 	const onSuccess = async (values) => {
-		const success = WebApi.setGamepadOptions(values);
+		const success = await WebApi.setGamepadOptions(values);
 		setSaveMessage(success ? 'Saved! Please Restart Your Device' : 'Unable to Save');
 	};
 
