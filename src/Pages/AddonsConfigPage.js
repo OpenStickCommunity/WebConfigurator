@@ -1474,6 +1474,9 @@ export default function AddonsConfigPage() {
                         <div
 							id="WiiExtensionAddonOptions"
 							hidden={!values.WiiExtensionAddonEnabled}>
+							<Row>
+								<p>Note: If the Display is enabled at the same time, this Addon will be disabled.</p>
+							</Row>
                             <Row className="mb-3">
                                 <FormControl type="number"
                                     label="I2C SDA Pin"
