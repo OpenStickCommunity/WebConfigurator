@@ -107,15 +107,6 @@ async function setGamepadOptions(options) {
 async function getLedOptions() {
 	return axios.get(`${baseUrl}/api/getLedOptions`)
 		.then((response) => {
-			// Transform ARGB int value to hex for easy use on frontend
-			Object.keys(response.data.customLeds)
-				.forEach((p) => {
-					response.data.customLeds[p] = {
-						normal: `#${rgbIntToHex(response.data.customLeds[p].normal)}`,
-						pressed: `#${rgbIntToHex(response.data.customLeds[p].pressed)}`,
-					};
-				});
-
 			console.log(response.data);
 			return response.data;
 		})
@@ -125,16 +116,48 @@ async function getLedOptions() {
 async function setLedOptions(options) {
 	let data = sanitizeRequest(options);
 
+	return axios.post(`${baseUrl}/api/setLedOptions`, sanitizeRequest(options))
+		.then((response) => {
+			console.log(response.data);
+			return true;
+		})
+		.catch((err) => {
+			console.error(err);
+			return false;
+		});
+}
+
+async function getCustomTheme() {
+	return axios.get(`${baseUrl}/api/getCustomTheme`)
+		.then((response) => {
+			// Transform ARGB int value to hex for easy use on frontend
+			Object.keys(response.data.customTheme)
+				.forEach((p) => {
+					response.data.customTheme[p] = {
+						normal: `#${rgbIntToHex(response.data.customTheme[p].normal)}`,
+						pressed: `#${rgbIntToHex(response.data.customTheme[p].pressed)}`,
+					};
+				});
+
+			console.log(response.data);
+			return response.data;
+		})
+		.catch(console.error);
+}
+
+async function setCustomTheme(customThemeOptions) {
+	const options = { ...customThemeOptions };
+
 	// Transform RGB hex values to ARGB int before sending back to API
-	Object.keys(data.customLeds)
+	Object.keys(options.customTheme)
 		.forEach((p) => {
-			data.customLeds[p] = {
-				normal: hexToInt(data.customLeds[p].normal.replace('#', '')),
-				pressed: hexToInt(data.customLeds[p].pressed.replace('#', '')),
+			options.customTheme[p] = {
+				normal: hexToInt(options.customTheme[p].normal.replace('#', '')),
+				pressed: hexToInt(options.customTheme[p].pressed.replace('#', '')),
 			};
 		});
 
-	return axios.post(`${baseUrl}/api/setLedOptions`, sanitizeRequest(options))
+	return axios.post(`${baseUrl}/api/setCustomTheme`, sanitizeRequest(options))
 		.then((response) => {
 			console.log(response.data);
 			return true;
@@ -260,6 +283,8 @@ const WebApi = {
 	setGamepadOptions,
 	getLedOptions,
 	setLedOptions,
+	getCustomTheme,
+	setCustomTheme,
 	getPinMappings,
 	setPinMappings,
 	getKeyMappings,

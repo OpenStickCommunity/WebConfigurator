@@ -10,6 +10,7 @@ import ResetSettingsPage from './Pages/ResetSettingsPage';
 import SettingsPage from './Pages/SettingsPage';
 import DisplayConfigPage from './Pages/DisplayConfig';
 import LEDConfigPage from './Pages/LEDConfigPage';
+import CustomThemePage from './Pages/CustomThemePage';
 import AddonsConfigPage from './Pages/AddonsConfigPage';
 import BackupPage from './Pages/BackupPage';
 import PlaygroundPage from './Pages/PlaygroundPage';
@@ -37,6 +38,7 @@ const App = () => {
 						<Route path="/keyboard-mapping" element={<KeyboardMappingPage />} />
             <Route path="/reset-settings" element={<ResetSettingsPage />} />
 						<Route path="/led-config" element={<LEDConfigPage />} />
+						<Route path="/custom-theme" element={<CustomThemePage />} />
 						<Route path="/display-config" element={<DisplayConfigPage />} />
 						<Route path="/add-ons" element={<AddonsConfigPage />} />
 						<Route path="/backup" element={<BackupPage />} />
