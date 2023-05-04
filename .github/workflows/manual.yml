@@ -6,16 +6,16 @@ on:
   push:
     branches: 
       - main
-
+permissions: write-all
 jobs:
   update:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3.5.2
         with: 
           repository: OpenStickCommunity/GP2040-CE
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT }}
           submodules: true
 
       - name: Pull & update submodules recursively

@@ -13,7 +13,6 @@ import Table from 'react-bootstrap/Table';
 import FormCheck from 'react-bootstrap/FormCheck';
 import { SketchPicker } from '@hello-pangea/color-picker';
 import { Formik, useFormikContext } from 'formik';
-import find from 'lodash/find';
 import orderBy from 'lodash/orderBy';
 import * as yup from 'yup';
 
@@ -255,9 +254,7 @@ export default function LEDConfigPage() {
 	};
 
 	const onSuccess = async (values) => {
-		const leds = { ...customLeds };
-		delete leds['ALL'];
-		const success = WebApi.setLedOptions({ ...values, useCustomLeds, customLeds: leds });
+		const success = await WebApi.setLedOptions(values);
 		setSaveMessage(success ? 'Saved! Please Restart Your Device' : 'Unable to Save');
 	};
 

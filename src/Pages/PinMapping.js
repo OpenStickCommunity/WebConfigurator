@@ -8,7 +8,12 @@ import boards from '../Data/Boards.json';
 import { BUTTONS } from '../Data/Buttons';
 import './PinMappings.scss';
 
-const requiredButtons = ['B1', 'B2', 'B3', 'S2'];
+const requiredButtons = ['S2'];
+const errorType = {
+	required: 'required',
+	conflict: 'conflict',
+	invalid: 'invalid'
+};
 
 export default function PinMappingPage() {
 	const { buttonLabels } = useContext(AppContext);
@@ -43,7 +48,7 @@ export default function PinMappingPage() {
 		let mappings = {...buttonMappings};
 		validateMappings(mappings);
 
-		if (Object.keys(mappings).filter(p => !!mappings[p].error).length) {
+		if (Object.keys(mappings).filter(p => mappings[p].error).length > 0) {
 			setSaveMessage('Validation errors, see above');
 			return;
 		}
@@ -53,27 +58,57 @@ export default function PinMappingPage() {
 	};
 
 	const validateMappings = (mappings) => {
-		const props = Object.keys(mappings);
+		const buttons = Object.keys(mappings);
 
-		for (let prop of props) {
-			mappings[prop].error = null;
+		// Create some mapped pin groups for easier error checking
+		const mappedPins = buttons
+			.filter(p => mappings[p].pin > -1)
+			.reduce((a, p) => {
+				a.push(mappings[p].pin);
+				return a;
+			}, []);
+		const mappedPinCounts = mappedPins.reduce((a, p) => ({ ...a, [p]: (a[p] || 0) + 1 }), {});
+		const uniquePins = mappedPins.filter((p, i, a) => a.indexOf(p) === i);
+		const conflictedPins = Object.keys(mappedPinCounts).filter(p => mappedPinCounts[p] > 1).map(parseInt);
+		const invalidPins = uniquePins.filter(p => boards[selectedBoard].invalidPins.indexOf(p) > -1);
 
-			for (let otherProp of props) {
-				if (prop === otherProp)
-					continue;
+		for (let button of buttons) {
+			mappings[button].error = '';
 
-				if (mappings[prop].pin === '' && !requiredButtons.filter(b => b === mappings[otherProp].button).length)
-					mappings[prop].error = `${mappings[prop].button} is required`;
-				else if (mappings[prop].pin === mappings[otherProp].pin)
-					mappings[prop].error = `Pin ${mappings[prop].pin} is already assigned`;
-				else if (boards[selectedBoard].invalidPins.filter(p => p === mappings[prop].pin).length > 0)
-					mappings[prop].error = `Pin ${mappings[prop].pin} is invalid for this board`;
-			}
+			// Validate required button
+			if ((mappings[button].pin < boards[selectedBoard].minPin || mappings[button].pin > boards[selectedBoard].maxPin) && requiredButtons.filter(b => b === button).length)
+				mappings[button].error = errorType.required;
 
+			// Identify conflicted pins
+			else if (conflictedPins.indexOf(mappings[button].pin) > -1)
+				mappings[button].error = errorType.conflict;
+
+			// Identify invalid pin assignments
+			else if (invalidPins.indexOf(mappings[button].pin) > -1)
+				mappings[button].error = errorType.invalid;
 		}
 
 		setButtonMappings(mappings);
 		setValidated(true);
+	};
+
+	const renderError = (button) => {
+		if (buttonMappings[button].error === errorType.required) {
+			return <span key="required" className="error-message">{`${BUTTONS[buttonLabels][button]} is required`}</span>;
+		}
+		else if (buttonMappings[button].error === errorType.conflict) {
+			const conflictedMappings = Object.keys(buttonMappings)
+				.filter(b => b !== button)
+				.filter(b => buttonMappings[b].pin === buttonMappings[button].pin)
+				.map(b => BUTTONS[buttonLabels][b]);
+
+			return <span key="conflict" className="error-message">{`Pin ${buttonMappings[button].pin} is already assigned to ${conflictedMappings.join(', ')}`}</span>;
+		}
+		else if (buttonMappings[button].error === errorType.invalid) {
+			return <span key="invalid" className="error-message">{`Pin ${buttonMappings[button].pin} is invalid for this board`}</span>;
+		}
+
+		return <></>;
 	};
 
 	return (
@@ -100,14 +135,14 @@ export default function PinMappingPage() {
 										type="number"
 										className="pin-input form-control-sm"
 										value={buttonMappings[button].pin}
-										min={boards[selectedBoard].minPin}
+										min={-1}
 										max={boards[selectedBoard].maxPin}
-										isInvalid={!!buttonMappings[button].error}
-										required={requiredButtons.filter(b => b === button).length}
+										isInvalid={buttonMappings[button].error}
 										onChange={(e) => handlePinChange(e, button)}
 									></Form.Control>
-									{boards[selectedBoard]?.min}
-									<Form.Control.Feedback type="invalid">{buttonMappings[button].error}</Form.Control.Feedback>
+									<Form.Control.Feedback type="invalid">
+										{renderError(button)}
+									</Form.Control.Feedback>
 								</td>
 							</tr>
 						)}

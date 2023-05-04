@@ -1,15 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import { AppContext } from '../Contexts/AppContext';
 import { Button, Form } from 'react-bootstrap';
 import { Formik, useFormikContext } from 'formik';
 import * as yup from 'yup';
 import Section from '../Components/Section';
 import WebApi from '../Services/WebApi';
+import BUTTONS from '../Data/Buttons.json';
 
 const INPUT_MODES = [
 	{ label: 'XInput', value: 0 },
 	{ label: 'Nintendo Switch', value: 1 },
 	{ label: 'PS3/DirectInput', value: 2 },
 	{ label: 'Keyboard', value: 3 },
+	{ label: 'PS4', value: 4 }
 ];
 
 const DPAD_MODES = [
@@ -22,10 +25,41 @@ const SOCD_MODES = [
 	{ label: 'Up Priority', value: 0 },
 	{ label: 'Neutral', value: 1 },
 	{ label: 'Last Win', value: 2 },
+	{ label: 'First Win', value: 3 },
+];
+
+const HOTKEY_MASKS = [
+	{ label: 'Up', value: 1<<0 },
+	{ label: 'Down', value: 1<<1 },
+	{ label: 'Left', value: 1<<2 },
+	{ label: 'Right', value: 1<<3 },
+];
+
+const HOTKEY_ACTIONS = [
+	{ label: 'No Action', value: 0 },
+	{ label: 'Dpad Digital', value: 1 },
+	{ label: 'Dpad Left Analog', value: 2 },
+	{ label: 'Dpad Right Analog', value: 3 },
+	{ label: 'Home Button', value: 4 },
+	{ label: 'Capture Button', value: 5 },
+	{ label: 'SOCD UP Priority', value: 6 },
+	{ label: 'SOCD Neutral', value: 7 },
+	{ label: 'SOCD Last Win', value: 8 },
+	{ label: 'SOCD First Win', value: 11 },
+	{ label: 'Invert X Axis', value: 9 },
+	{ label: 'Invert Y Axis', value: 10 },
 ];
 
 const schema = yup.object().shape({
 	dpadMode : yup.number().required().oneOf(DPAD_MODES.map(o => o.value)).label('D-Pad Mode'),
+	hotkeyF1 : yup.array().of(yup.object({
+		action: yup.number().required().oneOf(HOTKEY_ACTIONS.map(o => o.value)).label('Hotkey action'),
+		mask: yup.number().required().oneOf(HOTKEY_MASKS.map(o => o.value)).label('Hotkey action')
+	})),
+	hotkeyF2 : yup.array().of(yup.object({
+		action: yup.number().required().oneOf(HOTKEY_ACTIONS.map(o => o.value)).label('Hotkey action'),
+		mask: yup.number().required().oneOf(HOTKEY_MASKS.map(o => o.value)).label('Hotkey action')
+	})),
 	inputMode: yup.number().required().oneOf(INPUT_MODES.map(o => o.value)).label('Input Mode'),
 	socdMode : yup.number().required().oneOf(SOCD_MODES.map(o => o.value)).label('SOCD Mode'),
 });
@@ -47,16 +81,25 @@ const FormContext = () => {
 			values.inputMode = parseInt(values.inputMode);
 		if (!!values.socdMode)
 			values.socdMode = parseInt(values.socdMode);
+		values.hotkeyF1 = values.hotkeyF1?.map( i => ({
+			action: parseInt(i.action),
+			mask: parseInt(i.mask)
+		}));
+		values.hotkeyF2 = values.hotkeyF2?.map( i => ({
+			action: parseInt(i.action),
+			mask: parseInt(i.mask)
+		}));
 	}, [values, setValues]);
 
 	return null;
 };
 
 export default function SettingsPage() {
+	const { buttonLabels } = useContext(AppContext);
 	const [saveMessage, setSaveMessage] = useState('');
 
 	const onSuccess = async (values) => {
-		const success = WebApi.setGamepadOptions(values);
+		const success = await WebApi.setGamepadOptions(values);
 		setSaveMessage(success ? 'Saved! Please Restart Your Device' : 'Unable to Save');
 	};
 
@@ -65,13 +108,12 @@ export default function SettingsPage() {
 			{({
 				handleSubmit,
 				handleChange,
-				handleBlur,
 				values,
-				touched,
 				errors,
-			}) => (
-				<Section title="Settings">
+			}) => console.log('errors', errors) || (
+				<div>
 					<Form noValidate onSubmit={handleSubmit}>
+					<Section title="Settings">
 						<Form.Group className="row mb-3">
 							<Form.Label>Input Mode</Form.Label>
 							<div className="col-sm-3">
@@ -99,11 +141,42 @@ export default function SettingsPage() {
 								<Form.Control.Feedback type="invalid">{errors.socdMode}</Form.Control.Feedback>
 							</div>
 						</Form.Group>
-						<Button type="submit">Save</Button>
-						{saveMessage ? <span className="alert">{saveMessage}</span> : null}
-						<FormContext />
+					</Section>
+					<Section title="Hotkey Settings">
+						<div className='row'>
+							<Form.Label className='col'>{BUTTONS[buttonLabels]["S1"] + " + " + BUTTONS[buttonLabels]["S2"]}</Form.Label>
+						</div>
+						{HOTKEY_MASKS.map((o, i) =>
+							<Form.Group key={`hotkey-${i}`} className="row mb-3">
+							<div className="col-sm-1">{o.label}</div>
+							<div className="col-sm-2">
+								<Form.Select name={`hotkeyF1[${i}].action`} className="form-select-sm" value={values?.hotkeyF1 && values?.hotkeyF1[i]?.action} onChange={handleChange} isInvalid={errors?.hotkeyF1 && errors?.hotkeyF1[i]?.action}>
+									{HOTKEY_ACTIONS.map((o, i) => <option key={`f1-option-${i}`} value={o.value}>{o.label}</option>)}
+								</Form.Select>
+								<Form.Control.Feedback type="invalid">{errors?.hotkeyF1 && errors?.hotkeyF1[i]?.action}</Form.Control.Feedback>
+							</div>
+							</Form.Group>
+						)}	
+						<div className='row'>
+							<Form.Label className='col'>{BUTTONS[buttonLabels]["S2"] + " + " + BUTTONS[buttonLabels]["A1"]}</Form.Label>
+						</div>
+						{HOTKEY_MASKS.map((o, i) =>
+							<Form.Group key={`hotkey-${i}`} className="row mb-3">
+							<div className="col-sm-1">{o.label}</div>
+							<div className="col-sm-2">
+								<Form.Select name={`hotkeyF2[${i}].action`} className="form-select-sm" value={values?.hotkeyF2 && values?.hotkeyF2[i]?.action} onChange={handleChange} isInvalid={errors?.hotkeyF2 && errors?.hotkeyF2[i]?.action}>
+									{HOTKEY_ACTIONS.map((o, i) => <option key={`f2-option-${i}`} value={o.value}>{o.label}</option>)}
+								</Form.Select>
+								<Form.Control.Feedback type="invalid">{errors?.hotkeyF2 && errors?.hotkeyF2[i]?.action}</Form.Control.Feedback>
+							</div>
+							</Form.Group>
+						)}	
+					</Section>
+					<Button type="submit">Save</Button>
+					{saveMessage ? <span className="alert">{saveMessage}</span> : null}
+					<FormContext />
 					</Form>
-				</Section>
+				</div>
 			)}
 		</Formik>
 	);

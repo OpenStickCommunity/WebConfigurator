@@ -6,6 +6,10 @@ import FormControl from '../Components/FormControl';
 import FormSelect from '../Components/FormSelect';
 import Section from '../Components/Section';
 import WebApi from '../Services/WebApi';
+import JSEncrypt from 'jsencrypt';
+import CryptoJS from 'crypto-js';
+import get from 'lodash/get'
+import set from "lodash/set"
 
 const I2C_BLOCKS = [
 	{ label: 'i2c0', value: 0 },
@@ -56,10 +60,10 @@ const BUTTON_MASKS = [
 	{ label: 'R3',    value:  (1 << 11)  },
 	{ label: 'A1',    value:  (1 << 12)  },
 	{ label: 'A2',    value:  (1 << 13)  },
-	{ label: 'Up',    value:  (1 << 14)  },
-	{ label: 'Down',  value:  (1 << 15)  },
-	{ label: 'Left',  value:  (1 << 16)  },
-	{ label: 'Right', value:  (1 << 17)  },
+	{ label: 'Up',    value:  (1 << 16)  },
+	{ label: 'Down',  value:  (1 << 17)  },
+	{ label: 'Left',  value:  (1 << 18)  },
+	{ label: 'Right', value:  (1 << 19)  },
 ];
 
 const TURBO_MASKS = [
@@ -82,13 +86,174 @@ const REVERSE_ACTION = [
 	{ label: 'Neutral', value: 2 },
 ];
 
+const verifyAndSavePS4 = async () => {
+	let PS4Key = document.getElementById("ps4key-input");
+	let PS4Serial = document.getElementById("ps4serial-input");
+	let PS4Signature = document.getElementById("ps4signature-input");
+
+	let count = 0;
+	var pem;
+	var signature;
+	var serial;
+
+	const handlePEM = (e) => {
+		pem = keyReader.result;
+		count++;
+	};
+
+	const handleSignature = (e) => {
+		signature = sigReader.result;
+		count++;
+	};
+
+	const handleSerial = (e) => {
+		serial = serialReader.result;
+		count++;
+	};
+
+	let keyReader = new FileReader();
+	keyReader.onloadend = handlePEM;
+	keyReader.readAsText(PS4Key.files[0]);
+
+	let serialReader = new FileReader();
+	serialReader.onloadend = handleSerial;
+	serialReader.readAsText(PS4Serial.files[0]);
+
+	let sigReader = new FileReader();
+	sigReader.onloadend = handleSignature;
+	sigReader.readAsBinaryString(PS4Signature.files[0]);
+
+	async function checkRead () {
+		if ( count < 3 ) {
+			setTimeout(checkRead, 1000);
+		} else {
+			// Make sure our signature is 256 bytes
+			if ( signature.length !== 256 || serial.length !== 16) {
+				throw new Error("Signature or serial is invalid");
+			}
+			try {
+				serial = serial.padStart(32,'0'); // Add our padding
+
+				const key = new JSEncrypt();
+				key.setPrivateKey(pem);
+				const bytes = new Uint8Array(256);
+				for(let i = 0; i < 256; i++){
+					bytes[i] = Math.random();
+				}
+				const hashed = CryptoJS.SHA256(bytes);
+				const signNonce = key.sign(hashed, CryptoJS.SHA256, "sha256");
+				
+				if (signNonce === false) {
+					throw new Error("Bad Private Key");
+				}
+				
+				// Private key worked!
+				var BigInteger = require('jsbn').BigInteger;
+
+				// Translate these to BigInteger
+				var N = new BigInteger(String(key.key.n));
+				var E = new BigInteger(String(key.key.e));
+				var D = new BigInteger(String(key.key.d));
+				var P = new BigInteger(String(key.key.p));
+				var Q = new BigInteger(String(key.key.q));
+				var DP = new BigInteger(String(key.key.dmp1));
+				var DQ = new BigInteger(String(key.key.dmq1));
+				var constantR = new BigInteger('2').pow(4096); 	// constant R
+				var QP = Q.modInverse(P); 						// qp = 1 / ( Q % P)
+				var RN = constantR.mod(N); 						// rn = constant R mod N
+
+				function int2mbedmpi(num) {
+					var out = [];
+					var mask = new BigInteger('4294967295');
+					var zero = new BigInteger('0');
+					while(!num.equals(zero)) {
+						out.push(num.and(mask).toString(16).padStart(8, '0'));
+						num = num.shiftRight(32);
+					}
+					return out;
+				}
+
+				function hexToBytes(hex) {
+					let bytes = [];
+					for (let c = 0; c < hex.length; c += 2)
+						bytes.push(parseInt(hex.substr(c, 2), 16));
+					return bytes;
+				}
+
+				function mbedmpi2b64(mpi) {
+					var arr = new Uint8Array(mpi.length*4);
+					var cnt = 0;
+					for ( let i = 0; i < mpi.length; i++) {
+						let bytes = hexToBytes(mpi[i]);
+						for ( let j = 4; j > 0; j--) {
+							//arr[cnt] = bytes[j];
+							// TEST: re-order from LSB to MSB
+							arr[cnt] = bytes[j-1];
+							cnt++;
+						}
+					}
+
+					return btoa(String.fromCharCode.apply(null, arr));
+				}
+
+				const sendPS4Chunks = async (chunks) => {
+					for ( var i in chunks ) {
+						if (await WebApi.setPS4Options(chunks[i]) === false ) {
+							return false;
+						}
+					}
+					return true;
+				};
+
+
+				let serialBin = hexToBytes(serial);
+
+				let success = await sendPS4Chunks([{
+					N: mbedmpi2b64(int2mbedmpi(N)),
+					E: mbedmpi2b64(int2mbedmpi(E)),
+					D: mbedmpi2b64(int2mbedmpi(D))
+				}, {
+					P: mbedmpi2b64(int2mbedmpi(P)),
+					Q: mbedmpi2b64(int2mbedmpi(Q)),
+					DP: mbedmpi2b64(int2mbedmpi(DP)),
+					DQ: mbedmpi2b64(int2mbedmpi(DQ))
+				}, {
+					QP: mbedmpi2b64(int2mbedmpi(QP)),
+					RN: mbedmpi2b64(int2mbedmpi(RN)),
+					serial: btoa(String.fromCharCode(...new Uint8Array(serialBin)))
+				}, {
+					signature: btoa(signature)
+				}]);
+
+				if ( success ) {
+					document.getElementById("ps4alert").textContent = 'Verified and Saved PS4 Mode! Reboot to take effect';
+					document.getElementById("save").click();
+				} else {
+					throw Error("PS4 Chunks Error");
+				}
+
+			} catch (e) {
+				document.getElementById("ps4alert").textContent = 'ERROR: Could not verify required files';
+			}
+		}
+	};
+	setTimeout(checkRead, 1000);
+};
+
+const SOCD_MODES = [
+	{ label: 'Up Priority', value: 0 },
+	{ label: 'Neutral', value: 1 },
+	{ label: 'Last Win', value: 2 },
+	{ label: 'First Win', value: 3 },
+];
+
 const schema = yup.object().shape({
 	turboPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Turbo Pin'),
 	turboPinLED: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Turbo Pin LED'),
 	sliderLSPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Slider LS Pin'),
 	sliderRSPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Slider RS Pin'),
-	sliderSOCDUpPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Slider SOCD Up Priority Pin'),
-	sliderSOCDSecondPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Slider SOCD Second Priority Pin'),
+	sliderSOCDPinOne: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Slider SOCD Up Priority Pin'),
+	sliderSOCDPinTwo: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Slider SOCD Second Priority Pin'),
 	turboShotCount: yup.number().required().min(5).max(30).label('Turbo Shot Count'),
 	reversePin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Reverse Pin'),
 	reversePinLED: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Reverse Pin LED'),
@@ -127,6 +292,9 @@ const schema = yup.object().shape({
 	shmupBtnMask3: yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('Charge Shot Button 3 Map'),
 	shmupBtnMask4: yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('Charge Shot Button 4 Map'),
 	pinShmupDial: yup.number().required().test('', '${originalValue} is unavailable/already assigned!', (value) => usedPins.indexOf(value) === -1).label('Shmup Dial Pin'),
+	sliderSOCDModeOne: yup.number().required().oneOf(SOCD_MODES.map(o => o.value)).label('SOCD Slider Mode One'),
+	sliderSOCDModeTwo: yup.number().required().oneOf(SOCD_MODES.map(o => o.value)).label('SOCD Slider Mode Two'),
+	sliderSOCDModeDefault: yup.number().required().oneOf(SOCD_MODES.map(o => o.value)).label('SOCD Slider Mode Default'),
 	AnalogInputEnabled: yup.number().required().label('Analog Input Enabled'),
 	BoardLedAddonEnabled: yup.number().required().label('Board LED Add-On Enabled'),
 	BuzzerSpeakerAddonEnabled: yup.number().required().label('Buzzer Speaker Add-On Enabled'),
@@ -137,6 +305,7 @@ const schema = yup.object().shape({
 	JSliderInputEnabled: yup.number().required().label('JSlider Input Enabled'),
 	SliderSOCDInputEnabled: yup.number().required().label('Slider SOCD Input Enabled'),
 	PlayerNumAddonEnabled: yup.number().required().label('Player Number Add-On Enabled'),
+	PS4ModeAddonEnabled: yup.number().required().label('PS4 Mode Add-on Enabled'),
 	ReverseInputEnabled: yup.number().required().label('Reverse Input Enabled'),
 	TurboInputEnabled: yup.number().required().label('Turbo Input Enabled')
 });
@@ -146,8 +315,8 @@ const defaultValues = {
 	turboPinLED: -1,
 	sliderLSPin: -1,
 	sliderRSPin: -1,
-	sliderSOCDUpPin: -1,
-	sliderSOCDSecondPin: -1,
+	sliderSOCDPinOne: -1,
+	sliderSOCDPinTwo: -1,
 	turboShotCount: 5,
 	reversePin: -1,
 	reversePinLED: -1,
@@ -186,6 +355,9 @@ const defaultValues = {
 	shmupBtnMask3: 0,
 	shmupBtnMask4: 0,
 	pinShmupDial: -1,
+	sliderSOCDModeOne: 0,
+	sliderSOCDModeTwo: 2,
+	sliderSOCDModeDefault: 1,
 	AnalogInputEnabled: 0,
 	BoardLedAddonEnabled: 0,
 	BuzzerSpeakerAddonEnabled: 0,
@@ -196,13 +368,14 @@ const defaultValues = {
 	JSliderInputEnabled: 0,
 	SliderSOCDInputEnabled: 0,
 	PlayerNumAddonEnabled: 0,
+	PS4ModeAddonEnabled: 0,
 	ReverseInputEnabled: 0,
 	TurboInputEnabled: 0
 };
 
 let usedPins = [];
 
-const FormContext = () => {
+const FormContext = ({setStoredData}) => {
 	const { values, setValues } = useFormikContext();
 
 	useEffect(() => {
@@ -210,12 +383,20 @@ const FormContext = () => {
 			const data = await WebApi.getAddonsOptions();
 			usedPins = data.usedPins;
 			setValues(data);
+			setStoredData(JSON.parse(JSON.stringify(data))); // Do a deep copy to keep the original
 		}
 		fetchData();
 	}, [setValues]);
 
 	useEffect(() => {
-		if (!!values.turboPin)
+		sanitizeData(values);
+	}, [values, setValues]);
+
+	return null;
+};
+
+const sanitizeData = (values) => {
+	if (!!values.turboPin)
 			values.turboPin = parseInt(values.turboPin);
 		if (!!values.turboPinLED)
 			values.turboPinLED = parseInt(values.turboPinLED);
@@ -223,10 +404,10 @@ const FormContext = () => {
 			values.sliderLSPin = parseInt(values.sliderLSPin);
 		if (!!values.sliderRSPin)
 			values.sliderRSPin = parseInt(values.sliderRSPin);
-		if (!!values.sliderSOCDUpPin)
-			values.sliderSOCDUpPin = parseInt(values.sliderSOCDUpPin);
-		if (!!values.sliderSOCDSecondPin)
-			values.sliderSOCDSecondPin = parseInt(values.sliderSOCDSecondPin);
+		if (!!values.sliderSOCDPinOne)
+			values.sliderSOCDPinOne = parseInt(values.sliderSOCDPinOne);
+		if (!!values.sliderSOCDPinTwo)
+			values.sliderSOCDPinTwo = parseInt(values.sliderSOCDPinTwo);
 		if (!!values.turboShotCount)
 			values.turboShotCount = parseInt(values.turboShotCount);
 		if (!!values.reversePin)
@@ -309,6 +490,12 @@ const FormContext = () => {
 			values.shmupBtnMask4 = parseInt(values.shmupBtnMask4);
 		if (!!values.pinShmupDial)
 			values.pinShmupDial = parseInt(values.pinShmupDial);
+		if (!!values.sliderSOCDModeOne)
+			values.sliderSOCDModeOne = parseInt(values.sliderSOCDModeOne);
+		if (!!values.sliderSOCDModeTwo)
+			values.sliderSOCDModeTwo = parseInt(values.sliderSOCDModeTwo);
+		if (!!values.sliderSOCDModeDefault)
+			values.sliderSOCDModeDefault = parseInt(values.sliderSOCDModeDefault);
 		if (!!values.AnalogInputEnabled)
 			values.AnalogInputEnabled = parseInt(values.AnalogInputEnabled);
 		if (!!values.BoardLedAddonEnabled)
@@ -329,20 +516,52 @@ const FormContext = () => {
 			values.SliderSOCDInputEnabled = parseInt(values.SliderSOCDInputEnabled);
 		if (!!values.PlayerNumAddonEnabled)
 			values.PlayerNumAddonEnabled = parseInt(values.PlayerNumAddonEnabled);
+		if (!!values.PS4ModeAddonEnabled)
+			values.PS4ModeAddonEnabled = parseInt(values.PS4ModeAddonEnabled);
 		if (!!values.ReverseInputEnabled)
 			values.ReverseInputEnabled = parseInt(values.ReverseInputEnabled);
 		if (!!values.TurboInputEnabled)
 			values.TurboInputEnabled = parseInt(values.TurboInputEnabled);
-	}, [values, setValues]);
+}
 
-	return null;
-};
+function flattenObject(object) {
+	var toReturn = {};
+  
+	for (var i in object) {
+	  if (!object.hasOwnProperty(i)) continue;
+  
+	  if (typeof object[i] == "object" && object[i] !== null) {
+		var flatObject = flattenObject(object[i]);
+		for (var x in flatObject) {
+		  if (!flatObject.hasOwnProperty(x)) continue;
+  
+		  toReturn[i + "." + x] = flatObject[x];
+		}
+	  } else {
+		toReturn[i] = object[i];
+	  }
+	}
+	return toReturn;
+  }
 
 export default function AddonsConfigPage() {
 	const [saveMessage, setSaveMessage] = useState('');
+	const [storedData, setStoredData] = useState({});
 
 	const onSuccess = async (values) => {
-		const success = WebApi.setAddonsOptions(values);
+		const flattened = flattenObject(storedData)
+		
+		// Compare what's changed and set it to resultObject
+		let resultObject = {}
+		Object.entries(flattened)?.map(entry => {
+			const [key, oldVal] = entry;
+			const newVal = get(values, key)
+			if (newVal !== oldVal) {
+				set(resultObject, key, newVal)
+			}
+		})
+		sanitizeData(resultObject);
+		const success = await WebApi.setAddonsOptions(resultObject);
 		setSaveMessage(success ? 'Saved! Please Restart Your Device' : 'Unable to Save');
 	};
 
@@ -355,9 +574,7 @@ export default function AddonsConfigPage() {
 			{({
 				handleSubmit,
 				handleChange,
-				handleBlur,
 				values,
-				touched,
 				errors,
 			}) => (
 				<Form noValidate onSubmit={handleSubmit}>
@@ -386,8 +603,7 @@ export default function AddonsConfigPage() {
 							label="Enabled"
 							type="switch"
 							id="BootselButtonAddonButton"
-							reverse="true"
-							error={undefined}
+							reverse
 							isInvalid={false}
 							checked={Boolean(values.BootselButtonAddonEnabled)}
 							onChange={(e) => { handleCheckbox("BootselButtonAddonEnabled", values); handleChange(e);}}
@@ -413,8 +629,7 @@ export default function AddonsConfigPage() {
 							label="Enabled"
 							type="switch"
 							id="BoardLedAddonButton"
-							reverse="true"
-							error={undefined}
+							reverse
 							isInvalid={false}
 							checked={Boolean(values.BoardLedAddonEnabled)}
 							onChange={(e) => {handleCheckbox("BoardLedAddonEnabled", values); handleChange(e);}}
@@ -456,8 +671,7 @@ export default function AddonsConfigPage() {
 							label="Enabled"
 							type="switch"
 							id="AnalogInputButton"
-							reverse="true"
-							error={undefined}
+							reverse
 							isInvalid={false}
 							checked={Boolean(values.AnalogInputEnabled)}
 							onChange={(e) => {handleCheckbox("AnalogInputEnabled", values); handleChange(e);}}
@@ -521,7 +735,6 @@ export default function AddonsConfigPage() {
 								type="switch"
 								id="ShmupMode"
 								className="col-sm-3 ms-2"
-								error={undefined}
 								isInvalid={false}
 								checked={Boolean(values.shmupMode)}
 								onChange={(e) => {handleCheckbox("shmupMode", values); handleChange(e);}}
@@ -698,8 +911,7 @@ export default function AddonsConfigPage() {
 							label="Enabled"
 							type="switch"
 							id="TurboInputButton"
-							reverse="true"
-							error={undefined}
+							reverse
 							isInvalid={false}
 							checked={Boolean(values.TurboInputEnabled)}
 							onChange={(e) => {handleCheckbox("TurboInputEnabled", values); handleChange(e);}}
@@ -740,8 +952,7 @@ export default function AddonsConfigPage() {
 							label="Enabled"
 							type="switch"
 							id="JSliderInputButton"
-							reverse="true"
-							error={undefined}
+							reverse
 							isInvalid={false}
 							checked={Boolean(values.JSliderInputEnabled)}
 							onChange={(e) => {handleCheckbox("JSliderInputEnabled", values); handleChange(e);}}
@@ -832,8 +1043,7 @@ export default function AddonsConfigPage() {
 							label="Enabled"
 							type="switch"
 							id="ReverseInputButton"
-							reverse="true"
-							error={undefined}
+							reverse
 							isInvalid={false}
 							checked={Boolean(values.ReverseInputEnabled)}
 							onChange={(e) => {handleCheckbox("ReverseInputEnabled", values); handleChange(e);}}
@@ -910,8 +1120,7 @@ export default function AddonsConfigPage() {
 							label="Enabled"
 							type="switch"
 							id="I2CAnalog1219InputButton"
-							reverse="true"
-							error={undefined}
+							reverse
 							isInvalid={false}
 							checked={Boolean(values.I2CAnalog1219InputEnabled)}
 							onChange={(e) => {handleCheckbox("I2CAnalog1219InputEnabled", values); handleChange(e);}}
@@ -1003,8 +1212,7 @@ export default function AddonsConfigPage() {
 							label="Enabled"
 							type="switch"
 							id="DualDirectionalInputButton"
-							reverse="true"
-							error={undefined}
+							reverse
 							isInvalid={false}
 							checked={Boolean(values.DualDirectionalInputEnabled)}
 							onChange={(e) => {handleCheckbox("DualDirectionalInputEnabled", values); handleChange(e);}}
@@ -1045,8 +1253,7 @@ export default function AddonsConfigPage() {
 							label="Enabled"
 							type="switch"
 							id="BuzzerSpeakerAddonButton"
-							reverse="true"
-							error={undefined}
+							reverse
 							isInvalid={false}
 							checked={Boolean(values.BuzzerSpeakerAddonEnabled)}
 							onChange={(e) => {handleCheckbox("BuzzerSpeakerAddonEnabled", values); handleChange(e);}}
@@ -1087,8 +1294,7 @@ export default function AddonsConfigPage() {
 							label="Enabled"
 							type="switch"
 							id="ExtraButtonAddonButton"
-							reverse="true"
-							error={undefined}
+							reverse
 							isInvalid={false}
 							checked={Boolean(values.ExtraButtonAddonEnabled)}
 							onChange={(e) => { handleCheckbox("ExtraButtonAddonEnabled", values); handleChange(e);}}
@@ -1118,8 +1324,7 @@ export default function AddonsConfigPage() {
 							label="Enabled"
 							type="switch"
 							id="PlayerNumAddonButton"
-							reverse="true"
-							error={undefined}
+							reverse
 							isInvalid={false}
 							checked={Boolean(values.PlayerNumAddonEnabled)}
 							onChange={(e) => {handleCheckbox("PlayerNumAddonEnabled", values); handleChange(e);}}
@@ -1130,26 +1335,62 @@ export default function AddonsConfigPage() {
 							id="SliderSOCDInputOptions"
 							hidden={!values.SliderSOCDInputEnabled}>
 						<Row className="mb-3">
-							<FormControl type="number"
-								label="Slider SOCD Up Priority Pin"
-								name="sliderSOCDUpPin"
+							<FormSelect
+								label="SOCD Slider Mode Default"
+								name="sliderSOCDModeDefault"
 								className="form-select-sm"
 								groupClassName="col-sm-3 mb-3"
-								value={values.sliderSOCDUpPin}
-								error={errors.sliderSOCDUpPin}
-								isInvalid={errors.sliderSOCDUpPin}
+								value={values.sliderSOCDModeDefault}
+								error={errors.sliderSOCDModeDefault}
+								isInvalid={errors.sliderSOCDModeDefault}
+								onChange={handleChange}
+							>
+								{SOCD_MODES.map((o, i) => <option key={`sliderSOCDModeDefault-option-${i}`} value={o.value}>{o.label}</option>)}
+							</FormSelect>
+							<FormSelect
+								label="SOCD Slider Mode One"
+								name="sliderSOCDModeOne"
+								className="form-select-sm"
+								groupClassName="col-sm-3 mb-3"
+								value={values.sliderSOCDModeOne}
+								error={errors.sliderSOCDModeOne}
+								isInvalid={errors.sliderSOCDModeOne}
+								onChange={handleChange}
+							>
+								{SOCD_MODES.map((o, i) => <option key={`sliderSOCDModeOne-option-${i}`} value={o.value}>{o.label}</option>)}
+							</FormSelect>
+							<FormControl type="number"
+								label="Pin One"
+								name="sliderSOCDPinOne"
+								className="form-select-sm"
+								groupClassName="col-sm-1 mb-3"
+								value={values.sliderSOCDPinOne}
+								error={errors.sliderSOCDPinOne}
+								isInvalid={errors.sliderSOCDPinOne}
 								onChange={handleChange}
 								min={-1}
 								max={29}
 							/>
-							<FormControl type="number"
-								label="Slider SOCD Second Input Priority Pin"
-								name="sliderSOCDSecondPin"
-								className="form-control-sm"
+							<FormSelect
+								label="SOCD Slider Mode Two"
+								name="sliderSOCDModeTwo"
+								className="form-select-sm"
 								groupClassName="col-sm-3 mb-3"
-								value={values.sliderSOCDSecondPin}
-								error={errors.sliderSOCDSecondPin}
-								isInvalid={errors.sliderSOCDSecondPin}
+								value={values.sliderSOCDModeTwo}
+								error={errors.sliderSOCDModeTwo}
+								isInvalid={errors.sliderSOCDModeTwo}
+								onChange={handleChange}
+							>
+								{SOCD_MODES.map((o, i) => <option key={`sliderSOCDModeTwo-option-${i}`} value={o.value}>{o.label}</option>)}
+							</FormSelect>
+							<FormControl type="number"
+								label="Pin Two"
+								name="sliderSOCDPinTwo"
+								className="form-control-sm"
+								groupClassName="col-sm-1 mb-3"
+								value={values.sliderSOCDPinTwo}
+								error={errors.sliderSOCDPinTwo}
+								isInvalid={errors.sliderSOCDPinTwo}
 								onChange={handleChange}
 								min={-1}
 								max={29}
@@ -1160,18 +1401,60 @@ export default function AddonsConfigPage() {
 							label="Enabled"
 							type="switch"
 							id="SliderSOCDInputButton"
-							reverse="true"
-							error={undefined}
+							reverse
 							isInvalid={false}
 							checked={Boolean(values.SliderSOCDInputEnabled)}
 							onChange={(e) => {handleCheckbox("SliderSOCDInputEnabled", values); handleChange(e);}}
 						/>
 					</Section>
+					<Section title="PS4 Mode">
+						<div
+							id="PS4ModeOptions"
+							hidden={!values.PS4ModeAddonEnabled}>
+							<Row>
+								<h2>!!!! DISCLAIMER: GP2040-CE WILL NEVER SUPPLY THESE FILES !!!!</h2>
+								<p>Please upload the 3 required files and click the "Verify & Save" button to use PS4 Mode.</p>
+							</Row>
+							<Row className="mb-3">
+								<div className="col-sm-3 mb-3">
+									Private Key (PEM):
+									<input type="file" id="ps4key-input" accept="*/*" />
+								</div>
+								<div className="col-sm-3 mb-3">
+									Serial Number (16 Bytes in Hex Ascii):
+									<input type="file" id="ps4serial-input" accept="*/*" />
+								</div>
+								<div className="col-sm-3 mb-3">
+									Signature (256 Bytes in Binary):
+									<input type="file" id="ps4signature-input" accept="*/*" />
+								</div>
+							</Row>
+							<Row className="mb-3">
+								<div className="col-sm-3 mb-3">
+									<Button type="button" onClick={verifyAndSavePS4}>Verify & Save</Button>
+								</div>
+							</Row>
+							<Row className="mb-3">
+								<div className="col-sm-3 mb-3">
+									<span id="ps4alert"></span>
+								</div>
+							</Row>
+						</div>
+						<FormCheck
+							label="Enabled"
+							type="switch"
+							id="PS4ModeAddonEnabledButton"
+							reverse
+							isInvalid={false}
+							checked={Boolean(values.PS4ModeAddonEnabled)}
+							onChange={(e) => {handleCheckbox("PS4ModeAddonEnabled", values); handleChange(e);}}
+						/>
+					</Section>
 					<div className="mt-3">
-						<Button type="submit">Save</Button>
+						<Button type="submit" id="save">Save</Button>
 						{saveMessage ? <span className="alert">{saveMessage}</span> : null}
 					</div>
-					<FormContext />
+					<FormContext setStoredData={setStoredData}/>
 				</Form>
 			)}
 		</Formik>

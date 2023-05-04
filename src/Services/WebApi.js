@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { chunk } from 'lodash';
 import { intToHex, hexToInt, rgbIntToHex } from './Utilities';
 
 const baseUrl = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8080';
@@ -36,8 +35,8 @@ async function getDisplayOptions() {
 		.then((response) => {
 			if (response.data.i2cAddress)
 				response.data.i2cAddress = '0x' + response.data.i2cAddress.toString(16);
-			response.data.splashDuration = response.data.splashDuration / 1000; // milliseconds to seconds 
-			response.data.displaySaverTimeout = response.data.displaySaverTimeout / 60000; // milliseconds to minutes 
+			response.data.splashDuration = response.data.splashDuration / 1000; // milliseconds to seconds
+			response.data.displaySaverTimeout = response.data.displaySaverTimeout / 60000; // milliseconds to minutes
 
 			return response.data;
 		})
@@ -53,7 +52,7 @@ async function setDisplayOptions(options, isPreview) {
 	newOptions.splashDuration = parseInt(options.splashDuration) * 1000; // seconds to milliseconds
 	newOptions.displaySaverTimeout = parseInt(options.displaySaverTimeout) * 60000; // minutes to milliseconds
 	newOptions.splashChoice = parseInt(options.splashChoice);
-	
+
 	if (newOptions.buttonLayoutCustomOptions) {
 		newOptions.buttonLayoutCustomOptions.params.layout = parseInt(options.buttonLayoutCustomOptions?.params?.layout);
 		newOptions.buttonLayoutCustomOptions.paramsRight.layout = parseInt(options.buttonLayoutCustomOptions?.paramsRight?.layout);
@@ -217,6 +216,18 @@ async function setAddonsOptions(options) {
 		});
 }
 
+async function setPS4Options(options) {
+	return axios.post(`${baseUrl}/api/setPS4Options`, options)
+		.then((response) => {
+			console.log(response.data);
+			return true;
+		})
+		.catch((err) => {
+			console.error(err);
+			return false;
+		});
+}
+
 async function getFirmwareVersion() {
 	return axios.get(`${baseUrl}/api/getFirmwareVersion`)
 		.then((response) => response.data)
@@ -255,6 +266,7 @@ const WebApi = {
 	setKeyMappings,
 	getAddonsOptions,
 	setAddonsOptions,
+	setPS4Options,
 	getSplashImage,
 	setSplashImage,
 	getFirmwareVersion,

@@ -216,7 +216,7 @@ export default function BackupPage() {
 						}}
 					>
 						<Button
-							type={"save"}
+							type="submit"
 							onClick={handleSave}
 						>
 							{"Save"}
@@ -227,7 +227,6 @@ export default function BackupPage() {
 								paddingLeft: 24,
 								fontWeight: 600,
 								color: "darkcyan",
-								textJustify: "center",
 								alignSelf: "center"
 							}}
 						>
@@ -266,7 +265,6 @@ export default function BackupPage() {
 						}}
 					>
 						<Button
-							type={"load"}
 							onClick={() => {
 								inputFileSelect.current.click();
 							}}
@@ -279,7 +277,6 @@ export default function BackupPage() {
 								paddingLeft: 24,
 								fontWeight: 600,
 								color: "darkcyan",
-								textJustify: "center",
 								alignSelf: "center"
 							}}
 						>
