@@ -562,6 +562,7 @@ export default function AddonsConfigPage() {
 		})
 		sanitizeData(resultObject);
 		const success = await WebApi.setAddonsOptions(resultObject);
+		setStoredData(JSON.parse(JSON.stringify(values))); // Update to reflect saved data
 		setSaveMessage(success ? 'Saved! Please Restart Your Device' : 'Unable to Save');
 	};
 
