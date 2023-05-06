@@ -149,9 +149,9 @@ export default function KeyboardMappingPage() {
 					continue;
 
 				if (mappings[prop].key !== 0x00 && mappings[prop].key === mappings[otherProp].key)
-					mappings[prop].error = `Key ${KEY_CODES.find(({label, value}) => mappings[prop].key == value).label} is already assigned`;
+					mappings[prop].error = `Key ${KEY_CODES.find(({label, value}) => mappings[prop].key === value).label} is already assigned`;
 				else if ((boards[selectedBoard].invalidKeys || []).filter(p => p === mappings[prop].key).length > 0)
-					mappings[prop].error = `Key ${KEY_CODES.find(({label, value}) => mappings[prop].key == value).label} is invalid for this board`;
+					mappings[prop].error = `Key ${KEY_CODES.find(({label, value}) => mappings[prop].key === value).label} is invalid for this board`;
 			}
 
 		}
