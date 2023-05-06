@@ -130,30 +130,33 @@ async function setLedOptions(options) {
 async function getCustomTheme() {
 	return axios.get(`${baseUrl}/api/getCustomTheme`)
 		.then((response) => {
+			let data = { hasCustomTheme: response.data.enabled, customTheme: { } };
+
 			// Transform ARGB int value to hex for easy use on frontend
-			Object.keys(response.data.customTheme)
-				.forEach((p) => {
-					response.data.customTheme[p] = {
-						normal: `#${rgbIntToHex(response.data.customTheme[p].normal)}`,
-						pressed: `#${rgbIntToHex(response.data.customTheme[p].pressed)}`,
+			Object.keys(response.data)
+				.filter(p => p !== 'enabled')
+				.forEach((button) => {
+					data.customTheme[button] = {
+						normal: `#${rgbIntToHex(response.data[button].u)}`,
+						pressed: `#${rgbIntToHex(response.data[button].d)}`,
 					};
 				});
 
-			console.log(response.data);
-			return response.data;
+			console.log(data);
+			return data;
 		})
 		.catch(console.error);
 }
 
 async function setCustomTheme(customThemeOptions) {
-	const options = { ...customThemeOptions };
+	let options = { enabled: customThemeOptions.hasCustomTheme };
 
 	// Transform RGB hex values to ARGB int before sending back to API
-	Object.keys(options.customTheme)
-		.forEach((p) => {
-			options.customTheme[p] = {
-				normal: hexToInt(options.customTheme[p].normal.replace('#', '')),
-				pressed: hexToInt(options.customTheme[p].pressed.replace('#', '')),
+	Object.keys(customThemeOptions.customTheme)
+		.forEach(p => {
+			options[p] = {
+				u: hexToInt(customThemeOptions.customTheme[p].normal.replace('#', '')),
+				d: hexToInt(customThemeOptions.customTheme[p].pressed.replace('#', '')),
 			};
 		});
 

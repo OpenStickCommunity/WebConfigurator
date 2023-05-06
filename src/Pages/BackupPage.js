@@ -10,6 +10,7 @@ const API_BINDING = {
 	"display":     {label: "Display",      get: WebApi.getDisplayOptions, set: WebApi.setDisplayOptions},
 	"gamepad":     {label: "Gamepad",      get: WebApi.getGamepadOptions, set: WebApi.setGamepadOptions},
 	"led":         {label: "LED",          get: WebApi.getLedOptions,     set: WebApi.setLedOptions},
+	"ledTheme":    {label: "Custom Theme", get: WebApi.getCustomTheme,    set: WebApi.setCustomTheme},
 	"pinmappings": {label: "Pin Mappings", get: WebApi.getPinMappings,    set: WebApi.setPinMappings},
 	"addons":      {label: "Add-Ons",      get: WebApi.getAddonsOptions,  set: WebApi.setAddonsOptions},
 	// new api, add it here
@@ -196,7 +197,7 @@ export default function BackupPage() {
 			<Section title={"Backup To File"}>
 				<Col>
 					<Form.Group className={"row mb-3"}>
-						<div className={"col-sm-3"}>
+						<div className={"col-sm-4"}>
 							{Object.entries(API_BINDING).map(api =>
 								<Form.Check
 									id={`export_${api[0]}`}
@@ -238,7 +239,7 @@ export default function BackupPage() {
 			<Section title={"Restore From File"}>
 				<Col>
 					<Form.Group className={"row mb-3"}>
-						<div className={"col-sm-3"}>
+						<div className={"col-sm-4"}>
 							{Object.entries(API_BINDING).map(api =>
 								<Form.Check
 									id={`import_${api[0]}`}

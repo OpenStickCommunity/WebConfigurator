@@ -145,7 +145,7 @@ const CustomThemePage = () => {
 	const submit = async () => {
 		const leds = { ...customTheme };
 		delete leds['ALL'];
-		const success = WebApi.setCustomTheme({ hasCustomTheme, customTheme: leds });
+		const success = await WebApi.setCustomTheme({ hasCustomTheme, customTheme: leds });
 		setSaveMessage(success ? 'Saved! Please Restart Your Device' : 'Unable to Save');
 	};
 
