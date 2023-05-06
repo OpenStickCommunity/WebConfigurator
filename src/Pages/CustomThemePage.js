@@ -121,10 +121,6 @@ const CustomThemePage = () => {
 		setSelectedColor(c);
 	};
 
-	const handleLedColorDeselect = (e) => {
-		setSelectedButton('');
-	};
-
 	const toggleCustomTheme = (e) => {
 		setHasCustomTheme(e.target.checked);
 	};
@@ -133,6 +129,7 @@ const CustomThemePage = () => {
 		e.stopPropagation();
 		if (selectedButton === buttonName) {
 			setSelectedButton(null);
+			setLedOverlayTarget(null);
 		}
 		else {
 			setLedOverlayTarget(e.target);
@@ -160,6 +157,11 @@ const CustomThemePage = () => {
 		}
 
 		fetchData();
+
+		// Hide color picker when anywhere but picker is clicked
+		window.addEventListener('click', (e) => {
+			toggleSelectedButton(e, selectedButton);
+		});
 	}, []);
 
 	return <>
@@ -193,7 +195,6 @@ const CustomThemePage = () => {
 							<div className="d-flex led-preview-container">
 								<div
 									className={`led-preview led-preview-${BUTTON_LAYOUTS[ledLayout]?.stickLayout}`}
-									onClick={(e) => handleLedColorDeselect(e)}
 									onContextMenu={(e) => e.preventDefault()}
 								>
 									<div className="container-aux">
@@ -234,18 +235,19 @@ const CustomThemePage = () => {
 				<Overlay
 					show={!!selectedButton}
 					target={ledOverlayTarget}
-					placement="top"
+					placement="bottom"
 					container={this}
 					containerPadding={20}
+					transition={null}
 				>
-					<Popover>
+					<Popover onClick={(e) => e.stopPropagation()}>
 						<Container className="led-color-picker">
 							<h5 className="text-center">{selectedButton === 'ALL' ? selectedButton : BUTTONS[buttonLabels][selectedButton]}</h5>
 							<Form.Group as={Row}
 								className={`led-color-option ${pickerType?.type === 'normal' ? 'selected' : ''}`}
 								onClick={() => handleLedColorClick('normal')}
 							>
-								<Form.Label column lg={8} className="p-3">Normal</Form.Label>
+								<Form.Label column sm={8} className="p-3">Normal</Form.Label>
 								<Col sm={2}>
 									<div
 										className={`led-color led-color-normal`}
@@ -257,7 +259,7 @@ const CustomThemePage = () => {
 								className={`led-color-option ${pickerType?.type === 'pressed' ? 'selected' : ''}`}
 								onClick={() => handleLedColorClick('pressed')}
 							>
-								<Form.Label column lg={8} className="p-3">Pressed</Form.Label>
+								<Form.Label column sm={8} className="p-3">Pressed</Form.Label>
 								<Col sm={2}>
 									<div
 										className={`led-color led-color-pressed`}
@@ -297,7 +299,7 @@ const CustomThemePage = () => {
 		</div>
 		<Modal show={modalVisible} onHide={() => setModalVisible(false)}>
 			<Modal.Header closeButton>
-				<Modal.Title>Confirm Clear Custom LEDs</Modal.Title>
+				<Modal.Title>Confirm Clear Custom Theme</Modal.Title>
 			</Modal.Header>
 			<Modal.Body>Are you sure you would like to clear your current custom LED theme?</Modal.Body>
 			<Modal.Footer>
