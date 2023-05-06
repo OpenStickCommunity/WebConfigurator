@@ -235,38 +235,37 @@ const CustomThemePage = () => {
 				<Overlay
 					show={!!selectedButton}
 					target={ledOverlayTarget}
-					placement="bottom"
+					placement={selectedButton === 'ALL' ? 'top' : 'bottom'}
 					container={this}
 					containerPadding={20}
 					transition={null}
 				>
 					<Popover onClick={(e) => e.stopPropagation()}>
 						<Container className="led-color-picker">
-							<h5 className="text-center">{selectedButton === 'ALL' ? selectedButton : BUTTONS[buttonLabels][selectedButton]}</h5>
-							<Form.Group as={Row}
-								className={`led-color-option ${pickerType?.type === 'normal' ? 'selected' : ''}`}
-								onClick={() => handleLedColorClick('normal')}
-							>
-								<Form.Label column sm={8} className="p-3">Normal</Form.Label>
-								<Col sm={2}>
+							<h6 className="text-center">{selectedButton === 'ALL' ? selectedButton : BUTTONS[buttonLabels][selectedButton]}</h6>
+							<Row>
+								<Form.Group as={Col}
+									className={`led-color-option ${pickerType?.type === 'normal' ? 'selected' : ''}`}
+									onClick={() => handleLedColorClick('normal')}
+								>
+									<Form.Label>Normal</Form.Label>
 									<div
 										className={`led-color led-color-normal`}
 										style={{ backgroundColor: customTheme[selectedButton]?.normal }}
-									></div>
-								</Col>
-							</Form.Group>
-							<Form.Group as={Row}
-								className={`led-color-option ${pickerType?.type === 'pressed' ? 'selected' : ''}`}
-								onClick={() => handleLedColorClick('pressed')}
-							>
-								<Form.Label column sm={8} className="p-3">Pressed</Form.Label>
-								<Col sm={2}>
+									>
+									</div>
+								</Form.Group>
+								<Form.Group as={Col}
+									className={`led-color-option ${pickerType?.type === 'pressed' ? 'selected' : ''}`}
+									onClick={() => handleLedColorClick('pressed')}
+								>
+									<Form.Label>Pressed</Form.Label>
 									<div
 										className={`led-color led-color-pressed`}
 										style={{ backgroundColor: customTheme[selectedButton]?.pressed }}
 									></div>
-								</Col>
-							</Form.Group>
+								</Form.Group>
+							</Row>
 							<Row>
 								<Col>
 									<SketchPicker
