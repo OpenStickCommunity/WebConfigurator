@@ -245,6 +245,7 @@ const SOCD_MODES = [
 	{ label: 'Neutral', value: 1 },
 	{ label: 'Last Win', value: 2 },
 	{ label: 'First Win', value: 3 },
+	{ label: 'SOCD Cleaning Off', value: 4 },
 ];
 
 yup.NumberSchema.prototype.validateSelectionWhenEnabled = function(name, choices) {
@@ -1376,7 +1377,8 @@ export default function AddonsConfigPage() {
 							onChange={(e) => {handleCheckbox("PlayerNumAddonEnabled", values); handleChange(e);}}
 						/>
 					</Section>
-					<Section title="SOCD Selection Slider">
+					<Section title="SOCD Cleaning Mode Selection Slider">
+						<p>Note: PS4, PS3 and Nintendo Switch modes do not support setting SOCD Cleaning to Off and will default to Neutral SOCD Cleaning mode.</p>
 						<div
 							id="SliderSOCDInputOptions"
 							hidden={!values.SliderSOCDInputEnabled}>
