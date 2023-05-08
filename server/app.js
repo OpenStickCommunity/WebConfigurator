@@ -75,13 +75,13 @@ app.get("/api/getGamepadOptions", (req, res) => {
 		dpadMode: 0,
 		inputMode: 1,
 		socdMode: 2,
-		hotkeyF1: [ 
+		hotkeyF1: [
 			{ action: 1<<1, mask: 1<<0 },
 			{ action: 1<<2, mask: 1<<1 },
 			{ action: 1<<3, mask: 1<<2 },
 			{ action: 1<<4, mask: 1<<3 },
 		 ],
-		hotkeyF2: [ 
+		hotkeyF2: [
 			{ action: 1<<5, mask: 1<<0 },
 			{ action: 1<<6, mask: 1<<1 },
 			{ action: 1<<7, mask: 1<<2 },
@@ -119,6 +119,31 @@ app.get("/api/getLedOptions", (req, res) => {
 			A2: null,
 		},
 		usedPins: Object.values(picoController),
+	});
+});
+
+app.get('/api/getCustomTheme', (req, res) => {
+	console.log('/api/getCustomTheme');
+	return res.send({
+		enabled: true,
+		Up: { u: 16711680, d: 255 },
+		Down: { u: 16711680, d: 255 },
+		Left: { u: 16711680, d: 255 },
+		Right: { u: 16711680, d: 255 },
+		B1: { u: 65280, d: 16711680 },
+		B2: { u: 65280, d: 16711680 },
+		B3: { u: 255, d: 65280 },
+		B4: { u: 255, d: 65280 },
+		L1: { u: 255, d: 65280 },
+		R1: { u: 255, d: 65280 },
+		L2: { u: 65280, d: 16711680 },
+		R2: { u: 65280, d: 16711680 },
+		S1: { u: 65535, d: 16776960 },
+		S2: { u: 65535, d: 16776960 },
+		L3: { u: 65416, d: 16746496 },
+		R3: { u: 65416, d: 16746496 },
+		A1: { u: 8913151, d: 65416 },
+		A2: { u: 8913151, d: 65416 },
 	});
 });
 

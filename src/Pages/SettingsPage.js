@@ -26,6 +26,7 @@ const SOCD_MODES = [
 	{ label: 'Neutral', value: 1 },
 	{ label: 'Last Win', value: 2 },
 	{ label: 'First Win', value: 3 },
+	{ label: 'Off', value: 4 },
 ];
 
 const HOTKEY_MASKS = [
@@ -46,6 +47,7 @@ const HOTKEY_ACTIONS = [
 	{ label: 'SOCD Neutral', value: 7 },
 	{ label: 'SOCD Last Win', value: 8 },
 	{ label: 'SOCD First Win', value: 11 },
+	{ label: 'SOCD Cleaning Off', value: 12 },
 	{ label: 'Invert X Axis', value: 9 },
 	{ label: 'Invert Y Axis', value: 10 },
 ];
@@ -61,7 +63,7 @@ const schema = yup.object().shape({
 		mask: yup.number().required().oneOf(HOTKEY_MASKS.map(o => o.value)).label('Hotkey action')
 	})),
 	inputMode: yup.number().required().oneOf(INPUT_MODES.map(o => o.value)).label('Input Mode'),
-	socdMode : yup.number().required().oneOf(SOCD_MODES.map(o => o.value)).label('SOCD Mode'),
+	socdMode : yup.number().required().oneOf(SOCD_MODES.map(o => o.value)).label('SOCD Cleaning Mode'),
 });
 
 const FormContext = () => {
@@ -133,7 +135,7 @@ export default function SettingsPage() {
 							</div>
 						</Form.Group>
 						<Form.Group className="row mb-3">
-							<Form.Label>SOCD Mode</Form.Label>
+							<Form.Label>SOCD Cleaning Mode</Form.Label>
 							<div className="col-sm-3">
 								<Form.Select name="socdMode" className="form-select-sm" value={values.socdMode} onChange={handleChange} isInvalid={errors.socdMode}>
 									{SOCD_MODES.map((o, i) => <option key={`button-socdMode-option-${i}`} value={o.value}>{o.label}</option>)}
@@ -141,6 +143,7 @@ export default function SettingsPage() {
 								<Form.Control.Feedback type="invalid">{errors.socdMode}</Form.Control.Feedback>
 							</div>
 						</Form.Group>
+						<p>Note: PS4, PS3 and Nintendo Switch modes do not support setting SOCD Cleaning to Off and will default to Neutral SOCD Cleaning mode.</p>
 					</Section>
 					<Section title="Hotkey Settings">
 						<div className='row'>

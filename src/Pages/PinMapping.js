@@ -5,7 +5,7 @@ import { AppContext } from '../Contexts/AppContext';
 import Section from '../Components/Section';
 import WebApi, { baseButtonMappings } from '../Services/WebApi';
 import boards from '../Data/Boards.json';
-import BUTTONS from '../Data/Buttons.json';
+import { BUTTONS } from '../Data/Buttons';
 import './PinMappings.scss';
 
 const requiredButtons = ['S2'];

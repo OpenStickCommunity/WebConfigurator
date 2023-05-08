@@ -10,6 +10,7 @@ const API_BINDING = {
 	"display":     {label: "Display",      get: WebApi.getDisplayOptions, set: WebApi.setDisplayOptions},
 	"gamepad":     {label: "Gamepad",      get: WebApi.getGamepadOptions, set: WebApi.setGamepadOptions},
 	"led":         {label: "LED",          get: WebApi.getLedOptions,     set: WebApi.setLedOptions},
+	"ledTheme":    {label: "Custom Theme", get: WebApi.getCustomTheme,    set: WebApi.setCustomTheme},
 	"pinmappings": {label: "Pin Mappings", get: WebApi.getPinMappings,    set: WebApi.setPinMappings},
 	"addons":      {label: "Add-Ons",      get: WebApi.getAddonsOptions,  set: WebApi.setAddonsOptions},
 	// new api, add it here
@@ -99,9 +100,11 @@ export default function BackupPage() {
 
 		const fileDate = new Date().toISOString().replace(/[^0-9]/g, '');
 		const name = FILENAME.replace("{DATE}", fileDate);
-		const fileData = "text/json;charset=utf-8," + JSON.stringify(exportData);
+		const json = JSON.stringify(exportData);
+		const file = new Blob([json], { type: 'text/json;charset=utf-8' });
+
 		let a = document.createElement('a');
-		a.href = "data:" + fileData;
+		a.href = URL.createObjectURL(file);
 		a.download = name;
 		a.innerHTML = "Save Backup";
 
@@ -194,7 +197,7 @@ export default function BackupPage() {
 			<Section title={"Backup To File"}>
 				<Col>
 					<Form.Group className={"row mb-3"}>
-						<div className={"col-sm-3"}>
+						<div className={"col-sm-4"}>
 							{Object.entries(API_BINDING).map(api =>
 								<Form.Check
 									id={`export_${api[0]}`}
@@ -236,7 +239,7 @@ export default function BackupPage() {
 			<Section title={"Restore From File"}>
 				<Col>
 					<Form.Group className={"row mb-3"}>
-						<div className={"col-sm-3"}>
+						<div className={"col-sm-4"}>
 							{Object.entries(API_BINDING).map(api =>
 								<Form.Check
 									id={`import_${api[0]}`}

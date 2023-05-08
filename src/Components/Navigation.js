@@ -4,7 +4,7 @@ import { NavLink } from "react-router-dom";
 import { AppContext } from '../Contexts/AppContext';
 import FormSelect from './FormSelect';
 import { saveButtonLabels } from '../Services/Storage';
-import BUTTONS from '../Data/Buttons.json';
+import { BUTTONS } from '../Data/Buttons';
 import './Navigation.scss';
 import WebApi from '../Services/WebApi';
 
@@ -47,6 +47,7 @@ const Navigation = (props) => {
 						<NavDropdown.Item as={NavLink} exact="true" to="/pin-mapping">Pin Mapping</NavDropdown.Item>
 						<NavDropdown.Item as={NavLink} exact="true" to="/keyboard-mapping">Keyboard Mapping</NavDropdown.Item>
 						<NavDropdown.Item as={NavLink} exact="true" to="/led-config">LED Configuration</NavDropdown.Item>
+						<NavDropdown.Item as={NavLink} exact="true" to="/custom-theme">Custom LED Theme</NavDropdown.Item>
 						<NavDropdown.Item as={NavLink} exact="true" to="/display-config">Display Configuration</NavDropdown.Item>
 						<NavDropdown.Item as={NavLink} exact="true" to="/add-ons">Add-Ons Configuration</NavDropdown.Item>
 						<NavDropdown.Item as={NavLink} exact="true" to="/backup">Data Backup and Restoration</NavDropdown.Item>

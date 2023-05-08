@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { intToHex, hexToInt, rgbIntToHex } from './Utilities';
 
 const baseUrl = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8080';
 
@@ -34,8 +35,8 @@ async function getDisplayOptions() {
 		.then((response) => {
 			if (response.data.i2cAddress)
 				response.data.i2cAddress = '0x' + response.data.i2cAddress.toString(16);
-			response.data.splashDuration = response.data.splashDuration / 1000; // milliseconds to seconds 
-			response.data.displaySaverTimeout = response.data.displaySaverTimeout / 60000; // milliseconds to minutes 
+			response.data.splashDuration = response.data.splashDuration / 1000; // milliseconds to seconds
+			response.data.displaySaverTimeout = response.data.displaySaverTimeout / 60000; // milliseconds to minutes
 
 			return response.data;
 		})
@@ -51,7 +52,7 @@ async function setDisplayOptions(options, isPreview) {
 	newOptions.splashDuration = parseInt(options.splashDuration) * 1000; // seconds to milliseconds
 	newOptions.displaySaverTimeout = parseInt(options.displaySaverTimeout) * 60000; // minutes to milliseconds
 	newOptions.splashChoice = parseInt(options.splashChoice);
-	
+
 	if (newOptions.buttonLayoutCustomOptions) {
 		newOptions.buttonLayoutCustomOptions.params.layout = parseInt(options.buttonLayoutCustomOptions?.params?.layout);
 		newOptions.buttonLayoutCustomOptions.paramsRight.layout = parseInt(options.buttonLayoutCustomOptions?.paramsRight?.layout);
@@ -105,12 +106,61 @@ async function setGamepadOptions(options) {
 
 async function getLedOptions() {
 	return axios.get(`${baseUrl}/api/getLedOptions`)
-		.then((response) => response.data)
+		.then((response) => {
+			console.log(response.data);
+			return response.data;
+		})
 		.catch(console.error);
 }
 
 async function setLedOptions(options) {
+	let data = sanitizeRequest(options);
+
 	return axios.post(`${baseUrl}/api/setLedOptions`, sanitizeRequest(options))
+		.then((response) => {
+			console.log(response.data);
+			return true;
+		})
+		.catch((err) => {
+			console.error(err);
+			return false;
+		});
+}
+
+async function getCustomTheme() {
+	return axios.get(`${baseUrl}/api/getCustomTheme`)
+		.then((response) => {
+			let data = { hasCustomTheme: response.data.enabled, customTheme: { } };
+
+			// Transform ARGB int value to hex for easy use on frontend
+			Object.keys(response.data)
+				.filter(p => p !== 'enabled')
+				.forEach((button) => {
+					data.customTheme[button] = {
+						normal: `#${rgbIntToHex(response.data[button].u)}`,
+						pressed: `#${rgbIntToHex(response.data[button].d)}`,
+					};
+				});
+
+			console.log(data);
+			return data;
+		})
+		.catch(console.error);
+}
+
+async function setCustomTheme(customThemeOptions) {
+	let options = { enabled: customThemeOptions.hasCustomTheme };
+
+	// Transform RGB hex values to ARGB int before sending back to API
+	Object.keys(customThemeOptions.customTheme)
+		.forEach(p => {
+			options[p] = {
+				u: hexToInt(customThemeOptions.customTheme[p].normal.replace('#', '')),
+				d: hexToInt(customThemeOptions.customTheme[p].pressed.replace('#', '')),
+			};
+		});
+
+	return axios.post(`${baseUrl}/api/setCustomTheme`, sanitizeRequest(options))
 		.then((response) => {
 			console.log(response.data);
 			return true;
@@ -236,6 +286,8 @@ const WebApi = {
 	setGamepadOptions,
 	getLedOptions,
 	setLedOptions,
+	getCustomTheme,
+	setCustomTheme,
 	getPinMappings,
 	setPinMappings,
 	getKeyMappings,

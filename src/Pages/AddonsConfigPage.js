@@ -245,74 +245,120 @@ const SOCD_MODES = [
 	{ label: 'Neutral', value: 1 },
 	{ label: 'Last Win', value: 2 },
 	{ label: 'First Win', value: 3 },
+	{ label: 'SOCD Cleaning Off', value: 4 },
 ];
 
+yup.NumberSchema.prototype.validateSelectionWhenEnabled = function(name, choices) {
+	return this.when(name, {
+		is: value => !!value,
+		then: () => this.required().oneOf(choices.map(o => o.value)),
+		otherwise: () => yup.mixed().notRequired()
+	})
+};
+
+yup.NumberSchema.prototype.validateNumberWhenEnabled = function(name) {
+	return this.when(name, {
+		is: value => !!value,
+		then: () => this.required(),
+		otherwise: () => yup.mixed().notRequired().strip()
+	})
+};
+
+yup.NumberSchema.prototype.validateRangeWhenEnabled = function(name, min, max) {
+	return this.when(name, {
+		is: value =>!!value,
+		then: () => this.required().min(min).max(max),
+		otherwise: () => yup.mixed().notRequired().strip()
+	})
+};
+
+yup.NumberSchema.prototype.validatePinWhenEnabled = function(name) {
+	return this.checkUsedPins().validateRangeWhenEnabled(name, -1, 29)
+};
+
+yup.NumberSchema.prototype.checkUsedPins = function() {
+	return this.test('', '${originalValue} is unavailable/already assigned!', (value) => usedPins.indexOf(value) === -1)
+};
+
 const schema = yup.object().shape({
-	turboPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Turbo Pin'),
-	turboPinLED: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Turbo Pin LED'),
-	sliderLSPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Slider LS Pin'),
-	sliderRSPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Slider RS Pin'),
-	sliderSOCDPinOne: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Slider SOCD Up Priority Pin'),
-	sliderSOCDPinTwo: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Slider SOCD Second Priority Pin'),
-	turboShotCount: yup.number().required().min(5).max(30).label('Turbo Shot Count'),
-	reversePin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Reverse Pin'),
-	reversePinLED: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Reverse Pin LED'),
-	i2cAnalog1219SDAPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('I2C Analog1219 SDA Pin'),
-	i2cAnalog1219SCLPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('I2C Analog1219 SCL Pin'),
-	i2cAnalog1219Block: yup.number().required().oneOf(I2C_BLOCKS.map(o => o.value)).label('I2C Analog1219 Block'),
-	i2cAnalog1219Speed: yup.number().required().label('I2C Analog1219 Speed'),
-	i2cAnalog1219Address: yup.number().required().label('I2C Analog1219 Address'),
-	onBoardLedMode: yup.number().required().oneOf(ON_BOARD_LED_MODES.map(o => o.value)).label('On-Board LED Mode'),
-	dualDirUpPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Dual Directional Up Pin'),
-	dualDirDownPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Dual Directional Down Pin'),
-	dualDirLeftPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Dual Directional Left Pin'),
-	dualDirRightPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Dual Directional Right Pin'),
-	dualDirDpadMode : yup.number().required().oneOf(DUAL_STICK_MODES.map(o => o.value)).label('Dual Stick Mode'),
-	dualDirCombineMode : yup.number().required().oneOf(DUAL_COMBINE_MODES.map(o => o.value)).label('Dual Combination Mode'),
-	analogAdcPinX : yup.number().required().test('', '${originalValue} is unavailable/already assigned!', (value) => usedPins.indexOf(value) === -1).label('Analog Stick Pin X'),
- 	analogAdcPinY : yup.number().required().test('', '${originalValue} is unavailable/already assigned!', (value) => usedPins.indexOf(value) === -1).label('Analog Stick Pin Y'),
-	bootselButtonMap : yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('BOOTSEL Button Map'),
-	buzzerPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Buzzer Pin'),
-	buzzerVolume: yup.number().required().min(0).max(100).label('Buzzer Volume'),
-	extraButtonPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Extra Button Pin'),
-	extraButtonMap : yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('Extra Button Map'),
-	playerNumber: yup.number().required().min(1).max(4).label('Player Number'),
-	shmupMode: yup.number().required().label('Shmup Mode Enabled'),
-	shmupMixMode: yup.number().required().oneOf(DUAL_STICK_MODES.map(o => o.value)).label('Shmup Mix Priority'),
-	shmupAlwaysOn1: yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('Turbo-Button 1 (Always On)'),
-	shmupAlwaysOn2: yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('Turbo-Button 2 (Always On)'),
-	shmupAlwaysOn3: yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('Turbo-Button 3 (Always On)'),
-	shmupAlwaysOn4: yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('Turbo-Button 4 (Always On)'),
-	pinShmupBtn1: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Charge Shot 1 Pin'),
-	pinShmupBtn2: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Charge Shot 2 Pin'),
-	pinShmupBtn3: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Charge Shot 3 Pin'),
-	pinShmupBtn4: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Charge Shot 4 Pin'),
-	shmupBtnMask1: yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('Charge Shot Button 1 Map'),
-	shmupBtnMask2: yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('Charge Shot Button 2 Map'),
-	shmupBtnMask3: yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('Charge Shot Button 3 Map'),
-	shmupBtnMask4: yup.number().required().oneOf(BUTTON_MASKS.map(o => o.value)).label('Charge Shot Button 4 Map'),
-	pinShmupDial: yup.number().required().test('', '${originalValue} is unavailable/already assigned!', (value) => usedPins.indexOf(value) === -1).label('Shmup Dial Pin'),
-	sliderSOCDModeOne: yup.number().required().oneOf(SOCD_MODES.map(o => o.value)).label('SOCD Slider Mode One'),
-	sliderSOCDModeTwo: yup.number().required().oneOf(SOCD_MODES.map(o => o.value)).label('SOCD Slider Mode Two'),
-	sliderSOCDModeDefault: yup.number().required().oneOf(SOCD_MODES.map(o => o.value)).label('SOCD Slider Mode Default'),
-	wiiExtensionSDAPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('WiiExtension I2C SDA Pin'),
-	wiiExtensionSCLPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('WiiExtension I2C SCL Pin'),
-	wiiExtensionBlock: yup.number().required().oneOf(I2C_BLOCKS.map(o => o.value)).label('WiiExtension I2C Block'),
-	wiiExtensionSpeed: yup.number().required().label('WiiExtension I2C Speed'),
-	AnalogInputEnabled: yup.number().required().label('Analog Input Enabled'),
-	BoardLedAddonEnabled: yup.number().required().label('Board LED Add-On Enabled'),
-	BuzzerSpeakerAddonEnabled: yup.number().required().label('Buzzer Speaker Add-On Enabled'),
-	BootselButtonAddonEnabled: yup.number().required().label('Boot Select Button Add-On Enabled'),
+	I2CAnalog1219InputEnabled:   yup.number().label('I2C Analog1219 Input Enabled'),
+	i2cAnalog1219SDAPin:         yup.number().label('I2C Analog1219 SDA Pin').validatePinWhenEnabled('I2CAnalog1219InputEnabled'),
+	i2cAnalog1219SCLPin:         yup.number().label('I2C Analog1219 SCL Pin').validatePinWhenEnabled('I2CAnalog1219InputEnabled'),
+	i2cAnalog1219Block:          yup.number().label('I2C Analog1219 Block').validateSelectionWhenEnabled('I2CAnalog1219InputEnabled', I2C_BLOCKS),
+	i2cAnalog1219Speed:          yup.number().label('I2C Analog1219 Speed').validateNumberWhenEnabled('I2CAnalog1219InputEnabled'),
+	i2cAnalog1219Address:        yup.number().label('I2C Analog1219 Address').validateNumberWhenEnabled('I2CAnalog1219InputEnabled'),
+
+	AnalogInputEnabled:          yup.number().required().label('Analog Input Enabled'),
+	analogAdcPinX:               yup.number().label('Analog Stick Pin X').validatePinWhenEnabled('AnalogInputEnabled'),
+ 	analogAdcPinY:               yup.number().label('Analog Stick Pin Y').validatePinWhenEnabled('AnalogInputEnabled'),
+
+	BoardLedAddonEnabled:        yup.number().required().label('Board LED Add-On Enabled'),
+	onBoardLedMode:              yup.number().label('On-Board LED Mode').validateSelectionWhenEnabled('BoardLedAddonEnabled', ON_BOARD_LED_MODES),
+ 
+	BootselButtonAddonEnabled:   yup.number().required().label('Boot Select Button Add-On Enabled'),
+	bootselButtonMap:            yup.number().label('BOOTSEL Button Map').validateSelectionWhenEnabled('BootselButtonAddonEnabled', BUTTON_MASKS),
+
+	BuzzerSpeakerAddonEnabled:   yup.number().required().label('Buzzer Speaker Add-On Enabled'),
+	buzzerPin:                   yup.number().label('Buzzer Pin').validatePinWhenEnabled('BuzzerSpeakerAddonEnabled'),
+	buzzerVolume:                yup.number().label('Buzzer Volume').validateRangeWhenEnabled('BuzzerSpeakerAddonEnabled', 0, 100),
+
 	DualDirectionalInputEnabled: yup.number().required().label('Dual Directional Input Enabled'),
-	ExtraButtonAddonEnabled: yup.number().required().label('Extra Button Add-On Enabled'),
-	I2CAnalog1219InputEnabled: yup.number().required().label('I2C Analog1219 Input Enabled'),
-	JSliderInputEnabled: yup.number().required().label('JSlider Input Enabled'),
-	SliderSOCDInputEnabled: yup.number().required().label('Slider SOCD Input Enabled'),
-	PlayerNumAddonEnabled: yup.number().required().label('Player Number Add-On Enabled'),
+	dualDirUpPin:                yup.number().label('Dual Directional Up Pin').validatePinWhenEnabled('DualDirectionalInputEnabled')  ,
+	dualDirDownPin:              yup.number().label('Dual Directional Down Pin').validatePinWhenEnabled('DualDirectionalInputEnabled'),
+	dualDirLeftPin:              yup.number().label('Dual Directional Left Pin').validatePinWhenEnabled('DualDirectionalInputEnabled'),
+	dualDirRightPin:             yup.number().label('Dual Directional Right Pin').validatePinWhenEnabled('DualDirectionalInputEnabled'),
+	dualDirDpadMode:             yup.number().label('Dual Stick Mode').validateSelectionWhenEnabled('DualDirectionalInputEnabled', DUAL_STICK_MODES),
+	dualDirCombineMode:          yup.number().label('Dual Combination Mode').validateSelectionWhenEnabled('DualDirectionalInputEnabled', DUAL_COMBINE_MODES),
+
+	ExtraButtonAddonEnabled:     yup.number().required().label('Extra Button Add-On Enabled'),
+	extraButtonPin:              yup.number().label('Extra Button Pin').validatePinWhenEnabled('ExtraButtonAddonEnabled'),
+	extraButtonMap:              yup.number().label('Extra Button Map').validateSelectionWhenEnabled('ExtraButtonAddonEnabled', BUTTON_MASKS),
+
+	JSliderInputEnabled:         yup.number().required().label('JSlider Input Enabled'),
+	sliderLSPin:                 yup.number().label('Slider LS Pin').validatePinWhenEnabled('JSliderInputEnabled'),
+	sliderRSPin:                 yup.number().label('Slider RS Pin').validatePinWhenEnabled('JSliderInputEnabled'),
+
+	PlayerNumAddonEnabled:       yup.number().required().label('Player Number Add-On Enabled'),
+	playerNumber:                yup.number().label('Player Number').validateRangeWhenEnabled('PlayerNumAddonEnabled', 1, 4),
+
 	PS4ModeAddonEnabled: yup.number().required().label('PS4 Mode Add-on Enabled'),
-	ReverseInputEnabled: yup.number().required().label('Reverse Input Enabled'),
-	TurboInputEnabled: yup.number().required().label('Turbo Input Enabled'),
-	WiiExtensionAddonEnabled: yup.number().required().label('Wii Extensions Enabled'),
+
+	ReverseInputEnabled:         yup.number().required().label('Reverse Input Enabled'),
+	reversePin:                  yup.number().label('Reverse Pin').validatePinWhenEnabled('ReverseInputEnabled'),
+	reversePinLED:               yup.number().label('Reverse Pin LED').validatePinWhenEnabled('ReverseInputEnabled'),
+
+	SliderSOCDInputEnabled:      yup.number().required().label('Slider SOCD Input Enabled'),
+	sliderSOCDModeOne:           yup.number().label('SOCD Slider Mode One').validateSelectionWhenEnabled('SliderSOCDInputEnabled', SOCD_MODES),
+	sliderSOCDModeTwo:           yup.number().label('SOCD Slider Mode Two').validateSelectionWhenEnabled('SliderSOCDInputEnabled', SOCD_MODES),
+	sliderSOCDModeDefault:       yup.number().label('SOCD Slider Mode Default').validateSelectionWhenEnabled('SliderSOCDInputEnabled', SOCD_MODES),
+	sliderSOCDPinOne:            yup.number().label('Slider SOCD Up Priority Pin').validatePinWhenEnabled('SliderSOCDInputEnabled'),
+	sliderSOCDPinTwo:            yup.number().label('Slider SOCD Second Priority Pin').validatePinWhenEnabled('SliderSOCDInputEnabled'),
+
+	TurboInputEnabled:           yup.number().required().label('Turbo Input Enabled'),
+	turboPin:                    yup.number().label('Turbo Pin').validatePinWhenEnabled('TurboInputEnabled'),
+	turboPinLED:                 yup.number().label('Turbo Pin LED').validatePinWhenEnabled('TurboInputEnabled'),
+	pinShmupBtn1:                yup.number().label('Charge Shot 1 Pin').validatePinWhenEnabled('TurboInputEnabled'),
+	pinShmupBtn2:                yup.number().label('Charge Shot 2 Pin').validatePinWhenEnabled('TurboInputEnabled'),
+	pinShmupBtn3:                yup.number().label('Charge Shot 3 Pin').validatePinWhenEnabled('TurboInputEnabled'),
+	pinShmupBtn4:                yup.number().label('Charge Shot 4 Pin').validatePinWhenEnabled('TurboInputEnabled'),
+	pinShmupDial:                yup.number().label('Shmup Dial Pin').validatePinWhenEnabled('TurboInputEnabled'),
+	turboShotCount:              yup.number().label('Turbo Shot Count').validateRangeWhenEnabled('TurboInputEnabled', 5, 30),
+	shmupMode:                   yup.number().label('Shmup Mode Enabled').validateRangeWhenEnabled('TurboInputEnabled', 0, 1),
+	shmupMixMode:                yup.number().label('Shmup Mix Priority').validateSelectionWhenEnabled('TurboInputEnabled', DUAL_STICK_MODES), 
+	shmupAlwaysOn1:              yup.number().label('Turbo-Button 1 (Always On)').validateSelectionWhenEnabled('TurboInputEnabled', BUTTON_MASKS),
+	shmupAlwaysOn2:              yup.number().label('Turbo-Button 2 (Always On)').validateSelectionWhenEnabled('TurboInputEnabled', BUTTON_MASKS),
+	shmupAlwaysOn3:              yup.number().label('Turbo-Button 3 (Always On)').validateSelectionWhenEnabled('TurboInputEnabled', BUTTON_MASKS),
+	shmupAlwaysOn4:              yup.number().label('Turbo-Button 4 (Always On)').validateSelectionWhenEnabled('TurboInputEnabled', BUTTON_MASKS),
+	shmupBtnMask1:               yup.number().label('Charge Shot Button 1 Map').validateSelectionWhenEnabled('TurboInputEnabled', BUTTON_MASKS),
+	shmupBtnMask2:               yup.number().label('Charge Shot Button 2 Map').validateSelectionWhenEnabled('TurboInputEnabled', BUTTON_MASKS),
+	shmupBtnMask3:               yup.number().label('Charge Shot Button 3 Map').validateSelectionWhenEnabled('TurboInputEnabled', BUTTON_MASKS),
+	shmupBtnMask4:               yup.number().label('Charge Shot Button 4 Map').validateSelectionWhenEnabled('TurboInputEnabled', BUTTON_MASKS),
+
+	WiiExtensionAddonEnabled:    yup.number().required().label('Wii Extensions Enabled'),
+	wiiExtensionSDAPin:          yup.number().required().label('WiiExtension I2C SDA Pin').validatePinWhenEnabled('WiiExtensionAddonEnabled'),
+	wiiExtensionSCLPin:          yup.number().required().label('WiiExtension I2C SCL Pin').validatePinWhenEnabled('WiiExtensionAddonEnabled'),
+	wiiExtensionBlock:           yup.number().required().label('WiiExtension I2C Block').validateSelectionWhenEnabled('WiiExtensionAddonEnabled', I2C_BLOCKS),
+	wiiExtensionSpeed:           yup.number().label('WiiExtension I2C Speed').validateNumberWhenEnabled('WiiExtensionAddonEnabled'),
 });
 
 const defaultValues = {
@@ -570,18 +616,20 @@ export default function AddonsConfigPage() {
 
 	const onSuccess = async (values) => {
 		const flattened = flattenObject(storedData)
+		const valuesCopy = schema.cast((values)) // Strip invalid values
 		
 		// Compare what's changed and set it to resultObject
 		let resultObject = {}
 		Object.entries(flattened)?.map(entry => {
 			const [key, oldVal] = entry;
-			const newVal = get(values, key)
+			const newVal = get(valuesCopy, key)
 			if (newVal !== oldVal) {
 				set(resultObject, key, newVal)
 			}
 		})
 		sanitizeData(resultObject);
 		const success = await WebApi.setAddonsOptions(resultObject);
+		setStoredData(JSON.parse(JSON.stringify(values))); // Update to reflect saved data
 		setSaveMessage(success ? 'Saved! Please Restart Your Device' : 'Unable to Save');
 	};
 
@@ -1350,7 +1398,8 @@ export default function AddonsConfigPage() {
 							onChange={(e) => {handleCheckbox("PlayerNumAddonEnabled", values); handleChange(e);}}
 						/>
 					</Section>
-					<Section title="SOCD Selection Slider">
+					<Section title="SOCD Cleaning Mode Selection Slider">
+						<p>Note: PS4, PS3 and Nintendo Switch modes do not support setting SOCD Cleaning to Off and will default to Neutral SOCD Cleaning mode.</p>
 						<div
 							id="SliderSOCDInputOptions"
 							hidden={!values.SliderSOCDInputEnabled}>
