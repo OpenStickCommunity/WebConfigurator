@@ -353,6 +353,12 @@ const schema = yup.object().shape({
 	shmupBtnMask2:               yup.number().label('Charge Shot Button 2 Map').validateSelectionWhenEnabled('TurboInputEnabled', BUTTON_MASKS),
 	shmupBtnMask3:               yup.number().label('Charge Shot Button 3 Map').validateSelectionWhenEnabled('TurboInputEnabled', BUTTON_MASKS),
 	shmupBtnMask4:               yup.number().label('Charge Shot Button 4 Map').validateSelectionWhenEnabled('TurboInputEnabled', BUTTON_MASKS),
+
+	WiiExtensionAddonEnabled:    yup.number().required().label('Wii Extensions Enabled'),
+	wiiExtensionSDAPin:          yup.number().required().label('WiiExtension I2C SDA Pin').validatePinWhenEnabled('WiiExtensionAddonEnabled'),
+	wiiExtensionSCLPin:          yup.number().required().label('WiiExtension I2C SCL Pin').validatePinWhenEnabled('WiiExtensionAddonEnabled'),
+	wiiExtensionBlock:           yup.number().required().label('WiiExtension I2C Block').validateSelectionWhenEnabled('WiiExtensionAddonEnabled', I2C_BLOCKS),
+	wiiExtensionSpeed:           yup.number().label('WiiExtension I2C Speed').validateNumberWhenEnabled('WiiExtensionAddonEnabled'),
 });
 
 const defaultValues = {
@@ -403,6 +409,10 @@ const defaultValues = {
 	sliderSOCDModeOne: 0,
 	sliderSOCDModeTwo: 2,
 	sliderSOCDModeDefault: 1,
+	wiiExtensionSDAPin: -1,
+	wiiExtensionSCLPin: -1,
+	wiiExtensionBlock: 0,
+	wiiExtensionSpeed: 400000,
 	AnalogInputEnabled: 0,
 	BoardLedAddonEnabled: 0,
 	BuzzerSpeakerAddonEnabled: 0,
@@ -415,7 +425,8 @@ const defaultValues = {
 	PlayerNumAddonEnabled: 0,
 	PS4ModeAddonEnabled: 0,
 	ReverseInputEnabled: 0,
-	TurboInputEnabled: 0
+	TurboInputEnabled: 0,
+	WiiExtensionAddonEnabled: 0,
 };
 
 let usedPins = [];
@@ -541,6 +552,14 @@ const sanitizeData = (values) => {
 			values.sliderSOCDModeTwo = parseInt(values.sliderSOCDModeTwo);
 		if (!!values.sliderSOCDModeDefault)
 			values.sliderSOCDModeDefault = parseInt(values.sliderSOCDModeDefault);
+		if (!!values.wiiExtensionSDAPin)
+			values.wiiExtensionSDAPin = parseInt(values.wiiExtensionSDAPin);
+		if (!!values.wiiExtensionSCLPin)
+			values.wiiExtensionSCLPin = parseInt(values.wiiExtensionSCLPin);
+		if (!!values.wiiExtensionBlock)
+			values.wiiExtensionBlock = parseInt(values.wiiExtensionBlock);
+		if (!!values.wiiExtensionSpeed)
+			values.wiiExtensionSpeed = parseInt(values.wiiExtensionSpeed);
 		if (!!values.AnalogInputEnabled)
 			values.AnalogInputEnabled = parseInt(values.AnalogInputEnabled);
 		if (!!values.BoardLedAddonEnabled)
@@ -567,6 +586,8 @@ const sanitizeData = (values) => {
 			values.ReverseInputEnabled = parseInt(values.ReverseInputEnabled);
 		if (!!values.TurboInputEnabled)
 			values.TurboInputEnabled = parseInt(values.TurboInputEnabled);
+		if (!!values.WiiExtensionAddonEnabled)
+			values.WiiExtensionAddonEnabled = parseInt(values.WiiExtensionAddonEnabled);
 }
 
 function flattenObject(object) {
@@ -1496,6 +1517,78 @@ export default function AddonsConfigPage() {
 							isInvalid={false}
 							checked={Boolean(values.PS4ModeAddonEnabled)}
 							onChange={(e) => {handleCheckbox("PS4ModeAddonEnabled", values); handleChange(e);}}
+						/>
+					</Section>
+					<Section title="Wii Extension Configuration">
+						<div
+							id="WiiExtensionAddonOptions"
+							hidden={!values.WiiExtensionAddonEnabled}>
+							<Row>
+								<p>Note: If the Display is enabled at the same time, this Addon will be disabled.</p>
+                                <h3>Currently Supported Controllers</h3>
+                                <p>Classic/Classic Pro: Both Analogs and D-Pad Supported. B = B1, A = B2, Y = B3, X = B4, L = L1, ZL = L2, R = R1, ZR = R2, Minus = S1, Plus = S2, Home = A1</p>
+                                <p>Nunchuck: Analog Stick Supported. C = B1, Z = B2</p>
+                                <p>Guitar Hero Guitar: Analog Stick Supported. Green = B1, Red = B2, Blue = B3, Yellow = B4, Orange = L1, Strum Up = Up, Strum Down = Down, Minus = S1, Plus = S2</p>
+							</Row>
+							<Row className="mb-3">
+								<FormControl type="number"
+									label="I2C SDA Pin"
+									name="wiiExtensionSDAPin"
+									className="form-control-sm"
+									groupClassName="col-sm-3 mb-3"
+									value={values.wiiExtensionSDAPin}
+									error={errors.wiiExtensionSDAPin}
+									isInvalid={errors.wiiExtensionSDAPin}
+									onChange={handleChange}
+									min={-1}
+									max={29}
+								/>
+								<FormControl type="number"
+									label="I2C SCL Pin"
+									name="wiiExtensionSCLPin"
+									className="form-select-sm"
+									groupClassName="col-sm-3 mb-3"
+									value={values.wiiExtensionSCLPin}
+									error={errors.wiiExtensionSCLPin}
+									isInvalid={errors.wiiExtensionSCLPin}
+									onChange={handleChange}
+									min={-1}
+									max={29}
+								/>
+								<FormSelect
+									label="I2C Block"
+									name="wiiExtensionBlock"
+									className="form-select-sm"
+									groupClassName="col-sm-3 mb-3"
+									value={values.wiiExtensionBlock}
+									error={errors.wiiExtensionBlock}
+									isInvalid={errors.wiiExtensionBlock}
+									onChange={handleChange}
+								>
+									{I2C_BLOCKS.map((o, i) => <option key={`wiiExtensionI2cBlock-option-${i}`} value={o.value}>{o.label}</option>)}
+								</FormSelect>
+								<FormControl
+									label="I2C Speed"
+									name="wiiExtensionSpeed"
+									className="form-control-sm"
+									groupClassName="col-sm-3 mb-3"
+									value={values.wiiExtensionSpeed}
+									error={errors.wiiExtensionSpeed}
+									isInvalid={errors.wiiExtensionSpeed}
+									onChange={handleChange}
+									min={100000}
+								/>
+							</Row>
+						</div>
+						<FormCheck
+							label="Enabled"
+							type="switch"
+							id="WiiExtensionButton"
+							reverse="true"
+							error={undefined}
+							isInvalid={false}
+							checked={Boolean(values.WiiExtensionAddonEnabled)}
+							onChange={(e) => {handleCheckbox("WiiExtensionAddonEnabled", values); handleChange(e);}}
 						/>
 					</Section>
 					<div className="mt-3">
