@@ -169,7 +169,8 @@ const CustomThemePage = () => {
 	};
 
 	const saveCurrentColor = () => {
-		if (presetColors.filter(c => c.color.toLowerCase() === selectedColor.hex.toLowerCase()).length > 0)
+		const color = selectedColor.hex;
+		if (!color || presetColors.filter(c => c.color === color).length > 0)
 			return;
 
 		const newColors = [...savedColors];
