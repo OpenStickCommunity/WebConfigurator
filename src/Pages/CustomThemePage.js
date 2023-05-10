@@ -3,6 +3,7 @@ import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
+import Fade from 'react-bootstrap/Fade';
 import Form from 'react-bootstrap/Form';
 import FormCheck from 'react-bootstrap/FormCheck';
 import Modal from 'react-bootstrap/Modal';
@@ -86,12 +87,13 @@ const CustomThemePage = () => {
 	const [selectedColor, setSelectedColor] = useState('#000000');
 	const [hasCustomTheme, setHasCustomTheme] = useState(false);
 	const [customTheme, setCustomTheme] = useState({ ...defaultCustomTheme });
-	const [ledOverlayTarget, setLedOverlayTarget] = useState(null);
+	const [ledOverlayTarget, setLedOverlayTarget] = useState(document.body);
+	const [pickerVisible, setPickerVisible] = useState(false);
 	const [modalVisible, setModalVisible] = useState(false);
 
+	console.log('toggle after', pickerVisible, selectedButton);
+
 	const confirmClearAll = () => {
-		setLedOverlayTarget(null);
-		setSelectedButton(null);
 		setSelectedColor(null);
 
 		// Reset all custom LEDs
@@ -126,16 +128,17 @@ const CustomThemePage = () => {
 	};
 
 	const toggleSelectedButton = (e, buttonName) => {
+		console.log('toggle before', pickerVisible, selectedButton, buttonName);
 		e.stopPropagation();
 		if (selectedButton === buttonName) {
-			setSelectedButton(null);
-			setLedOverlayTarget(null);
+			setPickerVisible(false);
 		}
 		else {
 			setLedOverlayTarget(e.target);
 			setSelectedButton(buttonName);
 			setSelectedColor(buttonName === 'ALL' ? '#000000' : customTheme[buttonName].normal);
 			setPickerType({ type: 'normal', button: buttonName });
+			setPickerVisible(true);
 		}
 	};
 
@@ -233,12 +236,11 @@ const CustomThemePage = () => {
 					</>
 				}
 				<Overlay
-					show={!!selectedButton}
+					show={pickerVisible}
 					target={ledOverlayTarget}
 					placement={selectedButton === 'ALL' ? 'top' : 'bottom'}
 					container={this}
 					containerPadding={20}
-					transition={null}
 				>
 					<Popover onClick={(e) => e.stopPropagation()}>
 						<Container className="led-color-picker">
