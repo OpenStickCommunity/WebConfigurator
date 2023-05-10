@@ -10,7 +10,7 @@ const API_BINDING = {
 	"display":     {label: "Display",      get: WebApi.getDisplayOptions, set: WebApi.setDisplayOptions},
 	"gamepad":     {label: "Gamepad",      get: WebApi.getGamepadOptions, set: WebApi.setGamepadOptions},
 	"led":         {label: "LED",          get: WebApi.getLedOptions,     set: WebApi.setLedOptions},
-	"ledTheme":    {label: "Custom Theme", get: WebApi.getCustomTheme,    set: WebApi.setCustomTheme},
+	"ledTheme":    {label: "Custom LED Theme", get: WebApi.getCustomTheme,    set: WebApi.setCustomTheme},
 	"pinmappings": {label: "Pin Mappings", get: WebApi.getPinMappings,    set: WebApi.setPinMappings},
 	"addons":      {label: "Add-Ons",      get: WebApi.getAddonsOptions,  set: WebApi.setAddonsOptions},
 	// new api, add it here
