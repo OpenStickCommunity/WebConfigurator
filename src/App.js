@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { AppContext } from './Contexts/AppContext';
+import { AppContextProvider } from './Contexts/AppContext';
 import Navigation from './Components/Navigation'
 
 import HomePage from './Pages/HomePage'
@@ -19,15 +19,8 @@ import { loadButtonLabels } from './Services/Storage';
 import './App.scss';
 
 const App = () => {
-	const [buttonLabels, setButtonLabels] = useState(loadButtonLabels() ?? 'gp2040');
-
-	const appData = {
-		buttonLabels,
-		setButtonLabels,
-	};
-
 	return (
-		<AppContext.Provider value={appData}>
+		<AppContextProvider>
 			<Router>
 				<Navigation />
 				<div className="container-fluid body-content">
@@ -46,7 +39,7 @@ const App = () => {
 					</Routes>
 				</div>
 			</Router>
-		</AppContext.Provider>
+		</AppContextProvider>
 	);
 }
 

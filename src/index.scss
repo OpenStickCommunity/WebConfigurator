@@ -62,3 +62,11 @@ input.form-control {
 	}
 }
 
+.button-group {
+	display: flex;
+	justify-content: flex-start;
+
+	button:not(:first-child) {
+		margin-left: 10px;
+	}
+}

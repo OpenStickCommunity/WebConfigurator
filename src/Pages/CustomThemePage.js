@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
-import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
 import Fade from 'react-bootstrap/Fade';
@@ -78,8 +77,11 @@ const LEDButton = ({ id, name, buttonType, buttonColor, buttonPressedColor, clas
 	);
 };
 
+const ledColors = LEDColors.map(c => ({ title: c.name, color: c.value}));
+const customColors = (colors) => colors.map(c => ({ title: c, color: c }));
+
 const CustomThemePage = () => {
-	const { buttonLabels } = useContext(AppContext);
+	const { buttonLabels, savedColors, setSavedColors } = useContext(AppContext);
 	const [saveMessage, setSaveMessage] = useState('');
 	const [ledLayout, setLedLayout] = useState(0);
 	const [pickerType, setPickerType] = useState(null);
@@ -90,8 +92,7 @@ const CustomThemePage = () => {
 	const [ledOverlayTarget, setLedOverlayTarget] = useState(document.body);
 	const [pickerVisible, setPickerVisible] = useState(false);
 	const [modalVisible, setModalVisible] = useState(false);
-
-	console.log('toggle after', pickerVisible, selectedButton);
+	const [presetColors, setPresetColors] = useState([...ledColors, ...customColors(savedColors)]);
 
 	const confirmClearAll = () => {
 		setSelectedColor(null);
@@ -104,6 +105,17 @@ const CustomThemePage = () => {
 		});
 		setCustomTheme(customTheme);
 		setModalVisible(false);
+	};
+
+	const deleteCurrentColor = () => {
+		const colorIndex = savedColors.indexOf(selectedColor.hex);
+		if (colorIndex < 0)
+			return;
+
+		const newColors = [...savedColors];
+		newColors.splice(colorIndex, 1);
+		setSavedColors(newColors);
+		setPresetColors([...ledColors, ...customColors(newColors)]);
 	};
 
 	const handleLedColorClick = (pickerType) => {
@@ -123,12 +135,21 @@ const CustomThemePage = () => {
 		setSelectedColor(c);
 	};
 
+	const saveCurrentColor = () => {
+		if (presetColors.filter(c => c.color.toLowerCase() === selectedColor.hex.toLowerCase()).length > 0)
+			return;
+
+		const newColors = [...savedColors];
+		newColors.push(selectedColor.hex);
+		setSavedColors(newColors);
+		setPresetColors([...ledColors, ...customColors(newColors)]);
+	};
+
 	const toggleCustomTheme = (e) => {
 		setHasCustomTheme(e.target.checked);
 	};
 
 	const toggleSelectedButton = (e, buttonName) => {
-		console.log('toggle before', pickerVisible, selectedButton, buttonName);
 		e.stopPropagation();
 		if (selectedButton === buttonName) {
 			setPickerVisible(false);
@@ -162,10 +183,13 @@ const CustomThemePage = () => {
 		fetchData();
 
 		// Hide color picker when anywhere but picker is clicked
-		window.addEventListener('click', (e) => {
-			toggleSelectedButton(e, selectedButton);
-		});
+		window.addEventListener('click', (e) => toggleSelectedButton(e, selectedButton));
 	}, []);
+
+	useEffect(() => {
+		if (!pickerVisible)
+			setTimeout(() => setSelectedButton(null), 250); // Delay enough to allow fade animation to finish
+	}, [pickerVisible]);
 
 	return <>
 		<Section title="Custom LED Theme">
@@ -229,10 +253,10 @@ const CustomThemePage = () => {
 								</div>
 							</div>
 						</Stack>
-						<ButtonGroup>
+						<div className="button-group">
 							<Button onClick={(e) => setModalVisible(true)}>Clear All</Button>
 							<Button onClick={(e) => toggleSelectedButton(e, 'ALL')}>Set All To Color</Button>
-						</ButtonGroup>
+						</div>
 					</>
 				}
 				<Overlay
@@ -268,17 +292,21 @@ const CustomThemePage = () => {
 									></div>
 								</Form.Group>
 							</Row>
-							<Row>
+							<Row className="mb-2">
 								<Col>
 									<SketchPicker
 										color={selectedColor}
 										onChange={(c) => handleLedColorChange(c)}
 										disableAlpha={true}
-										presetColors={LEDColors.map(c => ({ title: c.name, color: c.value}))}
+										presetColors={presetColors}
 										width={180}
 									/>
 								</Col>
 							</Row>
+							<div className="button-group d-flex justify-content-between">
+								<Button size="sm" onClick={() => saveCurrentColor()}>Save Color</Button>
+								<Button size="sm" onClick={() => deleteCurrentColor()}>Delete Color</Button>
+							</div>
 						</Container>
 					</Popover>
 				</Overlay>

@@ -5,7 +5,7 @@ const hexToInt = (hex) => {
 
 // Convert a number to hex
 const intToHex = (d) => {
-	return ("0"+(Number(d).toString(16))).slice(-2).toUpperCase();
+	return ("0"+(Number(d).toString(16))).slice(-2).toLowerCase();
 };
 
 // Convert a 32-bit ARGB value to hex format (no # prefix)
