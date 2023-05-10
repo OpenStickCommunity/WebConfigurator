@@ -51,10 +51,10 @@ const defaultCustomTheme = Object.keys(BUTTONS.gp2040)
 	}, {});
 
 defaultCustomTheme['ALL'] = { normal: '#000000', pressed: '#000000' };
-defaultCustomTheme['GRADIENT'] = { normal: '#00ffff', pressed: '#ff00ff' };
-defaultCustomTheme['GRADIENT2'] = { normal: '#ff00ff', pressed: '#00ffff' };
+defaultCustomTheme['GRADIENT NORMAL'] = { normal: '#00ffff', pressed: '#ff00ff' };
+defaultCustomTheme['GRADIENT PRESSED'] = { normal: '#ff00ff', pressed: '#00ffff' };
 
-const specialButtons = ['ALL', 'GRADIENT', 'GRADIENT2'];
+const specialButtons = ['ALL', 'GRADIENT NORMAL', 'GRADIENT PRESSED'];
 
 const LEDButton = ({ id, name, buttonType, buttonColor, buttonPressedColor, className, labelUnder, onClick, ...props }) => {
 	const [pressed, setPressed] = useState(false);
@@ -89,7 +89,19 @@ const ledColors = LEDColors.map(c => ({ title: c.name, color: c.value}));
 const customColors = (colors) => colors.map(c => ({ title: c, color: c }));
 
 const CustomThemePage = () => {
-	const { buttonLabels, savedColors, setSavedColors } = useContext(AppContext);
+	const {
+		buttonLabels,
+		gradientNormalColor1,
+		gradientNormalColor2,
+		gradientPressedColor1,
+		gradientPressedColor2,
+		savedColors,
+		setGradientNormalColor1,
+		setGradientNormalColor2,
+		setGradientPressedColor1,
+		setGradientPressedColor2,
+		setSavedColors
+	} = useContext(AppContext);
 	const [saveMessage, setSaveMessage] = useState('');
 	const [ledLayout, setLedLayout] = useState(0);
 	const [pickerType, setPickerType] = useState(null);
@@ -137,7 +149,7 @@ const CustomThemePage = () => {
 			if (selectedButton === 'ALL') {
 				Object.keys(customTheme).forEach(p => customTheme[p][pickerType.type] = c.hex);
 			}
-			else if (selectedButton === 'GRADIENT' || selectedButton === 'GRADIENT2') {
+			else if (selectedButton === 'GRADIENT NORMAL' || selectedButton === 'GRADIENT PRESSED') {
 				customTheme[selectedButton][pickerType.type] = c.hex;
 
 				// Apply the gradient across action buttons only, 7-8 columns
@@ -152,12 +164,28 @@ const CustomThemePage = () => {
 				);
 				steps.push(customTheme[selectedButton].pressed);
 
-				if (selectedButton === 'GRADIENT')
+				if (selectedButton === 'GRADIENT NORMAL') {
 					matrix.forEach((r, i) => r.filter(b => !!b).forEach(b => customTheme[b] = { normal: steps[i], pressed: customTheme[b].pressed }));
-					else if (selectedButton === 'GRADIENT2')
+					if (pickerType.type === 'pressed') {
+						setGradientNormalColor1(customTheme[selectedButton].normal);
+						setGradientNormalColor2(c.hex);
+					}
+					else {
+						setGradientNormalColor1(c.hex);
+						setGradientNormalColor2(customTheme[selectedButton].pressed);
+					}
+				}
+				else if (selectedButton === 'GRADIENT PRESSED') {
 					matrix.forEach((r, i) => r.filter(b => !!b).forEach(b => customTheme[b] = { normal: customTheme[b].normal, pressed: steps[i] }));
-
-				setCustomTheme(customTheme);
+					if (pickerType.type === 'pressed') {
+						setGradientPressedColor1(customTheme[selectedButton].normal);
+						setGradientPressedColor2(c.hex);
+					}
+					else {
+						setGradientPressedColor1(c.hex);
+						setGradientPressedColor2(customTheme[selectedButton].pressed);
+					}
+				}
 			}
 			else {
 				customTheme[selectedButton][pickerType.type] = c.hex;
@@ -211,10 +239,10 @@ const CustomThemePage = () => {
 			setHasCustomTheme(data.hasCustomTheme);
 			if (!data.customTheme['ALL'])
 				data.customTheme['ALL'] = { normal: '#000000', pressed: '#000000' };
-			if (!data.customTheme['GRADIENT'])
-				data.customTheme['GRADIENT'] = { normal: '#00ffff', pressed: '#ff00ff' };
-			if (!data.customTheme['GRADIENT2'])
-				data.customTheme['GRADIENT2'] = { normal: '#00ffff', pressed: '#ff00ff' };
+			if (!data.customTheme['GRADIENT NORMAL'])
+				data.customTheme['GRADIENT NORMAL'] = { normal: '#00ffff', pressed: '#ff00ff' };
+			if (!data.customTheme['GRADIENT PRESSED'])
+				data.customTheme['GRADIENT PRESSED'] = { normal: '#00ffff', pressed: '#ff00ff' };
 
 			setCustomTheme(data.customTheme);
 		}
@@ -295,8 +323,8 @@ const CustomThemePage = () => {
 						<div className="button-group">
 							<Button onClick={(e) => setModalVisible(true)}>Clear All</Button>
 							<Button onClick={(e) => toggleSelectedButton(e, 'ALL')}>Set All To Color</Button>
-							<Button onClick={(e) => toggleSelectedButton(e, 'GRADIENT')}>Set Gradient</Button>
-							<Button onClick={(e) => toggleSelectedButton(e, 'GRADIENT2')}>Set Pressed Gradient</Button>
+							<Button onClick={(e) => toggleSelectedButton(e, 'GRADIENT NORMAL')}>Set Gradient</Button>
+							<Button onClick={(e) => toggleSelectedButton(e, 'GRADIENT PRESSED')}>Set Pressed Gradient</Button>
 						</div>
 					</>
 				}
@@ -315,7 +343,7 @@ const CustomThemePage = () => {
 									className={`led-color-option ${pickerType?.type === 'normal' ? 'selected' : ''}`}
 									onClick={() => handleLedColorClick('normal')}
 								>
-									<Form.Label>Normal</Form.Label>
+									<Form.Label>{selectedButton?.startsWith('GRADIENT') ? 'Color 1' : 'Normal'}</Form.Label>
 									<div
 										className={`led-color led-color-normal`}
 										style={{ backgroundColor: customTheme[selectedButton]?.normal }}
@@ -326,7 +354,7 @@ const CustomThemePage = () => {
 									className={`led-color-option ${pickerType?.type === 'pressed' ? 'selected' : ''}`}
 									onClick={() => handleLedColorClick('pressed')}
 								>
-									<Form.Label>Pressed</Form.Label>
+									<Form.Label>{selectedButton?.startsWith('GRADIENT') ? 'Color 2' : 'Pressed'}</Form.Label>
 									<div
 										className={`led-color led-color-pressed`}
 										style={{ backgroundColor: customTheme[selectedButton]?.pressed }}
