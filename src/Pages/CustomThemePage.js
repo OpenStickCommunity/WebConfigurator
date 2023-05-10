@@ -11,12 +11,13 @@ import Popover from 'react-bootstrap/Popover';
 import Row from 'react-bootstrap/Row';
 import Stack from 'react-bootstrap/Stack';
 import { SketchPicker } from '@hello-pangea/color-picker';
+import Gradient from "javascript-color-gradient";
 
 import { AppContext } from '../Contexts/AppContext';
 import FormSelect from '../Components/FormSelect';
 import Section from '../Components/Section';
 import WebApi from '../Services/WebApi';
-import { BUTTONS, MAIN_BUTTONS, AUX_BUTTONS } from '../Data/Buttons';
+import { BUTTONS, MAIN_BUTTONS, AUX_BUTTONS, KEYBOARD_LAYOUT, STICK_LAYOUT, STICKLESS_LAYOUT } from '../Data/Buttons';
 import LEDColors from '../Data/LEDColors';
 
 import './CustomThemePage.scss';
@@ -26,16 +27,19 @@ const BUTTON_LAYOUTS = [
 		label: 'Stick',
 		value: 0,
 		stickLayout: 'standard',
+		matrix: STICK_LAYOUT,
 	},
 	{
 		label: 'Stickless',
 		value: 1,
 		stickLayout: 'stickless',
+		matrix: STICKLESS_LAYOUT,
 	},
 	{
 		label: 'WASD',
 		value: 2,
 		stickLayout: 'keyboard',
+		matrix: KEYBOARD_LAYOUT,
 	},
 ];
 
@@ -47,6 +51,10 @@ const defaultCustomTheme = Object.keys(BUTTONS.gp2040)
 	}, {});
 
 defaultCustomTheme['ALL'] = { normal: '#000000', pressed: '#000000' };
+defaultCustomTheme['GRADIENT'] = { normal: '#00ffff', pressed: '#ff00ff' };
+defaultCustomTheme['GRADIENT2'] = { normal: '#ff00ff', pressed: '#00ffff' };
+
+const specialButtons = ['ALL', 'GRADIENT', 'GRADIENT2'];
 
 const LEDButton = ({ id, name, buttonType, buttonColor, buttonPressedColor, className, labelUnder, onClick, ...props }) => {
 	const [pressed, setPressed] = useState(false);
@@ -103,6 +111,7 @@ const CustomThemePage = () => {
 				customTheme[b][s] = '#000000';
 			});
 		});
+
 		setCustomTheme(customTheme);
 		setModalVisible(false);
 	};
@@ -125,10 +134,34 @@ const CustomThemePage = () => {
 
 	const handleLedColorChange = (c) => {
 		if (selectedButton) {
-			if (selectedButton === 'ALL')
+			if (selectedButton === 'ALL') {
 				Object.keys(customTheme).forEach(p => customTheme[p][pickerType.type] = c.hex);
-			else
-			customTheme[selectedButton][pickerType.type] = c.hex;
+			}
+			else if (selectedButton === 'GRADIENT' || selectedButton === 'GRADIENT2') {
+				customTheme[selectedButton][pickerType.type] = c.hex;
+
+				// Apply the gradient across action buttons only, 7-8 columns
+				const matrix = BUTTON_LAYOUTS[ledLayout].matrix;
+				const count = matrix.length;
+
+				let steps = [customTheme[selectedButton].normal];
+				steps.push(...new Gradient()
+					.setColorGradient(customTheme[selectedButton].normal, customTheme[selectedButton].pressed)
+					.setMidpoint(count - 2)
+					.getColors()
+				);
+				steps.push(customTheme[selectedButton].pressed);
+
+				if (selectedButton === 'GRADIENT')
+					matrix.forEach((r, i) => r.filter(b => !!b).forEach(b => customTheme[b] = { normal: steps[i], pressed: customTheme[b].pressed }));
+					else if (selectedButton === 'GRADIENT2')
+					matrix.forEach((r, i) => r.filter(b => !!b).forEach(b => customTheme[b] = { normal: customTheme[b].normal, pressed: steps[i] }));
+
+				setCustomTheme(customTheme);
+			}
+			else {
+				customTheme[selectedButton][pickerType.type] = c.hex;
+			}
 		}
 
 		setCustomTheme(customTheme);
@@ -165,7 +198,7 @@ const CustomThemePage = () => {
 
 	const submit = async () => {
 		const leds = { ...customTheme };
-		delete leds['ALL'];
+		specialButtons.forEach(b => delete leds[b]);
 		const success = await WebApi.setCustomTheme({ hasCustomTheme, customTheme: leds });
 		setSaveMessage(success ? 'Saved! Please Restart Your Device' : 'Unable to Save');
 	};
@@ -177,6 +210,11 @@ const CustomThemePage = () => {
 			setHasCustomTheme(data.hasCustomTheme);
 			if (!data.customTheme['ALL'])
 				data.customTheme['ALL'] = { normal: '#000000', pressed: '#000000' };
+			if (!data.customTheme['GRADIENT'])
+				data.customTheme['GRADIENT'] = { normal: '#00ffff', pressed: '#ff00ff' };
+			if (!data.customTheme['GRADIENT2'])
+				data.customTheme['GRADIENT2'] = { normal: '#00ffff', pressed: '#ff00ff' };
+
 			setCustomTheme(data.customTheme);
 		}
 
@@ -256,19 +294,21 @@ const CustomThemePage = () => {
 						<div className="button-group">
 							<Button onClick={(e) => setModalVisible(true)}>Clear All</Button>
 							<Button onClick={(e) => toggleSelectedButton(e, 'ALL')}>Set All To Color</Button>
+							<Button onClick={(e) => toggleSelectedButton(e, 'GRADIENT')}>Set Gradient</Button>
+							<Button onClick={(e) => toggleSelectedButton(e, 'GRADIENT2')}>Set Pressed Gradient</Button>
 						</div>
 					</>
 				}
 				<Overlay
 					show={pickerVisible}
 					target={ledOverlayTarget}
-					placement={selectedButton === 'ALL' ? 'top' : 'bottom'}
+					placement={specialButtons.indexOf(selectedButton) > -1 ? 'top' : 'bottom'}
 					container={this}
 					containerPadding={20}
 				>
 					<Popover onClick={(e) => e.stopPropagation()}>
 						<Container className="led-color-picker">
-							<h6 className="text-center">{selectedButton === 'ALL' ? selectedButton : BUTTONS[buttonLabels][selectedButton]}</h6>
+							<h6 className="text-center">{specialButtons.indexOf(selectedButton) > -1 ? selectedButton : BUTTONS[buttonLabels][selectedButton]}</h6>
 							<Row>
 								<Form.Group as={Col}
 									className={`led-color-option ${pickerType?.type === 'normal' ? 'selected' : ''}`}

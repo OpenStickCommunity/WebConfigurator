@@ -32,8 +32,8 @@ const rgbArrayToHex = (values) => {
 };
 
 export {
-	intToHex,
 	hexToInt,
+	intToHex,
 	rgbArrayToHex,
 	rgbIntToHex,
 };

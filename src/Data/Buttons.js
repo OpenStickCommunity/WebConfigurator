@@ -135,3 +135,34 @@ export const BUTTONS = {
 
 export const AUX_BUTTONS = [ 'S1', 'S2', 'L3', 'R3', 'A1', 'A2' ];
 export const MAIN_BUTTONS = [ 'Up', 'Down', 'Left', 'Right', 'B1', 'B2', 'B3', 'B4', 'L1', 'R1', 'L2', 'R2' ];
+
+export const STICK_LAYOUT = [
+	[null, 'Left', null],
+	['Up', null, 'Down'],
+	[null, 'Right', null],
+	['B3', null, 'B1'],
+	['B4', null, 'B2'],
+	['R1', null, 'R2'],
+	['L1', null, 'L2'],
+];
+
+export const STICKLESS_LAYOUT = [
+	['Left', null, null],
+	['Down', null, null],
+	['Right', null, null],
+	[null, 'Up', null],
+	['B3', 'B1', null],
+	['B4', 'B2', null],
+	['R1', 'R2', null],
+	['L1', 'L2', null],
+];
+
+export const KEYBOARD_LAYOUT = [
+	[null, 'Left'],
+	['Up', 'Down'],
+	[null, 'Right'],
+	['B3', 'B1'],
+	['B4', 'B2'],
+	['R1', 'R2'],
+	['L1', 'L2'],
+];
