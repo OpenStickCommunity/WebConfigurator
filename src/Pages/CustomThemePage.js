@@ -147,7 +147,7 @@ const CustomThemePage = () => {
 	const handleLedColorChange = (c) => {
 		if (selectedButton) {
 			if (selectedButton === 'ALL') {
-				Object.keys(customTheme).forEach(p => customTheme[p][pickerType.type] = c.hex);
+				Object.keys(customTheme).filter(b => b === 'ALL' || specialButtons.indexOf(b) === -1).forEach(p => customTheme[p][pickerType.type] = c.hex);
 			}
 			else if (selectedButton === 'GRADIENT NORMAL' || selectedButton === 'GRADIENT PRESSED') {
 				customTheme[selectedButton][pickerType.type] = c.hex;
