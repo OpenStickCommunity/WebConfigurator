@@ -287,7 +287,7 @@ export default function LEDConfigPage() {
 							/>
 						</Row>
 					</Section>
-					<Section title="RGB Player LEDs (XInput)">
+					<Section title="Player LEDs (XInput)">
 						<Form.Group as={Col}>
 							<Row>
 								<FormSelect
