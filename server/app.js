@@ -20,7 +20,7 @@ app.use((req, res, next) => {
 });
 
 app.get("/api/getUsedPins", (req, res) => {
-	return res.send(Object.values(picoController));
+	return res.send({ usedPins: Object.values(picoController) });
 })
 
 app.get("/api/resetSettings", (req, res) => {
