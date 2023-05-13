@@ -286,7 +286,7 @@ export default function LEDConfigPage() {
 		const success = Object.keys(errors).length === 0;
 		setSaveMessage(success ? 'Saved! Please Restart Your Device' : 'Unable to Save');
 		if (success)
-			onSuccess(values);
+			onSuccess(data);
 	};
 
 	return (
