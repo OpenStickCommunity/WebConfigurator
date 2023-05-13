@@ -280,6 +280,7 @@ app.get("/api/getMemoryReport", (req, res) => {
 });
 
 app.post("/api/*", (req, res) => {
+	console.log(req.body);
 	return res.send(req.body);
 });
 
