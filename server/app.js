@@ -19,6 +19,10 @@ app.use((req, res, next) => {
 	next();
 });
 
+app.get("/api/getUsedPins", (req, res) => {
+	return res.send(Object.values(picoController));
+})
+
 app.get("/api/resetSettings", (req, res) => {
 	return res.send({ success: true });
 });

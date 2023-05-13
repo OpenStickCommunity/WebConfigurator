@@ -266,6 +266,12 @@ async function getMemoryReport() {
 		.catch(console.error);
 }
 
+async function getUsedPins() {
+	return axios.get(`${baseUrl}/api/getUsedPins`)
+	.then((response) => response.data)
+	.catch(console.error);
+}
+
 async function reboot(bootMode) {
 	return axios.post(`${baseUrl}/api/reboot`, { bootMode })
 		.then((response) => response.data)
@@ -299,6 +305,7 @@ const WebApi = {
 	setSplashImage,
 	getFirmwareVersion,
 	getMemoryReport,
+	getUsedPins,
 	reboot
 };
 

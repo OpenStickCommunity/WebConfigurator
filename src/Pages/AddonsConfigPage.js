@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Form, Row, FormCheck } from 'react-bootstrap';
 import { Formik, useFormikContext } from 'formik';
+import * as yup from 'yup';
+
 import FormControl from '../Components/FormControl';
 import FormSelect from '../Components/FormSelect';
 import Section from '../Components/Section';
@@ -9,8 +11,6 @@ import JSEncrypt from 'jsencrypt';
 import CryptoJS from 'crypto-js';
 import get from 'lodash/get'
 import set from "lodash/set"
-
-import yup from '../Services/Validator';
 
 const I2C_BLOCKS = [
 	{ label: 'i2c0', value: 0 },

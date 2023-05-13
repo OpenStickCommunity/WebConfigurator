@@ -1,6 +1,50 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useEffect, useState } from 'react';
+import * as yup from 'yup';
+
+import WebApi from '../Services/WebApi';
 
 export const AppContext = createContext(null);
+
+let checkPins = null;
+
+yup.addMethod(yup.string, 'validateColor', function(this: yup.StringSchema, name) {
+	// console.log('validateColor');
+	return this.test('', 'Valid hex color required', (value) => value?.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i));
+});
+
+yup.addMethod(yup.NumberSchema, 'validateSelectionWhenEnabled', function(this: yup.NumberSchema, name, choices) {
+	// console.log('validateSelectionWhenEnabled');
+	return this.when(name, {
+		is: value => !!value,
+		then: () => this.required().oneOf(choices.map(o => o.value)),
+		otherwise: () => yup.mixed().notRequired()
+	})
+});
+
+yup.addMethod(yup.NumberSchema, 'validateNumberWhenEnabled', function(this: yup.NumberSchema, name) {
+	return this.when(name, {
+		is: value => !!value,
+		then: () => this.required(),
+		otherwise: () => yup.mixed().notRequired().strip()
+	})
+});
+
+yup.addMethod(yup.NumberSchema, 'validateRangeWhenEnabled', function(this: yup.NumberSchema, name, min, max) {
+	return this.when(name, {
+		is: value =>!!value,
+		then: () => this.required().min(min).max(max),
+		otherwise: () => yup.mixed().notRequired().strip()
+	});
+});
+
+yup.addMethod(yup.NumberSchema, 'validatePinWhenEnabled', function(this: yup.NumberSchema, name) {
+	// console.log('validating ' + name, usedPins, this);
+	return this.checkUsedPins();
+});
+
+yup.addMethod(yup.NumberSchema, 'checkUsedPins', function(this: yup.NumberSchema) {
+	return this.test('', '${originalValue} is unavailable/already assigned!', (value) => checkPins(value));
+});
 
 export const AppContextProvider = ({ children, ...props }) => {
 	const [buttonLabels, _setButtonLabels] = useState(localStorage.getItem('buttonLabels') || 'gp2040');
@@ -39,6 +83,26 @@ export const AppContextProvider = ({ children, ...props }) => {
 		_setGradientPressedColor1(gradientPressedColor2);
 	};
 
+	const [usedPins, setUsedPins] = useState([]);
+
+	const updateUsedPins = async () => {
+		const data = await WebApi.getUsedPins();
+		setUsedPins(data);
+		return data;
+	};
+
+	useEffect(() => {
+		updateUsedPins(setUsedPins);
+	}, []);
+
+	useEffect(() => {
+		checkPins = (value) => {
+			const hasValue = value > -1;
+			const isValid = value === -1 || (hasValue && value < 30 && usedPins.indexOf(value) === -1);
+			return isValid;
+		};
+	}, [usedPins, setUsedPins]);
+
 	return (
 		<AppContext.Provider
 			{...props}
@@ -49,12 +113,15 @@ export const AppContextProvider = ({ children, ...props }) => {
 				gradientPressedColor1,
 				gradientPressedColor2,
 				savedColors,
+				usedPins,
 				setButtonLabels,
 				setGradientNormalColor1,
 				setGradientNormalColor2,
 				setGradientPressedColor1,
 				setGradientPressedColor2,
 				setSavedColors,
+				setUsedPins,
+				updateUsedPins,
 			}}
 		>
 			{children}

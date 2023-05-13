@@ -5,6 +5,7 @@ import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import { Formik, useFormikContext } from 'formik';
+import * as yup from 'yup';
 import orderBy from 'lodash/orderBy';
 import { SketchPicker } from '@hello-pangea/color-picker';
 
@@ -17,7 +18,6 @@ import FormSelect from '../Components/FormSelect';
 import BUTTONS from '../Data/Buttons.json';
 import LEDColors from '../Data/LEDColors';
 import { hexToInt, rgbIntToHex } from '../Services/Utilities';
-import yup from '../Services/Validator';
 import WebApi from '../Services/WebApi';
 
 const LED_FORMATS = [
@@ -50,26 +50,24 @@ const defaultValue = {
 	pledColor: '#00ff00',
 };
 
-const usedPins = [];
-
 const schema = yup.object().shape({
 	brightnessMaximum : yup.number().required().positive().integer().min(0).max(255).label('Max Brightness'),
 	brightnessSteps   : yup.number().required().positive().integer().min(1).max(10).label('Brightness Steps'),
 	// eslint-disable-next-line no-template-curly-in-string
-	dataPin           : yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => usedPins.indexOf(value) === -1).label('Data Pin'),
+	dataPin           : yup.number().required().validatePinWhenEnabled('dataPin'),
 	ledFormat         : yup.number().required().positive().integer().min(0).max(3).label('LED Format'),
 	ledLayout         : yup.number().required().positive().integer().min(0).max(2).label('LED Layout'),
 	ledsPerButton     : yup.number().required().positive().integer().min(1).label('LEDs Per Pixel'),
 	pledType          : yup.number().required().integer().min(-1).max(1).label('Player LED Type'),
 	pledColor         : yup.string().label('RGB Player LEDs').validateColor(),
-	pledPin1          : yup.number().label('PLED 1').validatePinWhenEnabled('pledPins1', usedPins),
-	pledPin2          : yup.number().label('PLED 2').validatePinWhenEnabled('pledPins2', usedPins),
-	pledPin3          : yup.number().label('PLED 3').validatePinWhenEnabled('pledPins3', usedPins),
-	pledPin4          : yup.number().label('PLED 4').validatePinWhenEnabled('pledPins4', usedPins),
-// 	pledIndex1        : yup.number().label('PLED 1').validateNumberWhenEnabled('pledIndex1'),
-// 	pledIndex2        : yup.number().label('PLED 2').validateNumberWhenEnabled('pledIndex2'),
-// 	pledIndex3        : yup.number().label('PLED 3').validateNumberWhenEnabled('pledIndex3'),
-// 	pledIndex4        : yup.number().label('PLED 4').validateNumberWhenEnabled('pledIndex4'),
+	pledPin1          : yup.number().label('PLED 1').validatePinWhenEnabled('pledPins1'),
+	pledPin2          : yup.number().label('PLED 2').validatePinWhenEnabled('pledPins2'),
+	pledPin3          : yup.number().label('PLED 3').validatePinWhenEnabled('pledPins3'),
+	pledPin4          : yup.number().label('PLED 4').validatePinWhenEnabled('pledPins4'),
+	// pledIndex1        : yup.number().label('PLED 1').validateNumberWhenEnabled('pledIndex1'),
+	// pledIndex2        : yup.number().validateNumberWhenEnabled('pledIndex2'),
+	// pledIndex3        : yup.number().validateNumberWhenEnabled('pledIndex3'),
+	// pledIndex4        : yup.number().validateNumberWhenEnabled('pledIndex4'),
 });
 
 const getLedButtons = (buttonLabels, map, excludeNulls) => {
@@ -100,10 +98,13 @@ const getLedMap = (buttonLabels, ledButtons, excludeNulls) => {
 }
 
 const FormContext = ({ buttonLabels, ledButtonMap, ledFormat, pledColor, pledType, pledPin1, pledPin2, pledPin3, pledPin4, setDataSources }) => {
+	const { updateUsedPins } = useContext(AppContext);
 	const { setFieldValue, setValues } = useFormikContext();
 
 	useEffect(() => {
 		async function fetchData() {
+			await updateUsedPins();
+
 			const data = await WebApi.getLedOptions();
 			data.pledColor = rgbIntToHex(data.pledColor) || "#ffffff";
 
@@ -121,7 +122,7 @@ const FormContext = ({ buttonLabels, ledButtonMap, ledFormat, pledColor, pledTyp
 				getLedButtons(buttonLabels, available, true),
 				getLedButtons(buttonLabels, assigned, true),
 			];
-			usedPins.push(...data.usedPins);
+
 			setDataSources(dataSources);
 			setValues(data);
 		}
@@ -307,11 +308,10 @@ export default function LEDConfigPage() {
 								{parseInt(values.pledType) > -1 &&
 									<>
 										<FormControl type="number"
+											name="pledPin1"
 											label={PLED_LABELS[0][values.pledType]}
 											className="form-control-sm"
 											groupClassName="col-sm-2 mb-3"
-											key={'pledPin1'}
-											name={'pledPin1'}
 											value={values.pledPin1}
 											error={errors.pledPin1}
 											isInvalid={errors.pledPin1}
@@ -319,11 +319,10 @@ export default function LEDConfigPage() {
 											min={0}
 										/>
 										<FormControl type="number"
+											name="pledPin2"
 											label={PLED_LABELS[1][values.pledType]}
 											className="form-control-sm"
 											groupClassName="col-sm-2 mb-3"
-											key={'pledPin2'}
-											name={'pledPin2'}
 											value={values.pledPin2}
 											error={errors.pledPin2}
 											isInvalid={errors.pledPin2}
@@ -331,11 +330,10 @@ export default function LEDConfigPage() {
 											min={0}
 										/>
 										<FormControl type="number"
+											name="pledPin3"
 											label={PLED_LABELS[2][values.pledType]}
 											className="form-control-sm"
 											groupClassName="col-sm-2 mb-3"
-											key={'pledPin3'}
-											name={'pledPin3'}
 											value={values.pledPin3}
 											error={errors.pledPin3}
 											isInvalid={errors.pledPin3}
@@ -343,11 +341,10 @@ export default function LEDConfigPage() {
 											min={0}
 										/>
 										<FormControl type="number"
+											name="pledPin4"
 											label={PLED_LABELS[3][values.pledType]}
 											className="form-control-sm"
 											groupClassName="col-sm-2 mb-3"
-											key={'pledPin4'}
-											name={'pledPin4'}
 											value={values.pledPin4}
 											error={errors.pledPin4}
 											isInvalid={errors.pledPin4}

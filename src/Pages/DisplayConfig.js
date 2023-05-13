@@ -2,11 +2,11 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Button, Form, Row, Col, FormLabel } from 'react-bootstrap';
 import { Formik, useFormikContext, Field } from 'formik';
 import chunk from 'lodash/chunk';
+import * as yup from 'yup';
 
 import FormControl from '../Components/FormControl';
 import FormSelect from '../Components/FormSelect';
 import Section from '../Components/Section';
-import yup from '../Services/Validator';
 import WebApi from '../Services/WebApi';
 
 const ON_OFF_OPTIONS = [
