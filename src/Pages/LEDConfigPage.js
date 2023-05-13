@@ -14,7 +14,6 @@ import Section from '../Components/Section';
 import DraggableListGroup from '../Components/DraggableListGroup';
 import FormControl from '../Components/FormControl';
 import FormSelect from '../Components/FormSelect';
-import IconButton from '../Components/IconButton';
 import BUTTONS from '../Data/Buttons.json';
 import LEDColors from '../Data/LEDColors';
 import { hexToInt, rgbIntToHex } from '../Services/Utilities';
