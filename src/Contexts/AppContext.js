@@ -8,37 +8,34 @@ export const AppContext = createContext(null);
 let checkPins = null;
 
 yup.addMethod(yup.string, 'validateColor', function(this: yup.StringSchema, name) {
-	// console.log('validateColor');
 	return this.test('', 'Valid hex color required', (value) => value?.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i));
 });
 
-yup.addMethod(yup.NumberSchema, 'validateSelectionWhenEnabled', function(this: yup.NumberSchema, name, choices) {
-	// console.log('validateSelectionWhenEnabled');
+yup.addMethod(yup.NumberSchema, 'validateSelectionWhenValue', function(this: yup.NumberSchema, name, choices) {
 	return this.when(name, {
-		is: value => !!value,
+		is: value => !isNaN(parseInt(value)),
 		then: () => this.required().oneOf(choices.map(o => o.value)),
 		otherwise: () => yup.mixed().notRequired()
 	})
 });
 
-yup.addMethod(yup.NumberSchema, 'validateNumberWhenEnabled', function(this: yup.NumberSchema, name) {
+yup.addMethod(yup.NumberSchema, 'validateNumberWhenValue', function(this: yup.NumberSchema, name) {
 	return this.when(name, {
-		is: value => !!value,
+		is: value => !isNaN(parseInt(value)),
 		then: () => this.required(),
 		otherwise: () => yup.mixed().notRequired().strip()
 	})
 });
 
-yup.addMethod(yup.NumberSchema, 'validateRangeWhenEnabled', function(this: yup.NumberSchema, name, min, max) {
+yup.addMethod(yup.NumberSchema, 'validateRangeWhenValue', function(this: yup.NumberSchema, name, min, max) {
 	return this.when(name, {
-		is: value =>!!value,
+		is: value => !isNaN(parseInt(value)),
 		then: () => this.required().min(min).max(max),
 		otherwise: () => yup.mixed().notRequired().strip()
 	});
 });
 
-yup.addMethod(yup.NumberSchema, 'validatePinWhenEnabled', function(this: yup.NumberSchema, name) {
-	// console.log('validating ' + name, usedPins, this);
+yup.addMethod(yup.NumberSchema, 'validatePinWhenValue', function(this: yup.NumberSchema, name) {
 	return this.checkUsedPins();
 });
 
@@ -88,17 +85,18 @@ export const AppContextProvider = ({ children, ...props }) => {
 	const updateUsedPins = async () => {
 		const data = await WebApi.getUsedPins();
 		setUsedPins(data);
+		console.log('usedPins updated:', usedPins);
 		return data;
 	};
 
 	useEffect(() => {
-		updateUsedPins(setUsedPins);
+		updateUsedPins();
 	}, []);
 
 	useEffect(() => {
 		checkPins = (value) => {
 			const hasValue = value > -1;
-			const isValid = value === -1 || (hasValue && value < 30 && usedPins.indexOf(value) === -1);
+			const isValid = value === undefined || value === -1 || (hasValue && value < 30 && usedPins.indexOf(value) === -1);
 			return isValid;
 		};
 	}, [usedPins, setUsedPins]);

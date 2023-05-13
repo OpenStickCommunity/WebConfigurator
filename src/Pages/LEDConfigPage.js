@@ -47,6 +47,15 @@ const defaultValue = {
 	ledFormat: 0,
 	ledLayout: 0,
 	ledsPerButton: 2,
+	pledType: -1,
+	pledPin1: -1,
+	pledPin2: -1,
+	pledPin3: -1,
+	pledPin4: -1,
+	pledIndex1: -1,
+	pledIndex2: -1,
+	pledIndex3: -1,
+	pledIndex4: -1,
 	pledColor: '#00ff00',
 };
 
@@ -54,20 +63,20 @@ const schema = yup.object().shape({
 	brightnessMaximum : yup.number().required().positive().integer().min(0).max(255).label('Max Brightness'),
 	brightnessSteps   : yup.number().required().positive().integer().min(1).max(10).label('Brightness Steps'),
 	// eslint-disable-next-line no-template-curly-in-string
-	dataPin           : yup.number().required().validatePinWhenEnabled('dataPin'),
+	dataPin           : yup.number().required().validatePinWhenValue('dataPin'),
 	ledFormat         : yup.number().required().positive().integer().min(0).max(3).label('LED Format'),
 	ledLayout         : yup.number().required().positive().integer().min(0).max(2).label('LED Layout'),
 	ledsPerButton     : yup.number().required().positive().integer().min(1).label('LEDs Per Pixel'),
-	pledType          : yup.number().required().integer().min(-1).max(1).label('Player LED Type'),
+	pledType          : yup.number().required().label('Player LED Type'),
 	pledColor         : yup.string().label('RGB Player LEDs').validateColor(),
-	pledPin1          : yup.number().label('PLED 1').validatePinWhenEnabled('pledPins1'),
-	pledPin2          : yup.number().label('PLED 2').validatePinWhenEnabled('pledPins2'),
-	pledPin3          : yup.number().label('PLED 3').validatePinWhenEnabled('pledPins3'),
-	pledPin4          : yup.number().label('PLED 4').validatePinWhenEnabled('pledPins4'),
-	// pledIndex1        : yup.number().label('PLED 1').validateNumberWhenEnabled('pledIndex1'),
-	// pledIndex2        : yup.number().validateNumberWhenEnabled('pledIndex2'),
-	// pledIndex3        : yup.number().validateNumberWhenEnabled('pledIndex3'),
-	// pledIndex4        : yup.number().validateNumberWhenEnabled('pledIndex4'),
+	pledPin1          : yup.number().label('PLED 1').validatePinWhenValue('pledPins1'),
+	pledPin2          : yup.number().label('PLED 2').validatePinWhenValue('pledPins2'),
+	pledPin3          : yup.number().label('PLED 3').validatePinWhenValue('pledPins3'),
+	pledPin4          : yup.number().label('PLED 4').validatePinWhenValue('pledPins4'),
+	pledIndex1        : yup.number().label('PLED Index 1').min(0),
+	pledIndex2        : yup.number().label('PLED Index 2').min(0),
+	pledIndex3        : yup.number().label('PLED Index 3').min(0),
+	pledIndex4        : yup.number().label('PLED Index 4').min(0),
 });
 
 const getLedButtons = (buttonLabels, map, excludeNulls) => {
@@ -98,15 +107,11 @@ const getLedMap = (buttonLabels, ledButtons, excludeNulls) => {
 }
 
 const FormContext = ({ buttonLabels, ledButtonMap, ledFormat, pledColor, pledType, pledPin1, pledPin2, pledPin3, pledPin4, setDataSources }) => {
-	const { updateUsedPins } = useContext(AppContext);
 	const { setFieldValue, setValues } = useFormikContext();
 
 	useEffect(() => {
 		async function fetchData() {
-			await updateUsedPins();
-
 			const data = await WebApi.getLedOptions();
-			data.pledColor = rgbIntToHex(data.pledColor) || "#ffffff";
 
 			let available = {};
 			let assigned = {};
@@ -163,7 +168,7 @@ const FormContext = ({ buttonLabels, ledButtonMap, ledFormat, pledColor, pledTyp
 };
 
 export default function LEDConfigPage() {
-	const { buttonLabels } = useContext(AppContext);
+	const { buttonLabels, updateUsedPins } = useContext(AppContext);
 	const [saveMessage, setSaveMessage] = useState('');
 	const [ledButtonMap, setLedButtonMap] = useState([]);
 	const [dataSources, setDataSources] = useState([[], []]);
@@ -197,11 +202,74 @@ export default function LEDConfigPage() {
 			data.pledColor = hexToInt(values.pledColor);
 
 		const success = await WebApi.setLedOptions(data);
+		if (success)
+			updateUsedPins();
+	};
+
+	const onSubmit = (e, handleSubmit, values, errors) => {
+		setSaveMessage('');
+		e.preventDefault();
+
+		// Consolidate PLED fields based on selected type
+		const {
+			pledPin1, pledPin2, pledPin3, pledPin4,
+			pledIndex1, pledIndex2, pledIndex3, pledIndex4,
+			...data
+		} = values;
+
+		data.pledType = parseInt(data.pledType);
+
+		handleSubmit(data);
+
+		switch (data.pledType) {
+			case 0:
+				data.pledPin1 = pledPin1;
+				data.pledPin2 = pledPin2;
+				data.pledPin3 = pledPin3;
+				data.pledPin4 = pledPin4;
+				delete errors.pledIndex1;
+				delete errors.pledIndex2;
+				delete errors.pledIndex3;
+				delete errors.pledIndex4;
+				break;
+				
+			case 1:
+				data.pledPin1 = pledIndex1;
+				data.pledPin2 = pledIndex2;
+				data.pledPin3 = pledIndex3;
+				data.pledPin4 = pledIndex4;
+				delete errors.pledPin1;
+				delete errors.pledPin2;
+				delete errors.pledPin3;
+				delete errors.pledPin4;
+				break;
+
+			default:
+				data.pledPin1 = null;
+				data.pledPin2 = null;
+				data.pledPin3 = null;
+				data.pledPin4 = null;
+				delete errors.pledIndex1;
+				delete errors.pledIndex2;
+				delete errors.pledIndex3;
+				delete errors.pledIndex4;
+				delete errors.pledPin1;
+				delete errors.pledPin2;
+				delete errors.pledPin3;
+				delete errors.pledPin4;
+				break;
+		}
+
+		console.log(data, errors);
+
+		const success = Object.keys(errors).length === 0;
 		setSaveMessage(success ? 'Saved! Please Restart Your Device' : 'Unable to Save');
+		if (success)
+			onSuccess(values);
 	};
 
 	return (
-		<Formik validationSchema={schema} onSubmit={onSuccess} initialValues={defaultValue} validateOnChange={true}>
+		<Formik validationSchema={schema} onSubmit={onSuccess} initialValues={defaultValue}>
 			{({
 				handleSubmit,
 				handleChange,
@@ -210,7 +278,7 @@ export default function LEDConfigPage() {
 				touched,
 				errors,
 			}) => (
-				<Form noValidate onSubmit={handleSubmit}>
+				<Form noValidate onSubmit={(e) => onSubmit(e, handleSubmit, values, errors)}>
 					<Section title="RGB LED Configuration">
 						<Row>
 							<FormControl type="number"
@@ -297,7 +365,7 @@ export default function LEDConfigPage() {
 									className="form-select-sm"
 									groupClassName="col-sm-2 mb-3"
 									value={values.pledType}
-									error={errors.pledTypet}
+									error={errors.pledType}
 									isInvalid={errors.pledType}
 									onChange={handleChange}
 								>
@@ -305,83 +373,128 @@ export default function LEDConfigPage() {
 									<option value="0">PWM</option>
 									<option value="1">RGB</option>
 								</FormSelect>
-								{parseInt(values.pledType) > -1 &&
-									<>
-										<FormControl type="number"
-											name="pledPin1"
-											label={PLED_LABELS[0][values.pledType]}
-											className="form-control-sm"
-											groupClassName="col-sm-2 mb-3"
-											value={values.pledPin1}
-											error={errors.pledPin1}
-											isInvalid={errors.pledPin1}
-											onChange={handleChange}
-											min={0}
-										/>
-										<FormControl type="number"
-											name="pledPin2"
-											label={PLED_LABELS[1][values.pledType]}
-											className="form-control-sm"
-											groupClassName="col-sm-2 mb-3"
-											value={values.pledPin2}
-											error={errors.pledPin2}
-											isInvalid={errors.pledPin2}
-											onChange={handleChange}
-											min={0}
-										/>
-										<FormControl type="number"
-											name="pledPin3"
-											label={PLED_LABELS[2][values.pledType]}
-											className="form-control-sm"
-											groupClassName="col-sm-2 mb-3"
-											value={values.pledPin3}
-											error={errors.pledPin3}
-											isInvalid={errors.pledPin3}
-											onChange={handleChange}
-											min={0}
-										/>
-										<FormControl type="number"
-											name="pledPin4"
-											label={PLED_LABELS[3][values.pledType]}
-											className="form-control-sm"
-											groupClassName="col-sm-2 mb-3"
-											value={values.pledPin4}
-											error={errors.pledPin4}
-											isInvalid={errors.pledPin4}
-											onChange={handleChange}
-											min={0}
-										/>
-									</>
-								}
-								{parseInt(values.pledType) === 1 &&
-									<>
-										<FormControl
-											label="RGB PLED Color"
-											name="pledColor"
-											className="form-control-sm"
-											groupClassName="col-sm-2 mb-3"
-											value={values.pledColor}
-											error={errors.pledColor}
-											isInvalid={errors.pledColor}
-											onBlur={handleBlur}
-											onClick={toggleRgbPledPicker}
-											onChange={(e) => {
-												handleChange(e);
-												setShowPicker(false);
-											}}
-										/>
-										<ColorPicker
-											name="pledColor"
-											types={[{ value: values.pledColor }]}
-											onChange={(c, e) => setPledColor(values, c)}
-											onDismiss={(e) => setShowPicker(false)}
-											placement="bottom"
-											presetColors={LEDColors.map(c => ({ title: c.name, color: c.value}))}
-											show={showPicker}
-											target={colorPickerTarget}
-										></ColorPicker>
-									</>
-								}
+								<FormControl type="number"
+									name="pledPin1"
+									hidden={parseInt(values.pledType) !== 0}
+									label={PLED_LABELS[0][values.pledType]}
+									className="form-control-sm"
+									groupClassName="col-sm-2 mb-3"
+									value={values.pledPin1}
+									error={errors.pledPin1}
+									isInvalid={errors.pledPin1}
+									onChange={handleChange}
+									min={0}
+								/>
+								<FormControl type="number"
+									name="pledPin2"
+									hidden={parseInt(values.pledType) !== 0}
+									label={PLED_LABELS[1][values.pledType]}
+									className="form-control-sm"
+									groupClassName="col-sm-2 mb-3"
+									value={values.pledPin2}
+									error={errors.pledPin2}
+									isInvalid={errors.pledPin2}
+									onChange={handleChange}
+									min={0}
+								/>
+								<FormControl type="number"
+									name="pledPin3"
+									hidden={parseInt(values.pledType) !== 0}
+									label={PLED_LABELS[2][values.pledType]}
+									className="form-control-sm"
+									groupClassName="col-sm-2 mb-3"
+									value={values.pledPin3}
+									error={errors.pledPin3}
+									isInvalid={errors.pledPin3}
+									onChange={handleChange}
+									min={0}
+								/>
+								<FormControl type="number"
+									name="pledPin4"
+									hidden={parseInt(values.pledType) !== 0}
+									label={PLED_LABELS[3][values.pledType]}
+									className="form-control-sm"
+									groupClassName="col-sm-2 mb-3"
+									value={values.pledPin4}
+									error={errors.pledPin4}
+									isInvalid={errors.pledPin4}
+									onChange={handleChange}
+									min={0}
+								/>
+								<FormControl type="number"
+									name="pledIndex1"
+									hidden={parseInt(values.pledType) !== 1}
+									label={PLED_LABELS[0][values.pledType]}
+									className="form-control-sm"
+									groupClassName="col-sm-2 mb-3"
+									value={values.pledIndex1}
+									error={errors.pledIndex1}
+									isInvalid={errors.pledIndex1}
+									onChange={handleChange}
+									min={0}
+								/>
+								<FormControl type="number"
+									name="pledIndex2"
+									hidden={parseInt(values.pledType) !== 1}
+									label={PLED_LABELS[1][values.pledType]}
+									className="form-control-sm"
+									groupClassName="col-sm-2 mb-3"
+									value={values.pledIndex2}
+									error={errors.pledIndex2}
+									isInvalid={errors.pledIndex2}
+									onChange={handleChange}
+									min={0}
+								/>
+								<FormControl type="number"
+									name="pledIndex3"
+									hidden={parseInt(values.pledType) !== 1}
+									label={PLED_LABELS[2][values.pledType]}
+									className="form-control-sm"
+									groupClassName="col-sm-2 mb-3"
+									value={values.pledIndex3}
+									error={errors.pledIndex3}
+									isInvalid={errors.pledIndex3}
+									onChange={handleChange}
+									min={0}
+								/>
+								<FormControl type="number"
+									name="pledIndex4"
+									hidden={parseInt(values.pledType) !== 1}
+									label={PLED_LABELS[3][values.pledType]}
+									className="form-control-sm"
+									groupClassName="col-sm-2 mb-3"
+									value={values.pledIndex4}
+									error={errors.pledIndex4}
+									isInvalid={errors.pledIndex4}
+									onChange={handleChange}
+									min={0}
+								/>
+								<FormControl
+									label="RGB PLED Color"
+									hidden={parseInt(values.pledType) !== 1}
+									name="pledColor"
+									className="form-control-sm"
+									groupClassName="col-sm-2 mb-3"
+									value={values.pledColor}
+									error={errors.pledColor}
+									isInvalid={errors.pledColor}
+									onBlur={handleBlur}
+									onClick={toggleRgbPledPicker}
+									onChange={(e) => {
+										handleChange(e);
+										setShowPicker(false);
+									}}
+								/>
+								<ColorPicker
+									name="pledColor"
+									types={[{ value: values.pledColor }]}
+									onChange={(c, e) => setPledColor(values, c)}
+									onDismiss={(e) => setShowPicker(false)}
+									placement="bottom"
+									presetColors={LEDColors.map(c => ({ title: c.name, color: c.value}))}
+									show={showPicker}
+									target={colorPickerTarget}
+								></ColorPicker>
 							</Row>
 						</Form.Group>
 					</Section>

@@ -108,6 +108,15 @@ async function getLedOptions() {
 	return axios.get(`${baseUrl}/api/getLedOptions`)
 		.then((response) => {
 			console.log(response.data);
+
+			response.data.pledColor = rgbIntToHex(response.data.pledColor) || "#ffffff";
+			if (response.data.pledType === 1) {
+				response.data.pledIndex1 = response.data.pledPin1;
+				response.data.pledIndex2 = response.data.pledPin2;
+				response.data.pledIndex3 = response.data.pledPin3;
+				response.data.pledIndex4 = response.data.pledPin4;
+			}
+
 			return response.data;
 		})
 		.catch(console.error);
@@ -115,6 +124,7 @@ async function getLedOptions() {
 
 async function setLedOptions(options) {
 	let data = sanitizeRequest(options);
+	
 
 	return axios.post(`${baseUrl}/api/setLedOptions`, sanitizeRequest(options))
 		.then((response) => {
@@ -280,6 +290,10 @@ async function reboot(bootMode) {
 
 function sanitizeRequest(request) {
 	const newRequest = {...request};
+	delete newRequest.pledIndex1;
+	delete newRequest.pledIndex2;
+	delete newRequest.pledIndex3;
+	delete newRequest.pledIndex4;
 	delete newRequest.usedPins;
 	return newRequest;
 }
