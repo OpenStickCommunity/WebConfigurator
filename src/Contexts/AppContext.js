@@ -84,8 +84,8 @@ export const AppContextProvider = ({ children, ...props }) => {
 
 	const updateUsedPins = async () => {
 		const data = await WebApi.getUsedPins();
-		setUsedPins(data);
-		console.log('usedPins updated:', usedPins);
+		setUsedPins(data.usedPins);
+		console.log('usedPins updated:', data.usedPins);
 		return data;
 	};
 
@@ -96,10 +96,14 @@ export const AppContextProvider = ({ children, ...props }) => {
 	useEffect(() => {
 		checkPins = (value) => {
 			const hasValue = value > -1;
-			const isValid = value === undefined || value === -1 || (hasValue && value < 30 && usedPins.indexOf(value) === -1);
+			const isValid = value === undefined
+				|| value === -1
+				|| (hasValue && value < 30 && (usedPins || []).indexOf(value) === -1);
 			return isValid;
 		};
 	}, [usedPins, setUsedPins]);
+
+	console.log('usedPins:', usedPins);
 
 	return (
 		<AppContext.Provider

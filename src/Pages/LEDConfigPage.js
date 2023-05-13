@@ -106,7 +106,12 @@ const getLedMap = (buttonLabels, ledButtons, excludeNulls) => {
 	return map;
 }
 
-const FormContext = ({ buttonLabels, ledButtonMap, ledFormat, pledColor, pledType, pledPin1, pledPin2, pledPin3, pledPin4, setDataSources }) => {
+const FormContext = ({
+	buttonLabels, ledButtonMap, ledFormat, pledColor, pledType,
+	pledPin1, pledPin2, pledPin3, pledPin4,
+	pledIndex1, pledIndex2, pledIndex3, pledIndex4,
+	setDataSources
+}) => {
 	const { setFieldValue, setValues } = useFormikContext();
 
 	useEffect(() => {
@@ -159,6 +164,22 @@ const FormContext = ({ buttonLabels, ledButtonMap, ledFormat, pledColor, pledTyp
 		if (!!pledPin4)
 			setFieldValue('pledPin4', parseInt(pledPin4));
 	}, [pledPin4, setFieldValue]);
+	useEffect(() => {
+		if (!!pledIndex1)
+			setFieldValue('pledIndex1', parseInt(pledIndex1));
+	}, [pledIndex1, setFieldValue]);
+	useEffect(() => {
+		if (!!pledIndex2)
+			setFieldValue('pledIndex2', parseInt(pledIndex2));
+	}, [pledIndex2, setFieldValue]);
+	useEffect(() => {
+		if (!!pledIndex3)
+			setFieldValue('pledIndex3', parseInt(pledIndex3));
+	}, [pledIndex3, setFieldValue]);
+	useEffect(() => {
+		if (!!pledIndex4)
+			setFieldValue('pledIndex4', parseInt(pledIndex4));
+	}, [pledIndex4, setFieldValue]);
 	useEffect(() => {
 		if (!!pledColor)
 			setFieldValue('pledColor', pledColor);
@@ -357,6 +378,7 @@ export default function LEDConfigPage() {
 						</Row>
 					</Section>
 					<Section title="Player LEDs (XInput)">
+						<p className="card-text">Select between None, PWM (standard LEDs) or RGB Player LEDs.</p>
 						<Form.Group as={Col}>
 							<Row>
 								<FormSelect
@@ -496,6 +518,8 @@ export default function LEDConfigPage() {
 									target={colorPickerTarget}
 								></ColorPicker>
 							</Row>
+							<p hidden={parseInt(values.pledType) !== 0}>For PWM LEDs, set each LED to a dedicated GPIO pin.</p>
+							<p hidden={parseInt(values.pledType) !== 1}>For RGB LEDs, set each LED to the index of the LED module on the RGB strip. (starts at 0)</p>
 						</Form.Group>
 					</Section>
 					<Section title="RGB LED Button Order">

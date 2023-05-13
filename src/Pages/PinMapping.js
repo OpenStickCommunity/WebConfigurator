@@ -12,11 +12,12 @@ const requiredButtons = ['S2'];
 const errorType = {
 	required: 'required',
 	conflict: 'conflict',
-	invalid: 'invalid'
+	invalid: 'invalid',
+	used: 'used',
 };
 
 export default function PinMappingPage() {
-	const { buttonLabels } = useContext(AppContext);
+	const { buttonLabels, usedPins } = useContext(AppContext);
 	const [validated, setValidated] = useState(false);
 	const [saveMessage, setSaveMessage] = useState('');
 	const [buttonMappings, setButtonMappings] = useState(baseButtonMappings);
@@ -71,6 +72,7 @@ export default function PinMappingPage() {
 		const uniquePins = mappedPins.filter((p, i, a) => a.indexOf(p) === i);
 		const conflictedPins = Object.keys(mappedPinCounts).filter(p => mappedPinCounts[p] > 1).map(parseInt);
 		const invalidPins = uniquePins.filter(p => boards[selectedBoard].invalidPins.indexOf(p) > -1);
+		const otherPins = usedPins.filter(p => uniquePins.indexOf(p) === -1);
 
 		for (let button of buttons) {
 			mappings[button].error = '';
@@ -86,6 +88,10 @@ export default function PinMappingPage() {
 			// Identify invalid pin assignments
 			else if (invalidPins.indexOf(mappings[button].pin) > -1)
 				mappings[button].error = errorType.invalid;
+
+			// Identify used pins
+			else if (otherPins.indexOf(mappings[button].pin) > -1)
+				mappings[button].error = errorType.used;
 		}
 
 		setButtonMappings(mappings);
@@ -106,6 +112,9 @@ export default function PinMappingPage() {
 		}
 		else if (buttonMappings[button].error === errorType.invalid) {
 			return <span key="invalid" className="error-message">{`Pin ${buttonMappings[button].pin} is invalid for this board`}</span>;
+		}
+		else if (buttonMappings[button].error === errorType.used) {
+			return <span key="used" className="error-message">{`Pin ${buttonMappings[button].pin} is already assigned to another feature`}</span>;
 		}
 
 		return <></>;
