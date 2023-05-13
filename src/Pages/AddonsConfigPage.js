@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Form, Row, FormCheck } from 'react-bootstrap';
 import { Formik, useFormikContext } from 'formik';
-import * as yup from 'yup';
 import FormControl from '../Components/FormControl';
 import FormSelect from '../Components/FormSelect';
 import Section from '../Components/Section';
@@ -10,6 +9,8 @@ import JSEncrypt from 'jsencrypt';
 import CryptoJS from 'crypto-js';
 import get from 'lodash/get'
 import set from "lodash/set"
+
+import yup from '../Services/Validator';
 
 const I2C_BLOCKS = [
 	{ label: 'i2c0', value: 0 },
@@ -41,8 +42,10 @@ const SHMUP_MIXED_MODES = [
 ];
 
 const ANALOG_PINS = [
-	-1,26,27,28
+	-1,26,27,28,29
 ];
+
+const ANALOG_PIN_OPTIONS = ANALOG_PINS.map((i) => <option key={`analogPins-option-${i}`} value={i}>{i === -1 ? 'None' : i}</option>);
 
 const BUTTON_MASKS = [
 	{ label: 'None',  value:  0          },
@@ -85,6 +88,8 @@ const REVERSE_ACTION = [
 	{ label: 'Enable', value: 1 },
 	{ label: 'Neutral', value: 2 },
 ];
+
+let usedPins = [];
 
 const verifyAndSavePS4 = async () => {
 	let PS4Key = document.getElementById("ps4key-input");
@@ -248,49 +253,17 @@ const SOCD_MODES = [
 	{ label: 'SOCD Cleaning Off', value: 4 },
 ];
 
-yup.NumberSchema.prototype.validateSelectionWhenEnabled = function(name, choices) {
-	return this.when(name, {
-		is: value => !!value,
-		then: () => this.required().oneOf(choices.map(o => o.value)),
-		otherwise: () => yup.mixed().notRequired()
-	})
-};
-
-yup.NumberSchema.prototype.validateNumberWhenEnabled = function(name) {
-	return this.when(name, {
-		is: value => !!value,
-		then: () => this.required(),
-		otherwise: () => yup.mixed().notRequired().strip()
-	})
-};
-
-yup.NumberSchema.prototype.validateRangeWhenEnabled = function(name, min, max) {
-	return this.when(name, {
-		is: value =>!!value,
-		then: () => this.required().min(min).max(max),
-		otherwise: () => yup.mixed().notRequired().strip()
-	})
-};
-
-yup.NumberSchema.prototype.validatePinWhenEnabled = function(name) {
-	return this.checkUsedPins().validateRangeWhenEnabled(name, -1, 29)
-};
-
-yup.NumberSchema.prototype.checkUsedPins = function() {
-	return this.test('', '${originalValue} is unavailable/already assigned!', (value) => usedPins.indexOf(value) === -1)
-};
-
 const schema = yup.object().shape({
 	I2CAnalog1219InputEnabled:   yup.number().label('I2C Analog1219 Input Enabled'),
-	i2cAnalog1219SDAPin:         yup.number().label('I2C Analog1219 SDA Pin').validatePinWhenEnabled('I2CAnalog1219InputEnabled'),
-	i2cAnalog1219SCLPin:         yup.number().label('I2C Analog1219 SCL Pin').validatePinWhenEnabled('I2CAnalog1219InputEnabled'),
+	i2cAnalog1219SDAPin:         yup.number().label('I2C Analog1219 SDA Pin').validatePinWhenEnabled('I2CAnalog1219InputEnabled', usedPins),
+	i2cAnalog1219SCLPin:         yup.number().label('I2C Analog1219 SCL Pin').validatePinWhenEnabled('I2CAnalog1219InputEnabled', usedPins),
 	i2cAnalog1219Block:          yup.number().label('I2C Analog1219 Block').validateSelectionWhenEnabled('I2CAnalog1219InputEnabled', I2C_BLOCKS),
 	i2cAnalog1219Speed:          yup.number().label('I2C Analog1219 Speed').validateNumberWhenEnabled('I2CAnalog1219InputEnabled'),
 	i2cAnalog1219Address:        yup.number().label('I2C Analog1219 Address').validateNumberWhenEnabled('I2CAnalog1219InputEnabled'),
 
 	AnalogInputEnabled:          yup.number().required().label('Analog Input Enabled'),
-	analogAdcPinX:               yup.number().label('Analog Stick Pin X').validatePinWhenEnabled('AnalogInputEnabled'),
- 	analogAdcPinY:               yup.number().label('Analog Stick Pin Y').validatePinWhenEnabled('AnalogInputEnabled'),
+	analogAdcPinX:               yup.number().label('Analog Stick Pin X').validatePinWhenEnabled('AnalogInputEnabled', usedPins),
+ 	analogAdcPinY:               yup.number().label('Analog Stick Pin Y').validatePinWhenEnabled('AnalogInputEnabled', usedPins),
 
 	BoardLedAddonEnabled:        yup.number().required().label('Board LED Add-On Enabled'),
 	onBoardLedMode:              yup.number().label('On-Board LED Mode').validateSelectionWhenEnabled('BoardLedAddonEnabled', ON_BOARD_LED_MODES),
@@ -299,24 +272,24 @@ const schema = yup.object().shape({
 	bootselButtonMap:            yup.number().label('BOOTSEL Button Map').validateSelectionWhenEnabled('BootselButtonAddonEnabled', BUTTON_MASKS),
 
 	BuzzerSpeakerAddonEnabled:   yup.number().required().label('Buzzer Speaker Add-On Enabled'),
-	buzzerPin:                   yup.number().label('Buzzer Pin').validatePinWhenEnabled('BuzzerSpeakerAddonEnabled'),
+	buzzerPin:                   yup.number().label('Buzzer Pin').validatePinWhenEnabled('BuzzerSpeakerAddonEnabled', usedPins),
 	buzzerVolume:                yup.number().label('Buzzer Volume').validateRangeWhenEnabled('BuzzerSpeakerAddonEnabled', 0, 100),
 
 	DualDirectionalInputEnabled: yup.number().required().label('Dual Directional Input Enabled'),
-	dualDirUpPin:                yup.number().label('Dual Directional Up Pin').validatePinWhenEnabled('DualDirectionalInputEnabled')  ,
-	dualDirDownPin:              yup.number().label('Dual Directional Down Pin').validatePinWhenEnabled('DualDirectionalInputEnabled'),
-	dualDirLeftPin:              yup.number().label('Dual Directional Left Pin').validatePinWhenEnabled('DualDirectionalInputEnabled'),
-	dualDirRightPin:             yup.number().label('Dual Directional Right Pin').validatePinWhenEnabled('DualDirectionalInputEnabled'),
+	dualDirUpPin:                yup.number().label('Dual Directional Up Pin').validatePinWhenEnabled('DualDirectionalInputEnabled', usedPins)  ,
+	dualDirDownPin:              yup.number().label('Dual Directional Down Pin').validatePinWhenEnabled('DualDirectionalInputEnabled', usedPins),
+	dualDirLeftPin:              yup.number().label('Dual Directional Left Pin').validatePinWhenEnabled('DualDirectionalInputEnabled', usedPins),
+	dualDirRightPin:             yup.number().label('Dual Directional Right Pin').validatePinWhenEnabled('DualDirectionalInputEnabled', usedPins),
 	dualDirDpadMode:             yup.number().label('Dual Stick Mode').validateSelectionWhenEnabled('DualDirectionalInputEnabled', DUAL_STICK_MODES),
 	dualDirCombineMode:          yup.number().label('Dual Combination Mode').validateSelectionWhenEnabled('DualDirectionalInputEnabled', DUAL_COMBINE_MODES),
 
 	ExtraButtonAddonEnabled:     yup.number().required().label('Extra Button Add-On Enabled'),
-	extraButtonPin:              yup.number().label('Extra Button Pin').validatePinWhenEnabled('ExtraButtonAddonEnabled'),
+	extraButtonPin:              yup.number().label('Extra Button Pin').validatePinWhenEnabled('ExtraButtonAddonEnabled', usedPins),
 	extraButtonMap:              yup.number().label('Extra Button Map').validateSelectionWhenEnabled('ExtraButtonAddonEnabled', BUTTON_MASKS),
 
 	JSliderInputEnabled:         yup.number().required().label('JSlider Input Enabled'),
-	sliderLSPin:                 yup.number().label('Slider LS Pin').validatePinWhenEnabled('JSliderInputEnabled'),
-	sliderRSPin:                 yup.number().label('Slider RS Pin').validatePinWhenEnabled('JSliderInputEnabled'),
+	sliderLSPin:                 yup.number().label('Slider LS Pin').validatePinWhenEnabled('JSliderInputEnabled', usedPins),
+	sliderRSPin:                 yup.number().label('Slider RS Pin').validatePinWhenEnabled('JSliderInputEnabled', usedPins),
 
 	PlayerNumAddonEnabled:       yup.number().required().label('Player Number Add-On Enabled'),
 	playerNumber:                yup.number().label('Player Number').validateRangeWhenEnabled('PlayerNumAddonEnabled', 1, 4),
@@ -324,24 +297,24 @@ const schema = yup.object().shape({
 	PS4ModeAddonEnabled: yup.number().required().label('PS4 Mode Add-on Enabled'),
 
 	ReverseInputEnabled:         yup.number().required().label('Reverse Input Enabled'),
-	reversePin:                  yup.number().label('Reverse Pin').validatePinWhenEnabled('ReverseInputEnabled'),
-	reversePinLED:               yup.number().label('Reverse Pin LED').validatePinWhenEnabled('ReverseInputEnabled'),
+	reversePin:                  yup.number().label('Reverse Pin').validatePinWhenEnabled('ReverseInputEnabled', usedPins),
+	reversePinLED:               yup.number().label('Reverse Pin LED').validatePinWhenEnabled('ReverseInputEnabled', usedPins),
 
 	SliderSOCDInputEnabled:      yup.number().required().label('Slider SOCD Input Enabled'),
 	sliderSOCDModeOne:           yup.number().label('SOCD Slider Mode One').validateSelectionWhenEnabled('SliderSOCDInputEnabled', SOCD_MODES),
 	sliderSOCDModeTwo:           yup.number().label('SOCD Slider Mode Two').validateSelectionWhenEnabled('SliderSOCDInputEnabled', SOCD_MODES),
 	sliderSOCDModeDefault:       yup.number().label('SOCD Slider Mode Default').validateSelectionWhenEnabled('SliderSOCDInputEnabled', SOCD_MODES),
-	sliderSOCDPinOne:            yup.number().label('Slider SOCD Up Priority Pin').validatePinWhenEnabled('SliderSOCDInputEnabled'),
-	sliderSOCDPinTwo:            yup.number().label('Slider SOCD Second Priority Pin').validatePinWhenEnabled('SliderSOCDInputEnabled'),
+	sliderSOCDPinOne:            yup.number().label('Slider SOCD Up Priority Pin').validatePinWhenEnabled('SliderSOCDInputEnabled', usedPins),
+	sliderSOCDPinTwo:            yup.number().label('Slider SOCD Second Priority Pin').validatePinWhenEnabled('SliderSOCDInputEnabled', usedPins),
 
 	TurboInputEnabled:           yup.number().required().label('Turbo Input Enabled'),
-	turboPin:                    yup.number().label('Turbo Pin').validatePinWhenEnabled('TurboInputEnabled'),
-	turboPinLED:                 yup.number().label('Turbo Pin LED').validatePinWhenEnabled('TurboInputEnabled'),
-	pinShmupBtn1:                yup.number().label('Charge Shot 1 Pin').validatePinWhenEnabled('TurboInputEnabled'),
-	pinShmupBtn2:                yup.number().label('Charge Shot 2 Pin').validatePinWhenEnabled('TurboInputEnabled'),
-	pinShmupBtn3:                yup.number().label('Charge Shot 3 Pin').validatePinWhenEnabled('TurboInputEnabled'),
-	pinShmupBtn4:                yup.number().label('Charge Shot 4 Pin').validatePinWhenEnabled('TurboInputEnabled'),
-	pinShmupDial:                yup.number().label('Shmup Dial Pin').validatePinWhenEnabled('TurboInputEnabled'),
+	turboPin:                    yup.number().label('Turbo Pin').validatePinWhenEnabled('TurboInputEnabled', usedPins),
+	turboPinLED:                 yup.number().label('Turbo Pin LED').validatePinWhenEnabled('TurboInputEnabled', usedPins),
+	pinShmupBtn1:                yup.number().label('Charge Shot 1 Pin').validatePinWhenEnabled('TurboInputEnabled', usedPins),
+	pinShmupBtn2:                yup.number().label('Charge Shot 2 Pin').validatePinWhenEnabled('TurboInputEnabled', usedPins),
+	pinShmupBtn3:                yup.number().label('Charge Shot 3 Pin').validatePinWhenEnabled('TurboInputEnabled', usedPins),
+	pinShmupBtn4:                yup.number().label('Charge Shot 4 Pin').validatePinWhenEnabled('TurboInputEnabled', usedPins),
+	pinShmupDial:                yup.number().label('Shmup Dial Pin').validatePinWhenEnabled('TurboInputEnabled', usedPins),
 	turboShotCount:              yup.number().label('Turbo Shot Count').validateRangeWhenEnabled('TurboInputEnabled', 5, 30),
 	shmupMode:                   yup.number().label('Shmup Mode Enabled').validateRangeWhenEnabled('TurboInputEnabled', 0, 1),
 	shmupMixMode:                yup.number().label('Shmup Mix Priority').validateSelectionWhenEnabled('TurboInputEnabled', DUAL_STICK_MODES), 
@@ -355,8 +328,8 @@ const schema = yup.object().shape({
 	shmupBtnMask4:               yup.number().label('Charge Shot Button 4 Map').validateSelectionWhenEnabled('TurboInputEnabled', BUTTON_MASKS),
 
 	WiiExtensionAddonEnabled:    yup.number().required().label('Wii Extensions Enabled'),
-	wiiExtensionSDAPin:          yup.number().required().label('WiiExtension I2C SDA Pin').validatePinWhenEnabled('WiiExtensionAddonEnabled'),
-	wiiExtensionSCLPin:          yup.number().required().label('WiiExtension I2C SCL Pin').validatePinWhenEnabled('WiiExtensionAddonEnabled'),
+	wiiExtensionSDAPin:          yup.number().required().label('WiiExtension I2C SDA Pin').validatePinWhenEnabled('WiiExtensionAddonEnabled', usedPins),
+	wiiExtensionSCLPin:          yup.number().required().label('WiiExtension I2C SCL Pin').validatePinWhenEnabled('WiiExtensionAddonEnabled', usedPins),
 	wiiExtensionBlock:           yup.number().required().label('WiiExtension I2C Block').validateSelectionWhenEnabled('WiiExtensionAddonEnabled', I2C_BLOCKS),
 	wiiExtensionSpeed:           yup.number().label('WiiExtension I2C Speed').validateNumberWhenEnabled('WiiExtensionAddonEnabled'),
 });
@@ -429,14 +402,13 @@ const defaultValues = {
 	WiiExtensionAddonEnabled: 0,
 };
 
-let usedPins = [];
-
 const FormContext = ({setStoredData}) => {
 	const { values, setValues } = useFormikContext();
 
 	useEffect(() => {
 		async function fetchData() {
 			const data = await WebApi.getAddonsOptions();
+			console.log(data);
 			usedPins = data.usedPins;
 			setValues(data);
 			setStoredData(JSON.parse(JSON.stringify(data))); // Do a deep copy to keep the original
@@ -707,7 +679,7 @@ export default function AddonsConfigPage() {
 						<div
 							id="AnalogInputOptions"
 							hidden={!values.AnalogInputEnabled}>
-						<p>Available pins: {ANALOG_PINS.join(", ")}</p>
+						<p>Available pins: {ANALOG_PINS.filter(p => p !== -1).join(", ")}</p>
 						<Row className="mb-3">
 							<FormSelect
 								label="Analog Stick X Pin"
@@ -719,7 +691,7 @@ export default function AddonsConfigPage() {
 								isInvalid={errors.analogAdcPinX}
 								onChange={handleChange}
 							>
-								{ANALOG_PINS.map((i) => <option key={`analogPins-option-${i}`} value={i}>{i}</option>)}
+								{ANALOG_PIN_OPTIONS}
 							</FormSelect>
 							<FormSelect
 								label="Analog Stick Y Pin"
@@ -731,7 +703,7 @@ export default function AddonsConfigPage() {
 								isInvalid={errors.analogAdcPinY}
 								onChange={handleChange}
 							>
-								{ANALOG_PINS.map((i) => <option key={`analogPins-option-${i}`} value={i}>{i}</option>)}
+								{ANALOG_PIN_OPTIONS}
 							</FormSelect>
 						</Row>
 						</div>
@@ -796,7 +768,7 @@ export default function AddonsConfigPage() {
 								isInvalid={errors.pinShmupDial}
 								onChange={handleChange}
 							>
-								{ANALOG_PINS.map((i) => <option key={`turboDialPins-option-${i}`} value={i}>{i}</option>)}
+								{ANALOG_PIN_OPTIONS}
 							</FormSelect>
 							<FormCheck
 								label="SHMUP MODE"

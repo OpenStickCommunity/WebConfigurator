@@ -119,6 +119,12 @@ app.get("/api/getLedOptions", (req, res) => {
 			A2: null,
 		},
 		usedPins: Object.values(picoController),
+		pledType: 1,
+		pledPin1: 12,
+		pledPin2: 13,
+		pledPin3: 14,
+		pledPin4: 15,
+		pledColor: 65280,
 	});
 });
 

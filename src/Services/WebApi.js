@@ -137,8 +137,8 @@ async function getCustomTheme() {
 				.filter(p => p !== 'enabled')
 				.forEach((button) => {
 					data.customTheme[button] = {
-						normal: `#${rgbIntToHex(response.data[button].u)}`,
-						pressed: `#${rgbIntToHex(response.data[button].d)}`,
+						normal: rgbIntToHex(response.data[button].u),
+						pressed: rgbIntToHex(response.data[button].d),
 					};
 				});
 

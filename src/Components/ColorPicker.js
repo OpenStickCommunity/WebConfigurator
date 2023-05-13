@@ -16,7 +16,7 @@ import './ColorPicker.scss';
 const ledColors = LEDColors.map(c => ({ title: c.name, color: c.value}));
 const customColors = (colors) => colors.map(c => ({ title: c, color: c }));
 
-const ColorPicker = ({ types, onChange, onDismiss, placement, show, target, title, ...props }) => {
+const ColorPicker = ({ types, onChange, onDismiss, pickerOnly, placement, show, target, title, ...props }) => {
 	const { savedColors, setSavedColors } = useContext(AppContext);
 	const [colorPalette, setColorPalette] = useState([...ledColors, ...customColors(savedColors)]);
 	const [colorTypes, setColorTypes] = useState(types);
@@ -44,9 +44,9 @@ const ColorPicker = ({ types, onChange, onDismiss, placement, show, target, titl
 		setColorPalette([...ledColors, ...customColors(newColors)]);
 	};
 
-	const selectColor = (c) => {
+	const selectColor = (c, e) => {
 		if (onChange)
-			onChange(c.hex);
+			onChange(c.hex, e);
 
 		selectedColorType.value = c.hex;
 		
@@ -68,15 +68,14 @@ const ColorPicker = ({ types, onChange, onDismiss, placement, show, target, titl
 			placement={placement || 'bottom'}
 			container={this}
 			containerPadding={20}
-			transition={null}
 		>
 			<Popover onClick={(e) => e.stopPropagation()}>
 				<Container className="color-picker">
 					<h6 className="text-center">{title}</h6>
 					<Row>
-						{colorTypes.map((o =>
+						{colorTypes.map(((o, i) =>
 							<Form.Group as={Col}
-								key={o.title}
+								key={`colorType${i}`}
 								className={`${o === selectedColorType ? 'selected' : ''}`}
 								onClick={() => setSelectedColorType(o)}
 							>
@@ -93,7 +92,7 @@ const ColorPicker = ({ types, onChange, onDismiss, placement, show, target, titl
 						<Col>
 							<SketchPicker
 								color={selectedColorType.value}
-								onChange={(c) => selectColor(c)}
+								onChange={(c, e) => selectColor(c, e)}
 								disableAlpha={true}
 								presetColors={colorPalette}
 								width={180}
