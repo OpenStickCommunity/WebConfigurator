@@ -199,10 +199,20 @@ export default function LEDConfigPage() {
 	const [dataSources, setDataSources] = useState([[], []]);
 	const [colorPickerTarget, setColorPickerTarget] = useState(null);
 	const [showPicker, setShowPicker] = useState(false);
+	const [rgbLedStartIndex, setRgbLedStartIndex] = useState(0);
 
-	const ledOrderChanged = (ledOrderArrays) => {
-		if (ledOrderArrays.length === 2)
+	const ledOrderChanged = (ledOrderArrays, ledsPerButton) => {
+		if (ledOrderArrays.length === 2) {
 			setLedButtonMap(getLedMap(buttonLabels, ledOrderArrays[1]));
+			setRgbLedStartIndex(ledOrderArrays[1].length * (ledsPerButton || 0));
+			console.log('new start index: ', ledOrderArrays[1].length * (ledsPerButton || 0), ledOrderArrays);
+		}
+	};
+
+	const ledsPerButtonChanged = (e, handleChange) => {
+		const ledsPerButton = parseInt(e.target.value);
+		setRgbLedStartIndex(dataSources[1].length * (ledsPerButton || 0));
+		handleChange(e);
 	};
 
 	const setPledColor = (values, hexColor) => {
@@ -233,7 +243,7 @@ export default function LEDConfigPage() {
 		setSaveMessage(success ? 'Saved! Please Restart Your Device' : 'Unable to Save');
 	};
 
-	const onSubmit = (e, handleSubmit, setValues, values, errors) => {
+	const onSubmit = (e, handleSubmit, setValues, values) => {
 		setSaveMessage('');
 		e.preventDefault();
 
@@ -275,7 +285,7 @@ export default function LEDConfigPage() {
 				touched,
 				errors,
 			}) => (
-				<Form noValidate onSubmit={(e) => onSubmit(e, handleSubmit, setValues, values, errors)}>
+				<Form noValidate onSubmit={(e) => onSubmit(e, handleSubmit, setValues, values)}>
 					<Section title="RGB LED Configuration">
 						<Row>
 							<FormControl type="number"
@@ -324,7 +334,7 @@ export default function LEDConfigPage() {
 								value={values.ledsPerButton}
 								error={errors.ledsPerButton}
 								isInvalid={errors.ledsPerButton}
-								onChange={handleChange}
+								onChange={(e) => ledsPerButtonChanged(e, handleChange)}
 								min={1}
 							/>
 							<FormControl type="number"
@@ -495,7 +505,7 @@ export default function LEDConfigPage() {
 								></ColorPicker>
 							</Row>
 							<p hidden={parseInt(values.pledType) !== 0}>For PWM LEDs, set each LED to a dedicated GPIO pin.</p>
-							<p hidden={parseInt(values.pledType) !== 1}>For RGB LEDs, set each LED to the index of the LED module on the RGB strip. (starts at 0)</p>
+							<p hidden={parseInt(values.pledType) !== 1}>For RGB LEDs, the indexes must be after the last LED button defined in <em>RGB LED Button Order</em> section and likely <strong>starts at index {rgbLedStartIndex}</strong>.</p>
 						</Form.Group>
 					</Section>
 					<Section title="RGB LED Button Order">
@@ -510,7 +520,7 @@ export default function LEDConfigPage() {
 							groupName="test"
 							titles={['Available Buttons', 'Assigned Buttons']}
 							dataSources={dataSources}
-							onChange={ledOrderChanged}
+							onChange={(a) => ledOrderChanged(a, values.ledsPerButton)}
 						/>
 					</Section>
 					<Button type="submit">Save</Button>
