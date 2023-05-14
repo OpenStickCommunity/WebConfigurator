@@ -364,7 +364,6 @@ export default function LEDConfigPage() {
 						</Row>
 					</Section>
 					<Section title="Player LEDs (XInput)">
-						<p className="card-text">Select between None, PWM (standard LEDs) or RGB Player LEDs.</p>
 						<Form.Group as={Col}>
 							<Row>
 								<FormSelect
