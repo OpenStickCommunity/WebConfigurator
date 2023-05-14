@@ -62,21 +62,20 @@ const defaultValue = {
 const schema = yup.object().shape({
 	brightnessMaximum : yup.number().required().positive().integer().min(0).max(255).label('Max Brightness'),
 	brightnessSteps   : yup.number().required().positive().integer().min(1).max(10).label('Brightness Steps'),
-	// eslint-disable-next-line no-template-curly-in-string
 	dataPin           : yup.number().required().validatePinWhenValue('dataPin'),
 	ledFormat         : yup.number().required().positive().integer().min(0).max(3).label('LED Format'),
 	ledLayout         : yup.number().required().positive().integer().min(0).max(2).label('LED Layout'),
 	ledsPerButton     : yup.number().required().positive().integer().min(1).label('LEDs Per Pixel'),
 	pledType          : yup.number().required().label('Player LED Type'),
 	pledColor         : yup.string().label('RGB Player LEDs').validateColor(),
-	pledPin1          : yup.number().label('PLED 1').validatePinWhenValue('pledPins1'),
-	pledPin2          : yup.number().label('PLED 2').validatePinWhenValue('pledPins2'),
-	pledPin3          : yup.number().label('PLED 3').validatePinWhenValue('pledPins3'),
-	pledPin4          : yup.number().label('PLED 4').validatePinWhenValue('pledPins4'),
-	pledIndex1        : yup.number().label('PLED Index 1').min(0),
-	pledIndex2        : yup.number().label('PLED Index 2').min(0),
-	pledIndex3        : yup.number().label('PLED Index 3').min(0),
-	pledIndex4        : yup.number().label('PLED Index 4').min(0),
+	pledPin1          : yup.number().label('PLED 1').validatePinWhenEqualTo('pledPins1', 'pledType', 0),
+	pledPin2          : yup.number().label('PLED 2').validatePinWhenEqualTo('pledPins2', 'pledType', 0),
+	pledPin3          : yup.number().label('PLED 3').validatePinWhenEqualTo('pledPins3', 'pledType', 0),
+	pledPin4          : yup.number().label('PLED 4').validatePinWhenEqualTo('pledPins4', 'pledType', 0),
+	pledIndex1        : yup.number().label('PLED Index 1').validateMinWhenEqualTo('pledType', 1, 0),
+	pledIndex2        : yup.number().label('PLED Index 2').validateMinWhenEqualTo('pledType', 1, 0),
+	pledIndex3        : yup.number().label('PLED Index 3').validateMinWhenEqualTo('pledType', 1, 0),
+	pledIndex4        : yup.number().label('PLED Index 4').validateMinWhenEqualTo('pledType', 1, 0),
 });
 
 const getLedButtons = (buttonLabels, map, excludeNulls) => {
@@ -132,6 +131,11 @@ const FormContext = ({
 				getLedButtons(buttonLabels, available, true),
 				getLedButtons(buttonLabels, assigned, true),
 			];
+
+			data.pledIndex1 = data.pledType === 1 ? data.pledPin1 : -1;
+			data.pledIndex2 = data.pledType === 1 ? data.pledPin2 : -1;
+			data.pledIndex3 = data.pledType === 1 ? data.pledPin3 : -1;
+			data.pledIndex4 = data.pledType === 1 ? data.pledPin4 : -1;
 
 			setDataSources(dataSources);
 			setValues(data);
@@ -225,68 +229,39 @@ export default function LEDConfigPage() {
 		const success = await WebApi.setLedOptions(data);
 		if (success)
 			updateUsedPins();
+
+		setSaveMessage(success ? 'Saved! Please Restart Your Device' : 'Unable to Save');
 	};
 
-	const onSubmit = (e, handleSubmit, values, errors) => {
+	const onSubmit = (e, handleSubmit, setValues, values, errors) => {
 		setSaveMessage('');
 		e.preventDefault();
 
+		values.pledType = parseInt(values.pledType);
+
 		// Consolidate PLED fields based on selected type
-		const {
-			pledPin1, pledPin2, pledPin3, pledPin4,
-			pledIndex1, pledIndex2, pledIndex3, pledIndex4,
-			...data
-		} = values;
-
-		data.pledType = parseInt(data.pledType);
-
-		handleSubmit(data);
-
-		switch (data.pledType) {
+		switch (values.pledType) {
 			case 0:
-				data.pledPin1 = pledPin1;
-				data.pledPin2 = pledPin2;
-				data.pledPin3 = pledPin3;
-				data.pledPin4 = pledPin4;
-				delete errors.pledIndex1;
-				delete errors.pledIndex2;
-				delete errors.pledIndex3;
-				delete errors.pledIndex4;
+				// PLED pin already set
 				break;
 				
 			case 1:
-				data.pledPin1 = pledIndex1;
-				data.pledPin2 = pledIndex2;
-				data.pledPin3 = pledIndex3;
-				data.pledPin4 = pledIndex4;
-				delete errors.pledPin1;
-				delete errors.pledPin2;
-				delete errors.pledPin3;
-				delete errors.pledPin4;
+				values.pledPin1 = values.pledIndex1;
+				values.pledPin2 = values.pledIndex2;
+				values.pledPin3 = values.pledIndex3;
+				values.pledPin4 = values.pledIndex4;
 				break;
 
 			default:
-				data.pledPin1 = null;
-				data.pledPin2 = null;
-				data.pledPin3 = null;
-				data.pledPin4 = null;
-				delete errors.pledIndex1;
-				delete errors.pledIndex2;
-				delete errors.pledIndex3;
-				delete errors.pledIndex4;
-				delete errors.pledPin1;
-				delete errors.pledPin2;
-				delete errors.pledPin3;
-				delete errors.pledPin4;
+				values.pledPin1 = -1;
+				values.pledPin2 = -1;
+				values.pledPin3 = -1;
+				values.pledPin4 = -1;
 				break;
 		}
 
-		console.log(data, errors);
-
-		const success = Object.keys(errors).length === 0;
-		setSaveMessage(success ? 'Saved! Please Restart Your Device' : 'Unable to Save');
-		if (success)
-			onSuccess(data);
+		setValues(values);
+		handleSubmit();
 	};
 
 	return (
@@ -295,11 +270,12 @@ export default function LEDConfigPage() {
 				handleSubmit,
 				handleChange,
 				handleBlur,
+				setValues,
 				values,
 				touched,
 				errors,
 			}) => (
-				<Form noValidate onSubmit={(e) => onSubmit(e, handleSubmit, values, errors)}>
+				<Form noValidate onSubmit={(e) => onSubmit(e, handleSubmit, setValues, values, errors)}>
 					<Section title="RGB LED Configuration">
 						<Row>
 							<FormControl type="number"

@@ -27,12 +27,28 @@ yup.addMethod(yup.NumberSchema, 'validateNumberWhenValue', function(this: yup.Nu
 	})
 });
 
+yup.addMethod(yup.NumberSchema, 'validateMinWhenEqualTo', function(this: yup.NumberSchema, name, compareValue, min) {
+	return this.when(name, {
+		is: value => parseInt(value) === compareValue,
+		then: () => this.required().min(min),
+		otherwise: () => yup.mixed().notRequired().strip()
+	})
+});
+
 yup.addMethod(yup.NumberSchema, 'validateRangeWhenValue', function(this: yup.NumberSchema, name, min, max) {
 	return this.when(name, {
 		is: value => !isNaN(parseInt(value)),
 		then: () => this.required().min(min).max(max),
 		otherwise: () => yup.mixed().notRequired().strip()
 	});
+});
+
+yup.addMethod(yup.NumberSchema, 'validatePinWhenEqualTo', function(this: yup.NumberSchema, name, compareName, compareValue) {
+	return this.when(compareName, {
+		is: value => parseInt(value) === compareValue,
+		then: () => this.validatePinWhenValue(name),
+		otherwise: () => yup.mixed().notRequired().strip()
+	})
 });
 
 yup.addMethod(yup.NumberSchema, 'validatePinWhenValue', function(this: yup.NumberSchema, name) {
