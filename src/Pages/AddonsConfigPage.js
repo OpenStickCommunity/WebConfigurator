@@ -1399,11 +1399,11 @@ export default function AddonsConfigPage() {
 						/>
 					</Section>
 					<Section title="SOCD Cleaning Mode Selection Slider">
-						<p>Note: PS4, PS3 and Nintendo Switch modes do not support setting SOCD Cleaning to Off and will default to Neutral SOCD Cleaning mode.</p>
 						<div
 							id="SliderSOCDInputOptions"
 							hidden={!values.SliderSOCDInputEnabled}>
 						<Row className="mb-3">
+							<p>Note: PS4, PS3 and Nintendo Switch modes do not support setting SOCD Cleaning to Off and will default to Neutral SOCD Cleaning mode.</p>
 							<FormSelect
 								label="SOCD Slider Mode Default"
 								name="sliderSOCDModeDefault"
