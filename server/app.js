@@ -80,16 +80,16 @@ app.get("/api/getGamepadOptions", (req, res) => {
 		inputMode: 1,
 		socdMode: 2,
 		hotkeyF1: [
-			{ action: 1<<1, mask: 1<<0 },
-			{ action: 1<<2, mask: 1<<1 },
-			{ action: 1<<3, mask: 1<<2 },
-			{ action: 1<<4, mask: 1<<3 },
+			{ action: 1, mask: 1<<0 },
+			{ action: 2, mask: 1<<1 },
+			{ action: 3, mask: 1<<2 },
+			{ action: 4, mask: 1<<3 },
 		 ],
 		hotkeyF2: [
-			{ action: 1<<5, mask: 1<<0 },
-			{ action: 1<<6, mask: 1<<1 },
-			{ action: 1<<7, mask: 1<<2 },
-			{ action: 1<<8, mask: 1<<3 },
+			{ action: 5, mask: 1<<0 },
+			{ action: 6, mask: 1<<1 },
+			{ action: 7, mask: 1<<2 },
+			{ action: 8, mask: 1<<3 },
 		 ]
 	});
 });
