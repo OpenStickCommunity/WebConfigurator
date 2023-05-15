@@ -33,6 +33,19 @@ input.form-control {
 	}
 }
 
+button {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	flex: 0 0 auto;
+	width: auto !important;
+
+	svg {
+		margin: 0.25rem;
+		transform: translateY(-0.125rem);
+	}
+}
+
 // Fix for invalid inputs showing valid style after calling `form.checkValidity()`
 .was-validated .form-control.is-invalid {
 	border-color: $danger;

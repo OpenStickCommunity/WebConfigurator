@@ -19,6 +19,10 @@ app.use((req, res, next) => {
 	next();
 });
 
+app.get("/api/getUsedPins", (req, res) => {
+	return res.send({ usedPins: Object.values(picoController) });
+})
+
 app.get("/api/resetSettings", (req, res) => {
 	return res.send({ success: true });
 });
@@ -119,6 +123,12 @@ app.get("/api/getLedOptions", (req, res) => {
 			A2: null,
 		},
 		usedPins: Object.values(picoController),
+		pledType: 1,
+		pledPin1: 12,
+		pledPin2: 13,
+		pledPin3: 14,
+		pledPin4: 15,
+		pledColor: 65280,
 	});
 });
 
@@ -270,6 +280,7 @@ app.get("/api/getMemoryReport", (req, res) => {
 });
 
 app.post("/api/*", (req, res) => {
+	console.log(req.body);
 	return res.send(req.body);
 });
 

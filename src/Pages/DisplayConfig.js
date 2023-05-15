@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useContext, useEffect, useState, useRef } from 'react';
 import { Button, Form, Row, Col, FormLabel } from 'react-bootstrap';
 import { Formik, useFormikContext, Field } from 'formik';
-import * as yup from 'yup';
 import chunk from 'lodash/chunk';
+import * as yup from 'yup';
 
+import { AppContext } from '../Contexts/AppContext';
 import FormControl from '../Components/FormControl';
 import FormSelect from '../Components/FormSelect';
 import Section from '../Components/Section';
@@ -120,18 +121,14 @@ const defaultValues = {
 	displaySaverTimeout: 0,
 };
 
-let usedPins = [];
-
 const buttonLayoutSchema = yup.number().required().oneOf(BUTTON_LAYOUTS.map(o => o.value)).label('Button Layout Left')
 const buttonLayoutRightSchema = yup.number().required().oneOf(BUTTON_LAYOUTS_RIGHT.map(o => o.value)).label('Button Layout Right')
 
 const schema = yup.object().shape({
 	enabled: yup.number().label('Enabled?'),
 	i2cAddress: yup.string().required().label('I2C Address'),
-	// eslint-disable-next-line no-template-curly-in-string
-	sdaPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => true).label('SDA Pin'),
-	// eslint-disable-next-line no-template-curly-in-string
-	sclPin: yup.number().required().min(-1).max(29).test('', '${originalValue} is already assigned!', (value) => true).label('SCL Pin'),
+	sdaPin: yup.number().label('SDA Pin').validatePinWhenValue('sdaPin'),
+	sclPin: yup.number().label('SCL Pin').validatePinWhenValue('sclPin'),
 	i2cBlock: yup.number().required().oneOf(I2C_BLOCKS.map(o => o.value)).label('I2C Block'),
 	i2cSpeed: yup.number().required().label('I2C Speed'),
 	flipDisplay: yup.number().oneOf(DISPLAY_FLIP_MODES.map(o => o.value)).label('Flip Display'),
@@ -165,7 +162,6 @@ const FormContext = () => {
 	useEffect(() => {
 		async function fetchData() {
 			const data = await WebApi.getDisplayOptions();
-			usedPins = data.usedPins;
 			const splashImageResponse = await WebApi.getSplashImage();
 			data.splashImage = splashImageResponse.splashImage;
 			setValues(data);
@@ -231,12 +227,18 @@ const FormContext = () => {
 const isButtonLayoutCustom = (values) => values.buttonLayout === 12 || values.buttonLayoutRight === 16
 
 export default function DisplayConfigPage() {
+	const { updateUsedPins } = useContext(AppContext);
 	const [saveMessage, setSaveMessage] = useState('');
 
 	const onSuccess = async (values) => {
 		const success = await WebApi.setDisplayOptions(values, false)
-		.then(() => WebApi.setSplashImage(values));
+			.then(() => WebApi.setSplashImage(values));
+
+		if (success)
+			await updateUsedPins();
+
 		setSaveMessage(success ? 'Saved! Please Restart Your Device' : 'Unable to Save');
+
 	};
 
 	const onChangeCanvas = (base64, form, field) => {
